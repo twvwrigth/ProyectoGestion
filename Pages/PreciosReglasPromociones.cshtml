@@ -1,6 +1,7 @@
 @page
+@model PreciosReglasPromocionesModel
 @{
-    ViewData["Title"] = "Configuración - HU-08";
+    ViewData["Title"] = "PreciosReglasPromociones";
 }
 
 <div class="hu-container">
@@ -183,28 +184,3 @@
 
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Lógica en Vanilla JS para cambiar de pestañas sin Bootstrap
-        document.addEventListener("DOMContentLoaded", function() {
-            const tabLinks = document.querySelectorAll('.hu-tab-link');
-            const tabPanels = document.querySelectorAll('.hu-tab-panel');
-
-            tabLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    // 1. Quitar la clase 'active' de todos los botones y paneles
-                    tabLinks.forEach(l => l.classList.remove('active'));
-                    tabPanels.forEach(p => p.classList.remove('active'));
-
-                    // 2. Añadir la clase 'active' al botón clickeado
-                    this.classList.add('active');
-
-                    // 3. Mostrar el panel correspondiente según el 'data-tab'
-                    const tabId = this.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-        });
-    </script>
-}
