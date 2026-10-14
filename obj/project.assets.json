@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net10.0": {}
   },
@@ -8,19 +8,19 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\antip\\.nuget\\packages\\": {}
+    "C:\\Users\\strop\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\antip\\OneDrive\\Escritorio\\LISTI\\Quinto semestre\\Gestion de proyectos\\Proyecto\\Proyecto.csproj",
+      "projectUniqueName": "C:\\Users\\strop\\OneDrive\\Desktop\\PROYECTO-DESARROLLO\\ProyectoGestion\\Proyecto.csproj",
       "projectName": "Proyecto",
-      "projectPath": "C:\\Users\\antip\\OneDrive\\Escritorio\\LISTI\\Quinto semestre\\Gestion de proyectos\\Proyecto\\Proyecto.csproj",
-      "packagesPath": "C:\\Users\\antip\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\antip\\OneDrive\\Escritorio\\LISTI\\Quinto semestre\\Gestion de proyectos\\Proyecto\\obj\\",
+      "projectPath": "C:\\Users\\strop\\OneDrive\\Desktop\\PROYECTO-DESARROLLO\\ProyectoGestion\\Proyecto.csproj",
+      "packagesPath": "C:\\Users\\strop\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\strop\\OneDrive\\Desktop\\PROYECTO-DESARROLLO\\ProyectoGestion\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\antip\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\strop\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -30,6 +30,7 @@
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {}
         }
@@ -44,10 +45,11 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.300"
     },
     "frameworks": {
       "net10.0": {
+        "framework": "net10.0",
         "targetAlias": "net10.0",
         "imports": [
           "net461",
@@ -68,7 +70,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

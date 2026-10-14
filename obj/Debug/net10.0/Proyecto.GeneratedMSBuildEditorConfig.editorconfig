@@ -8,44 +8,49 @@ build_property.ProjectTypeGuids =
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Proyecto
 build_property.RootNamespace = Proyecto
-build_property.ProjectDir = C:\Users\antip\OneDrive\Escritorio\LISTI\Quinto semestre\Gestion de proyectos\Proyecto\
+build_property.ProjectDir = C:\Users\strop\OneDrive\Desktop\PROYECTO-DESARROLLO\ProyectoGestion\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.RazorLangVersion = 9.0
+build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\antip\OneDrive\Escritorio\LISTI\Quinto semestre\Gestion de proyectos\Proyecto
+build_property.MSBuildProjectDirectory = C:\Users\strop\OneDrive\Desktop\PROYECTO-DESARROLLO\ProyectoGestion
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/Error.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/Index.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/Privacy.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/_ViewImports.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Vista-HU-08.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmlzdGEtSFUtMDguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/_ViewStart.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/antip/OneDrive/Escritorio/LISTI/Quinto semestre/Gestion de proyectos/Proyecto/Pages/Shared/_Layout.cshtml]
+[C:/Users/strop/OneDrive/Desktop/PROYECTO-DESARROLLO/ProyectoGestion/Pages/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-sz8ldx8amz
