@@ -1,0 +1,210 @@
+@page
+@{
+    ViewData["Title"] = "Configuración - HU-08";
+}
+
+<div class="hu-container">
+    <header class="hu-header">
+        <h2>Gestión de Precios, Parámetros y Promociones</h2>
+        <span class="hu-badge">Rol: Encargado</span>
+    </header>
+
+    <!-- Pestañas de Navegación -->
+    <ul class="hu-tabs">
+        <li><button class="hu-tab-link active" data-tab="micas">Precios de Micas</button></li>
+        <li><button class="hu-tab-link" data-tab="parametros">Parámetros del Negocio</button></li>
+        <li><button class="hu-tab-link" data-tab="promociones">Promociones</button></li>
+    </ul>
+
+    <!-- Contenido de las Pestañas -->
+    <div class="hu-tab-content">
+        
+        <!-- Pestaña 1: Precios de Micas -->
+        <div id="micas" class="hu-tab-panel active">
+            <h3>Matriz de Precios</h3>
+            
+            <form class="hu-form-grid">
+                <div class="hu-form-group">
+                    <label class="hu-label">Material</label>
+                    <select class="hu-select">
+                        <option>Seleccionar...</option>
+                        <option>CR-39</option>
+                        <option>Policarbonato</option>
+                        <option>Poliuretano</option>
+                    </select>
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Tratamiento</label>
+                    <select class="hu-select">
+                        <option>Ninguno</option>
+                        <option>Antirreflejante</option>
+                        <option>Fotocromático</option>
+                        <option>Filtro Luz Azul</option>
+                    </select>
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Rango Grad.</label>
+                    <input type="text" class="hu-input" placeholder="Ej. ±2.00">
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Precio (MXN)</label>
+                    <input type="number" class="hu-input" placeholder="0.00">
+                </div>
+                <div class="hu-form-group" style="padding-top: 24px;">
+                    <button type="button" class="hu-btn hu-btn-success hu-btn-block">Agregar</button>
+                </div>
+            </form>
+
+            <div class="hu-table-container">
+                <table class="hu-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Tratamiento</th>
+                            <th>Rango de Graduación</th>
+                            <th>Precio Autorizado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CR-39</td>
+                            <td>Filtro Luz Azul</td>
+                            <td>±2.00 a ±4.00</td>
+                            <td>$850.00</td>
+                            <td><button class="hu-btn hu-btn-danger-outline">Eliminar</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pestaña 2: Parámetros del Negocio -->
+        <div id="parametros" class="hu-tab-panel">
+            <h3>Reglas de Operación y Cobros</h3>
+            
+            <form>
+                <div class="hu-cards-grid">
+                    <div class="hu-card">
+                        <label class="hu-label">Precio Base del Examen</label>
+                        <div class="hu-input-group">
+                            <span>$</span>
+                            <input type="number" class="hu-input" value="250.00">
+                            <span>MXN</span>
+                        </div>
+                        <span class="hu-text-muted">Costo si el cliente no compra lentes.</span>
+                    </div>
+
+                    <div class="hu-card">
+                        <label class="hu-label">Vigencia de Bonificación</label>
+                        <div class="hu-input-group">
+                            <input type="number" class="hu-input" value="30">
+                            <span>Días</span>
+                        </div>
+                        <span class="hu-text-muted">Días válidos para bonificar examen.</span>
+                    </div>
+
+                    <div class="hu-card">
+                        <label class="hu-label">Anticipo Mínimo Requerido</label>
+                        <div class="hu-input-group">
+                            <input type="number" class="hu-input" value="50">
+                            <span>%</span>
+                        </div>
+                        <span class="hu-text-muted">Porcentaje inicial para laboratorio.</span>
+                    </div>
+                </div>
+                <div class="hu-text-right">
+                    <button type="button" class="hu-btn hu-btn-primary">Guardar Parámetros</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Pestaña 3: Promociones -->
+        <div id="promociones" class="hu-tab-panel">
+            <h3>Crear Nueva Promoción</h3>
+            
+            <form class="hu-form-grid">
+                <div class="hu-form-group">
+                    <label class="hu-label">Nombre de Promoción</label>
+                    <input type="text" class="hu-input" placeholder="Ej. Buen Fin">
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Tipo</label>
+                    <select class="hu-select">
+                        <option>Porcentaje (%)</option>
+                        <option>Monto Fijo ($)</option>
+                    </select>
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Valor</label>
+                    <input type="number" class="hu-input" placeholder="15">
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Aplica a</label>
+                    <input type="text" class="hu-input" placeholder="Armazones">
+                </div>
+                <div class="hu-form-group">
+                    <label class="hu-label">Vigencia (Fin)</label>
+                    <input type="date" class="hu-input">
+                </div>
+                <div class="hu-form-group hu-checkbox-group">
+                    <input type="checkbox" id="acumulable">
+                    <label for="acumulable" class="hu-label" style="margin:0;">¿Acumulable?</label>
+                </div>
+                <div class="hu-form-group" style="padding-top: 24px;">
+                    <button type="button" class="hu-btn hu-btn-primary hu-btn-block">Registrar</button>
+                </div>
+            </form>
+
+            <h3>Promociones Activas</h3>
+            <div class="hu-table-container">
+                <table class="hu-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Vigencia</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Descuento Estudiantes</td>
+                            <td>Porcentaje</td>
+                            <td>10%</td>
+                            <td>01/09/2026 - 30/11/2026</td>
+                            <td><span class="hu-status">Activa</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Lógica en Vanilla JS para cambiar de pestañas sin Bootstrap
+        document.addEventListener("DOMContentLoaded", function() {
+            const tabLinks = document.querySelectorAll('.hu-tab-link');
+            const tabPanels = document.querySelectorAll('.hu-tab-panel');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // 1. Quitar la clase 'active' de todos los botones y paneles
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    tabPanels.forEach(p => p.classList.remove('active'));
+
+                    // 2. Añadir la clase 'active' al botón clickeado
+                    this.classList.add('active');
+
+                    // 3. Mostrar el panel correspondiente según el 'data-tab'
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+}
