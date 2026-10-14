@@ -1,0 +1,87 @@
+@model Proyecto.Pages.GestionDeEmpleadosModel
+
+<!-- Modal para Crear Empleado (HU-01) -->
+<div class="modal fade" id="modalCrearEmpleado" tabindex="-1" aria-labelledby="modalCrearEmpleadoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Crear">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalCrearEmpleadoLabel">Dar de Alta Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Campo Nombre -->
+                    <div class="mb-3">
+                        <label for="nombreEmpleado" class="form-label">Nombre Completo</label>
+                        <input type="text" id="nombreEmpleado" name="Nombre" class="form-control" required placeholder="Ej. Juan Pérez" />
+                    </div>
+
+                    <!-- Campo Usuario Único -->
+                    <div class="mb-3">
+                        <label for="usuarioEmpleado" class="form-label">Usuario Único</label>
+                        <input type="text" id="usuarioEmpleado" name="Usuario" class="form-control" required placeholder="Ej. jperez" />
+                    </div>
+
+                    <!-- Campo Contraseña Temporal -->
+                    <div class="mb-3">
+                        <label for="passTemporal" class="form-label">Contraseña Temporal</label>
+                        <input type="password" id="passTemporal" name="PasswordTemporal" class="form-control" required />
+                        <div class="form-text">El usuario deberá cambiarla obligatoriamente en su primer ingreso.</div>
+                    </div>
+
+                    <!-- Campo Selección de Rol -->
+                    <div class="mb-3">
+                        <label for="rolEmpleado" class="form-label">Asignar Rol</label>
+                        <select id="rolEmpleado" name="Rol" class="form-select">
+                            <option value="Admin">Admin</option>
+                            <option value="Encargado">Encargado</option>
+                            <option value="Cajero">Cajero</option>
+                            <option value="Almacenista">Almacenista</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Empleado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Empleado -->
+<div class="modal fade" id="modalEditarEmpleado" tabindex="-1" aria-labelledby="modalEditarEmpleadoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Editar">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalEditarEmpleadoLabel">Editar Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editNombre" class="form-label">Nombre Completo</label>
+                        <input type="text" id="editNombre" name="Nombre" class="form-control" value="Juan Pérez" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editUsuario" class="form-label">Usuario Único</label>
+                        <input type="text" id="editUsuario" name="Usuario" class="form-control" value="jperez" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editRol" class="form-label">Rol Asignado</label>
+                        <select id="editRol" name="Rol" class="form-select">
+                            <option value="Admin">Admin</option>
+                            <option value="Encargado" selected>Encargado</option>
+                            <option value="Cajero">Cajero</option>
+                            <option value="Almacenista">Almacenista</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
