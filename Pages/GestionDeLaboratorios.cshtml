@@ -1,0 +1,73 @@
+@page 
+@model Proyecto.Pages.Laboratorios.IndexModel
+@{
+    ViewData["Title"] = "Gestión de Laboratorios";
+}
+
+<div class="container mt-4">
+    <div>
+        <h2>Gestión de Laboratorios</h2>
+        <!-- Botón estático, por ahora no hace nada -->
+        <button>
+            + Nuevo Laboratorio
+        </button>
+    </div>
+
+    <div>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Teléfono</th>
+                        <th>Tiempo Prom. Entrega</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lab in Model.Laboratorios)
+                    {
+                        <tr>
+                            <td>@lab.Nombre</td>
+                            <td>
+                                @if (lab.Tipo == "Interno")
+                                {
+                                    <span>@lab.Tipo</span>
+                                }
+                                else
+                                {
+                                    <span>@lab.Tipo</span>
+                                }
+                            </td>
+                            <td>@lab.Telefono</td>
+                            <td>@lab.TiempoEntrega</td>
+                            <td>
+                                @if (lab.Activo)
+                                {
+                                    <span>Activo</span>
+                                }
+                                else
+                                {
+                                    <span>Desactivado</span>
+                                }
+                            </td>
+                            <td>
+                                <button>Editar</button>
+                                @if (lab.Activo)
+                                {
+                                    <button>Desactivar</button>
+                                }
+                                else
+                                {
+                                    <button>Activar</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
