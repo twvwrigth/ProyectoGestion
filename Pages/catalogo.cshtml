@@ -1,0 +1,116 @@
+@page
+@{
+    ViewData["Title"] = "Catálogo de Productos";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="border-bottom pb-2">Catálogo de Productos</h2>
+            <p class="text-muted">Registro y control de armazones, gafas de sol y accesorios.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Panel Izquierdo: Formulario de Registro -->
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Nuevo Producto</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre / Modelo</label>
+                            <input type="text" class="form-control" placeholder="Ej. Ray-Ban Aviator">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Categoría</label>
+                            <select class="form-select">
+                                <option value="" selected disabled>Selecciona una opción...</option>
+                                <option value="armazon">Armazón</option>
+                                <option value="gafas_sol">Gafas de sol</option>
+                                <option value="accesorio">Accesorios</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Precio</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Existencia</label>
+                                <input type="number" class="form-control" placeholder="0">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100">Guardar Producto</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Vista del Inventario -->
+        <div class="col-lg-8 col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Inventario Actual</h5>
+                    <input type="text" class="form-control form-control-sm w-50" placeholder="Buscar producto...">
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 text-center align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Código</th>
+                                    <th class="text-start">Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>PRD-001</td>
+                                    <td class="text-start">Ray-Ban Aviator Classic</td>
+                                    <td><span class="badge bg-info text-dark">Gafas de sol</span></td>
+                                    <td>$2,500.00</td>
+                                    <td><span class="badge bg-success">15</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PRD-002</td>
+                                    <td class="text-start">Armazón Vogue Care</td>
+                                    <td><span class="badge bg-secondary">Armazón</span></td>
+                                    <td>$1,200.00</td>
+                                    <td><span class="badge bg-danger">2</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>PRD-003</td>
+                                    <td class="text-start">Estuche Rígido Negro</td>
+                                    <td><span class="badge bg-warning text-dark">Accesorio</span></td>
+                                    <td>$250.00</td>
+                                    <td><span class="badge bg-success">30</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
