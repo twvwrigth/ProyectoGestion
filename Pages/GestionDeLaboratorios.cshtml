@@ -65,6 +65,9 @@
                                         <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#modalEditarLaboratorio" data-id="@lab.Nombre">
                                             Editar
                                         </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#modalGestionarUsuarios" data-lab-id="@lab.Nombre">
+                                            Gestionar usuarios
+                                        </button>
                                         @if (lab.Activo)
                                         {
                                             <form method="post" asp-page-handler="Desactivar" asp-route-id="@lab.Nombre" class="d-inline">
@@ -94,80 +97,5 @@
     </div>
 </div>
 
-<!-- Modal para Crear Laboratorio -->
-<div class="modal fade" id="modalCrearLaboratorio" tabindex="-1" aria-labelledby="modalCrearLaboratorioLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <form method="post" asp-page-handler="Crear">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="modalCrearLaboratorioLabel">Nuevo Laboratorio</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nombreLab" class="form-label">Nombre del Laboratorio</label>
-                        <input type="text" id="nombreLab" name="Nombre" class="form-control" required placeholder="Ej. Laboratorio Central" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="tipoLab" class="form-label">Tipo</label>
-                        <select id="tipoLab" name="Tipo" class="form-select">
-                            <option value="Interno">Interno</option>
-                            <option value="Externo">Externo</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="telLab" class="form-label">Teléfono</label>
-                        <input type="tel" id="telLab" name="Telefono" class="form-control" placeholder="Ej. 2281234567" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="tiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="tiempoLab" name="TiempoEntrega" class="form-control" placeholder="Ej. 3 a 5 días hábiles" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Laboratorio</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Editar Laboratorio -->
-<div class="modal fade" id="modalEditarLaboratorio" tabindex="-1" aria-labelledby="modalEditarLaboratorioLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <form method="post" asp-page-handler="Editar">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="modalEditarLaboratorioLabel">Editar Laboratorio</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editNombreLab" class="form-label">Nombre del Laboratorio</label>
-                        <input type="text" id="editNombreLab" name="Nombre" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label for="editTipoLab" class="form-label">Tipo</label>
-                        <select id="editTipoLab" name="Tipo" class="form-select">
-                            <option value="Interno">Interno</option>
-                            <option value="Externo">Externo</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editTelLab" class="form-label">Teléfono</label>
-                        <input type="tel" id="editTelLab" name="Telefono" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label for="editTiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="editTiempoLab" name="TiempoEntrega" class="form-control" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<!-- Llamada a la Vista Parcial única que contiene los tres modales -->
+<partial name="~/Pages/Modales/_ModalesLaboratorios.cshtml" />
