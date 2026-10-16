@@ -18,7 +18,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Accesorio> Accesorios { get; set; }
 
-    public virtual DbSet<Armazon> Armazons { get; set; }
+    public virtual DbSet<Armazon> Armazones { get; set; }
 
     public virtual DbSet<Bitacora> Bitacoras { get; set; }
 
@@ -26,11 +26,11 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Cliente> Clientes { get; set; }
 
-    public virtual DbSet<Cotizacion> Cotizacions { get; set; }
+    public virtual DbSet<Cotizacion> Cotizaciones { get; set; }
 
     public virtual DbSet<Empleado> Empleados { get; set; }
 
-    public virtual DbSet<GafasSol> GafasSols { get; set; }
+    public virtual DbSet<GafasSol> GafasSolList { get; set; }
 
     public virtual DbSet<Inventario> Inventarios { get; set; }
 
@@ -42,17 +42,17 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Producto> Productos { get; set; }
 
-    public virtual DbSet<Promocion> Promocions { get; set; }
+    public virtual DbSet<Promocion> Promociones { get; set; }
 
-    public virtual DbSet<Recetum> Receta { get; set; }
+    public virtual DbSet<Receta> Receta { get; set; }
 
-    public virtual DbSet<Reparacion> Reparacions { get; set; }
+    public virtual DbSet<Reparacion> Reparaciones { get; set; }
 
-    public virtual DbSet<Rol> Rols { get; set; }
+    public virtual DbSet<Rol> Roles { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
 
-    public virtual DbSet<Ventum> Venta { get; set; }
+    public virtual DbSet<Venta> Venta { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -124,16 +124,16 @@ public partial class MiApplicationDbContext : DbContext
                 .HasDefaultValueSql("'1'")
                 .HasColumnName("ventaSinGraduacion");
 
-            entity.HasOne(d => d.IdClasePrecioNavigation).WithMany(p => p.Armazons)
+            entity.HasOne(d => d.IdClasePrecioNavigation).WithMany(p => p.Armazones)
                 .HasForeignKey(d => d.IdClasePrecio)
                 .HasConstraintName("fk_armazon_clase");
 
-            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.Armazons)
+            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.Armazones)
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_armazon_producto");
 
-            entity.HasOne(d => d.IdPromocionNavigation).WithMany(p => p.Armazons)
+            entity.HasOne(d => d.IdPromocionNavigation).WithMany(p => p.Armazones)
                 .HasForeignKey(d => d.IdPromocion)
                 .HasConstraintName("fk_armazon_promo");
         });
@@ -229,17 +229,17 @@ public partial class MiApplicationDbContext : DbContext
                 .HasPrecision(10, 2)
                 .HasColumnName("totalCalculado");
 
-            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Cotizacions)
+            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Cotizaciones)
                 .HasForeignKey(d => d.IdCliente)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_cotizacion_cliente");
 
-            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Cotizacions)
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Cotizaciones)
                 .HasForeignKey(d => d.IdEmpleado)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_cotizacion_empleado");
 
-            entity.HasOne(d => d.IdRecetaNavigation).WithMany(p => p.Cotizacions)
+            entity.HasOne(d => d.IdRecetaNavigation).WithMany(p => p.Cotizaciones)
                 .HasForeignKey(d => d.IdReceta)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_cotizacion_receta");
@@ -303,7 +303,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasMaxLength(30)
                 .HasColumnName("nombre");
 
-            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.GafasSols)
+            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.GafasSolList)
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_gafas_producto");
@@ -476,7 +476,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasColumnName("tipoPromocion");
         });
 
-        modelBuilder.Entity<Recetum>(entity =>
+        modelBuilder.Entity<Receta>(entity =>
         {
             entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
 
@@ -555,7 +555,7 @@ public partial class MiApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_reparacion_cliente");
 
-            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Reparacions)
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Reparaciones)
                 .HasForeignKey(d => d.IdEmpleado)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_reparacion_empleado");
@@ -593,7 +593,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_ticket_venta");
         });
 
-        modelBuilder.Entity<Ventum>(entity =>
+        modelBuilder.Entity<Venta>(entity =>
         {
             entity.HasKey(e => e.FolioVenta).HasName("PRIMARY");
 

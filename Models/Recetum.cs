@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Proyecto.Models;
 
-public partial class Recetum
+public partial class Receta
 {
     public int IdReceta { get; set; }
 
@@ -27,7 +27,7 @@ public partial class Recetum
 
     public string? Emisor { get; set; }
 
-    public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
+    public virtual ICollection<Cotizacion> Cotizaciones { get; set; } = new List<Cotizacion>();
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 

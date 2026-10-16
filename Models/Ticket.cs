@@ -9,5 +9,5 @@ public partial class Ticket
 
     public int FolioVenta { get; set; }
 
-    public virtual Ventum FolioVentaNavigation { get; set; } = null!;
+    public virtual Venta FolioVentaNavigation { get; set; } = null!;
 }

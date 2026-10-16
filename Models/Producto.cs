@@ -21,9 +21,9 @@ public partial class Producto
 
     public virtual ICollection<Accesorio> Accesorios { get; set; } = new List<Accesorio>();
 
-    public virtual ICollection<Armazon> Armazons { get; set; } = new List<Armazon>();
+    public virtual ICollection<Armazon> Armazones { get; set; } = new List<Armazon>();
 
-    public virtual ICollection<GafasSol> GafasSols { get; set; } = new List<GafasSol>();
+    public virtual ICollection<GafasSol> GafasSolList { get; set; } = new List<GafasSol>();
 
     public virtual ClasePrecio? IdClasePrecioNavigation { get; set; }
 
@@ -31,5 +31,5 @@ public partial class Producto
 
     public virtual ICollection<Inventario> Inventarios { get; set; } = new List<Inventario>();
 
-    public virtual ICollection<Ventum> Venta { get; set; } = new List<Ventum>();
+    public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
 }

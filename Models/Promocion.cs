@@ -13,7 +13,7 @@ public partial class Promocion
 
     public bool? Acumulable { get; set; }
 
-    public virtual ICollection<Armazon> Armazons { get; set; } = new List<Armazon>();
+    public virtual ICollection<Armazon> Armazones { get; set; } = new List<Armazon>();
 
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

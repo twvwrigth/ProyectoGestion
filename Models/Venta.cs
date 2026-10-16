@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Proyecto.Models;
 
-public partial class Ventum
+public partial class Venta
 {
     public int FolioVenta { get; set; }
 

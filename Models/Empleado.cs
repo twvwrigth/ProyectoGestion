@@ -25,15 +25,15 @@ public partial class Empleado
 
     public virtual ICollection<Bitacora> BitacoraIdEncargadoNavigations { get; set; } = new List<Bitacora>();
 
-    public virtual ICollection<Cotizacion> Cotizacions { get; set; } = new List<Cotizacion>();
+    public virtual ICollection<Cotizacion> Cotizaciones { get; set; } = new List<Cotizacion>();
 
     public virtual Laboratorio? IdLaboratorioNavigation { get; set; }
 
     public virtual Rol IdRolNavigation { get; set; } = null!;
 
-    public virtual ICollection<Recetum> Receta { get; set; } = new List<Recetum>();
+    public virtual ICollection<Receta> Receta { get; set; } = new List<Receta>();
 
-    public virtual ICollection<Reparacion> Reparacions { get; set; } = new List<Reparacion>();
+    public virtual ICollection<Reparacion> Reparaciones { get; set; } = new List<Reparacion>();
 
-    public virtual ICollection<Ventum> Venta { get; set; } = new List<Ventum>();
+    public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
 }
