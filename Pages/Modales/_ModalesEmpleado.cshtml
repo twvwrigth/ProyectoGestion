@@ -47,7 +47,7 @@
     </div>
 </div>
 
-<!-- Modal para Editar Empleado (Funcional) -->
+<!-- Modal para Editar Empleado -->
 <div class="modal fade" id="modalEditarEmpleado" tabindex="-1" aria-labelledby="modalEditarEmpleadoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -63,11 +63,13 @@
                     <div class="mb-3">
                         <label for="editNombre" class="form-label">Nombre Completo</label>
                         <input type="text" id="editNombre" asp-for="EditNombre" class="form-control" required />
+                        <span asp-validation-for="EditNombre" class="text-danger small mt-1 d-block"></span>
                     </div>
                     
                     <div class="mb-3">
                         <label for="editUsuario" class="form-label">Usuario Único</label>
                         <input type="text" id="editUsuario" asp-for="EditUsuario" class="form-control" required />
+                        <span asp-validation-for="EditUsuario" class="text-danger small mt-1 d-block"></span>
                     </div>
                     
                     <div class="mb-3">
@@ -85,6 +87,31 @@
                     <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reutilizable de Éxito -->
+<div class="modal fade" id="modalExito" tabindex="-1" aria-labelledby="modalExitoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold" id="modalExitoLabel">
+                    <i class="bi bi-check-circle-fill me-2"></i>Operación Exitosa
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <span class="display-4 text-success">&#10004;</span>
+                </div>
+                <p class="fs-5 mb-0" id="mensajeExitoTexto">
+                    @TempData["SuccessMessage"]
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center border-0 pt-0">
+                <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">Aceptar</button>
+            </div>
         </div>
     </div>
 </div>

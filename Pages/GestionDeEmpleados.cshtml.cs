@@ -18,7 +18,7 @@ public class GestionDeEmpleadosModel : PageModel
     public List<Empleado> EmpleadosList { get; set; } = new();
 
     // ==========================================
-    // PROPIEDADES PARA CREAR
+    // PROPIEDADES PARA CREAR EMPLEADO
     // ==========================================
     [BindProperty]
     [Required(ErrorMessage = "El nombre es obligatorio.")]
@@ -35,7 +35,7 @@ public class GestionDeEmpleadosModel : PageModel
     public int Rol { get; set; }
 
     // ==========================================
-    // PROPIEDADES PARA EDITAR
+    // PROPIEDADES PARA EDITAR EMPLEADO
     // ==========================================
     [BindProperty]
     public int EditId { get; set; }
@@ -50,9 +50,9 @@ public class GestionDeEmpleadosModel : PageModel
 
     [BindProperty]
     public int EditRol { get; set; }
-
+    
     // ==========================================
-    // MÉTODOS (HANDLERS)
+    // METODOS
     // ==========================================
     public async Task OnGetAsync()
     {
@@ -61,12 +61,17 @@ public class GestionDeEmpleadosModel : PageModel
 
     public async Task<IActionResult> OnPostCrearAsync()
     {
+        ModelState.Remove("EditId");
+        ModelState.Remove("EditNombre");
+        ModelState.Remove("EditUsuario");
+        ModelState.Remove("EditRol");
+        
         if (!ModelState.IsValid)
         {
             EmpleadosList = await _context.Empleados.ToListAsync();
             return Page();
         }
-
+        
         if (await _context.Empleados.AnyAsync(e => e.Usuario.ToLower() == Usuario.ToLower()))
         {
             ModelState.AddModelError("Usuario", "El usuario ya existe.");
@@ -90,12 +95,27 @@ public class GestionDeEmpleadosModel : PageModel
         _context.Empleados.Add(nuevoEmpleado);
         await _context.SaveChangesAsync();
         
+        // AGREGA ESTO:
+        TempData["SuccessMessage"] = "El empleado ha sido registrado exitosamente.";
         return RedirectToPage();
     }
 
     // MANEJADOR PARA EDITAR EMPLEADO
     public async Task<IActionResult> OnPostEditarAsync()
     {
+        // AGREGA ESTO PARA EVITAR ERRORES DE VALIDACIÓN:
+        ModelState.Remove("Nombre");
+        ModelState.Remove("Usuario");
+        ModelState.Remove("ContrasenaTemporal");
+        ModelState.Remove("Rol");
+
+        if (!ModelState.IsValid)
+        {
+            ViewData["ShowModal"] = "Editar";
+            EmpleadosList = await _context.Empleados.ToListAsync();
+            return Page();
+        }
+
         var empleado = await _context.Empleados.FindAsync(EditId);
         
         if (empleado == null)
@@ -103,22 +123,25 @@ public class GestionDeEmpleadosModel : PageModel
             return NotFound();
         }
 
-        // Validar que el nuevo nombre de usuario no esté ocupado por OTRO empleado
         bool usuarioOcupado = await _context.Empleados
             .AnyAsync(e => e.Usuario.ToLower() == EditUsuario.ToLower() && e.IdEmpleado != EditId);
 
         if (usuarioOcupado)
         {
-            TempData["ErrorMessage"] = "El nombre de usuario ingresado ya está en uso por otra persona.";
-            return RedirectToPage();
+            ModelState.AddModelError("EditUsuario", "El nombre de usuario ingresado ya está en uso.");
+            ViewData["ShowModal"] = "Editar";
+            EmpleadosList = await _context.Empleados.ToListAsync();
+            return Page();
         }
 
-        // Actualizar datos
         empleado.Nombre = EditNombre.Trim();
         empleado.Usuario = EditUsuario.Trim();
         empleado.IdRol = EditRol;
 
         await _context.SaveChangesAsync();
+        
+        // AGREGA ESTO:
+        TempData["SuccessMessage"] = "Los datos del empleado se actualizaron correctamente.";
         return RedirectToPage();
     }
 
@@ -129,8 +152,12 @@ public class GestionDeEmpleadosModel : PageModel
         
         if (empleado != null)
         {
-            empleado.Activo = !empleado.Activo; // Invierte el estado actual
+            empleado.Activo = !empleado.Activo;
             await _context.SaveChangesAsync();
+            
+            // AGREGA ESTO:
+            string estado = empleado.Activo ? "activado" : "desactivado";
+            TempData["SuccessMessage"] = $"El empleado fue {estado} exitosamente.";
         }
 
         return RedirectToPage();
