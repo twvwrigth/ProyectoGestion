@@ -1,6 +1,6 @@
 @model Proyecto.Pages.GestionDeEmpleadosModel
 
-<!-- Modal para Crear Empleado (HU-01) -->
+<!-- Modal para Crear Empleado (Sin cambios) -->
 <div class="modal fade" id="modalCrearEmpleado" tabindex="-1" aria-labelledby="modalCrearEmpleadoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -10,33 +10,31 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Campo Nombre -->
                     <div class="mb-3">
                         <label for="nombreEmpleado" class="form-label">Nombre Completo</label>
-                        <input type="text" id="nombreEmpleado" name="Nombre" class="form-control" required placeholder="Ej. Juan Pérez" />
+                        <input type="text" id="nombreEmpleado" asp-for="Nombre" class="form-control" required placeholder="Ej. Juan Pérez" />
+                        <span asp-validation-for="Nombre" class="text-danger small mt-1 d-block"></span>
                     </div>
 
-                    <!-- Campo Usuario Único -->
                     <div class="mb-3">
                         <label for="usuarioEmpleado" class="form-label">Usuario Único</label>
-                        <input type="text" id="usuarioEmpleado" name="Usuario" class="form-control" required placeholder="Ej. jperez" />
+                        <input type="text" id="usuarioEmpleado" asp-for="Usuario" class="form-control" required placeholder="Ej. jperez" />
+                        <span asp-validation-for="Usuario" class="text-danger small mt-1 d-block"></span>
                     </div>
 
-                    <!-- Campo Contraseña Temporal -->
                     <div class="mb-3">
-                        <label for="passTemporal" class="form-label">Contraseña Temporal</label>
-                        <input type="password" id="passTemporal" name="PasswordTemporal" class="form-control" required />
-                        <div class="form-text">El usuario deberá cambiarla obligatoriamente en su primer ingreso.</div>
+                        <label for="contrasenaTemporal" class="form-label">Contraseña</label>
+                        <input type="text" id="contrasenaTemporal" asp-for="ContrasenaTemporal" class="form-control" />
+                        <div class="form-text">En caso de no llenar este campo se asignará una temporal</div>
                     </div>
 
-                    <!-- Campo Selección de Rol -->
                     <div class="mb-3">
                         <label for="rolEmpleado" class="form-label">Asignar Rol</label>
-                        <select id="rolEmpleado" name="Rol" class="form-select">
-                            <option value="Admin">Admin</option>
-                            <option value="Encargado">Encargado</option>
-                            <option value="Cajero">Cajero</option>
-                            <option value="Almacenista">Almacenista</option>
+                        <select id="rolEmpleado" asp-for="Rol" class="form-select">
+                            <option value="1">Admin</option>
+                            <option value="2">Encargado</option>
+                            <option value="3">Cajero</option>
+                            <option value="4">Almacenista</option>
                         </select>
                     </div>
                 </div>
@@ -49,11 +47,14 @@
     </div>
 </div>
 
-<!-- Modal para Editar Empleado -->
+<!-- Modal para Editar Empleado (Funcional) -->
 <div class="modal fade" id="modalEditarEmpleado" tabindex="-1" aria-labelledby="modalEditarEmpleadoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <form method="post" asp-page-handler="Editar">
+                <!-- ID Oculto necesario para el UPDATE -->
+                <input type="hidden" id="editId" asp-for="EditId" />
+                
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold" id="modalEditarEmpleadoLabel">Editar Empleado</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -61,19 +62,21 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="editNombre" class="form-label">Nombre Completo</label>
-                        <input type="text" id="editNombre" name="Nombre" class="form-control" value="Juan Pérez" required />
+                        <input type="text" id="editNombre" asp-for="EditNombre" class="form-control" required />
                     </div>
+                    
                     <div class="mb-3">
                         <label for="editUsuario" class="form-label">Usuario Único</label>
-                        <input type="text" id="editUsuario" name="Usuario" class="form-control" value="jperez" required />
+                        <input type="text" id="editUsuario" asp-for="EditUsuario" class="form-control" required />
                     </div>
+                    
                     <div class="mb-3">
                         <label for="editRol" class="form-label">Rol Asignado</label>
-                        <select id="editRol" name="Rol" class="form-select">
-                            <option value="Admin">Admin</option>
-                            <option value="Encargado" selected>Encargado</option>
-                            <option value="Cajero">Cajero</option>
-                            <option value="Almacenista">Almacenista</option>
+                        <select id="editRol" asp-for="EditRol" class="form-select">
+                            <option value="1">Admin</option>
+                            <option value="2">Encargado</option>
+                            <option value="3">Cajero</option>
+                            <option value="4">Almacenista</option>
                         </select>
                     </div>
                 </div>

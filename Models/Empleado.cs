@@ -17,7 +17,7 @@ public partial class Empleado
 
     public string Contrasena { get; set; } = null!;
 
-    public bool? Activo { get; set; }
+    public bool Activo { get; set; }
 
     public int? IntentosContrasena { get; set; }
 
