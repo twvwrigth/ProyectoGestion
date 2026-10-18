@@ -341,11 +341,14 @@ public partial class MiApplicationDbContext : DbContext
                 .HasMaxLength(10)
                 .HasColumnName("telefono");
             entity.Property(e => e.TiempoEntrega)
-                .HasMaxLength(10)
+                .HasMaxLength(50)
                 .HasColumnName("tiempoEntrega");
             entity.Property(e => e.TipoLaboratorio)
                 .HasMaxLength(7)
                 .HasColumnName("tipoLaboratorio");
+            entity.Property(e => e.Activo)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("activo");
         });
 
         modelBuilder.Entity<ListaEspera>(entity =>

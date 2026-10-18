@@ -1,4 +1,4 @@
-@page 
+@page
 @model Proyecto.Pages.Laboratorios.IndexModel
 @{
     ViewData["Title"] = "Gestión de Laboratorios";
@@ -13,7 +13,8 @@
                 <h5 class="mb-1 fw-bold">Gestión de Laboratorios</h5>
                 <p class="text-muted small mb-0">Administración de laboratorios internos y externos</p>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearLaboratorio">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalCrearLaboratorio">
                 + Nuevo Laboratorio
             </button>
         </div>
@@ -40,13 +41,15 @@
                                 <tr>
                                     <td class="ps-3 fw-medium">@lab.Nombre</td>
                                     <td>
-                                        @if (lab.Tipo == "Interno")
+                                        @if (lab.TipoLaboratorio == "Interno")
                                         {
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">@lab.Tipo</span>
+                                            <span
+                                            class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">@lab.TipoLaboratorio</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">@lab.Tipo</span>
+                                            <span
+                                            class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">@lab.TipoLaboratorio</span>
                                         }
                                     </td>
                                     <td>@lab.Telefono</td>
@@ -54,29 +57,38 @@
                                     <td>
                                         @if (lab.Activo)
                                         {
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Activo</span>
+                                            <span
+                                            class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Activo</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Desactivado</span>
+                                            <span
+                                            class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Desactivado</span>
                                         }
                                     </td>
                                     <td class="text-end pe-3">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#modalEditarLaboratorio" data-id="@lab.Nombre">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-1 btn-editar"
+                                                data-bs-toggle="modal" data-bs-target="#modalEditarLaboratorio"
+                                                data-id="@lab.IdLaboratorio" data-nombre="@lab.Nombre"
+                                                data-tipo="@lab.TipoLaboratorio" data-telefono="@lab.Telefono"
+                                                data-tiempo="@lab.TiempoEntrega">
                                             Editar
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#modalGestionarUsuarios" data-lab-id="@lab.Nombre">
+                                        <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal"
+                                                data-bs-target="#modalGestionarUsuarios" data-lab-id="@lab.IdLaboratorio">
                                             Gestionar usuarios
                                         </button>
                                         @if (lab.Activo)
                                         {
-                                            <form method="post" asp-page-handler="Desactivar" asp-route-id="@lab.Nombre" class="d-inline">
+                                            <form method="post" asp-page-handler="Desactivar" asp-route-id="@lab.IdLaboratorio"
+                                                  class="d-inline">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
                                             </form>
                                         }
                                         else
                                         {
-                                            <form method="post" asp-page-handler="Activar" asp-route-id="@lab.Nombre" class="d-inline">
+                                            <form method="post" asp-page-handler="Activar" asp-route-id="@lab.IdLaboratorio"
+                                                  class="d-inline">
                                                 <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
                                             </form>
                                         }
@@ -99,3 +111,75 @@
 
 <!-- Llamada a la Vista Parcial única que contiene los tres modales -->
 <partial name="~/Pages/Modales/_ModalesLaboratorios.cshtml" />
+
+@section Scripts {
+    <script>
+        // Llenar campos dinámicamente en el modal de Editar
+        const modalEditar = document.getElementById('modalEditarLaboratorio');
+        if (modalEditar) {
+            modalEditar.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                modalEditar.querySelector('#editIdLab').value = btn.getAttribute('data-id');
+                modalEditar.querySelector('#editNombreLab').value = btn.getAttribute('data-nombre');
+                modalEditar.querySelector('#editTipoLab').value = btn.getAttribute('data-tipo');
+                modalEditar.querySelector('#editTelLab').value = btn.getAttribute('data-telefono');
+                modalEditar.querySelector('#editTiempoLab').value = btn.getAttribute('data-tiempo');
+            });
+        }
+
+        // Cargar usuarios dinámicamente según el laboratorio seleccionado
+        const modalUsuarios = document.getElementById('modalGestionarUsuarios');
+        if (modalUsuarios) {
+            modalUsuarios.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                const labId = btn.getAttribute('data-lab-id');
+                modalUsuarios.querySelector('#labIdForUser').value = labId;
+
+                const tbody = modalUsuarios.querySelector('#listaUsuariosLab');
+                tbody.innerHTML = '';
+
+                // Extraemos el Anti-Forgery Token presente en el formulario de la página
+                const tokenInput = modalUsuarios.querySelector('input[name="__RequestVerificationToken"]');
+                const tokenHtml = tokenInput ? tokenInput.outerHTML : '';
+
+                // Extraer laboratorios y empleados serializados
+                const laboratorios = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Laboratorios.Select(l => new
+                    {
+                        id = l.IdLaboratorio,
+                            empleados = l.Empleados.Select(e => new { id = e.IdEmpleado, nombre = e.Nombre, usuario = e.Usuario, activo = e.Activo })
+                    })));
+
+                const labEncontrado = laboratorios.find(l => l.id == labId);
+
+                if (labEncontrado && labEncontrado.empleados && labEncontrado.empleados.length > 0) {
+                    labEncontrado.empleados.forEach(emp => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                <td>${emp.nombre}</td>
+                <td>${emp.usuario}</td>
+                <td><span class="badge ${emp.activo ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}">${emp.activo ? 'Activo' : 'Inactivo'}</span></td>
+                <td class="text-end">
+                    ${emp.activo ? `
+                    <form method="post" action="?handler=DesactivarUsuario" class="d-inline">
+                        ${tokenHtml}
+                        <input type="hidden" name="usuarioId" value="${emp.id}" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                    </form>` : `
+                    <form method="post" action="?handler=ActivarUsuario" class="d-inline">
+                        ${tokenHtml}
+                        <input type="hidden" name="usuarioId" value="${emp.id}" />
+                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                    </form>`}
+                </td>
+            `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No hay usuarios asignados a este laboratorio.</td></tr>';
+                }
+            });
+        }
+    </script>
+}
+
+

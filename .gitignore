@@ -34,3 +34,4 @@ artifacts/
 !**/[Pp]ackages/build/
 .env
 appsettings.Development.json
+Program.cs

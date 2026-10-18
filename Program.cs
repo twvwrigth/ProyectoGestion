@@ -1,18 +1,16 @@
-using Proyecto.Models;
 using Microsoft.EntityFrameworkCore;
+using Proyecto.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Registramos el DbContext con la cadena de conexión a MySQL
+var connectionString = "server=127.0.0.1;port=3306;database=dboptica;user id=root;password=KngMTZ2006._";
 
 builder.Services.AddDbContext<MiApplicationDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    ));
+    options.UseMySql(connectionString, ServerVersion.Parse("8.0.44-mysql")));
 
 var app = builder.Build();
 

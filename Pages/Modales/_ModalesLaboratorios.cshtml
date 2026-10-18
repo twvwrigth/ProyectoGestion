@@ -3,6 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <form method="post" asp-page-handler="Crear">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold" id="modalCrearLaboratorioLabel">Nuevo Laboratorio</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -14,7 +15,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tipoLab" class="form-label">Tipo</label>
-                        <select id="tipoLab" name="Tipo" class="form-select">
+                        <select id="tipoLab" name="TipoLaboratorio" class="form-select">
                             <option value="Interno">Interno</option>
                             <option value="Externo">Externo</option>
                         </select>
@@ -25,7 +26,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="tiempoLab" name="TiempoEntrega" class="form-control" placeholder="Ej. 3 a 5 días hábiles" />
+                        <input type="text" id="tiempoLab" name="TiempoEntrega" class="form-control" maxlength="50" placeholder="Ej. 3 a 5 días" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -42,6 +43,8 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <form method="post" asp-page-handler="Editar">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editIdLab" name="IdLaboratorio" />
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold" id="modalEditarLaboratorioLabel">Editar Laboratorio</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -53,7 +56,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="editTipoLab" class="form-label">Tipo</label>
-                        <select id="editTipoLab" name="Tipo" class="form-select">
+                        <select id="editTipoLab" name="TipoLaboratorio" class="form-select">
                             <option value="Interno">Interno</option>
                             <option value="Externo">Externo</option>
                         </select>
@@ -64,7 +67,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="editTiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="editTiempoLab" name="TiempoEntrega" class="form-control" />
+                        <input type="text" id="editTiempoLab" name="TiempoEntrega" class="form-control" maxlength="50" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -85,21 +88,21 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Sección 1: Formulario para crear un usuario ligado al laboratorio -->
                 <div class="card mb-4 bg-light border-0">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3">Registrar Nuevo Laboratorista</h6>
                         <form method="post" asp-page-handler="CrearUsuarioLaboratorio">
-                            <input type="hidden" id="labIdForUser" name="LaboratorioId" />
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="labIdForUser" name="laboratorioId" />
                             <div class="row g-2">
                                 <div class="col-md-4">
-                                    <input type="text" name="NombreEmpleado" class="form-control form-control-sm" placeholder="Nombre completo" required />
+                                    <input type="text" name="nombreEmpleado" class="form-control form-control-sm" placeholder="Nombre completo" required />
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" name="Usuario" class="form-control form-control-sm" placeholder="Usuario único" required />
+                                    <input type="text" name="usuario" class="form-control form-control-sm" placeholder="Usuario único" required />
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="password" name="PasswordTemporal" class="form-control form-control-sm" placeholder="Contraseña temporal" required />
+                                    <input type="password" name="passwordTemporal" class="form-control form-control-sm" placeholder="Contraseña temporal" required />
                                 </div>
                             </div>
                             <div class="mt-3 text-end">
@@ -109,7 +112,6 @@
                     </div>
                 </div>
 
-                <!-- Sección 2: Tabla de usuarios ligados actualmente -->
                 <h6 class="fw-bold mb-2">Usuarios Activos en este Laboratorio</h6>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover align-middle">
@@ -122,18 +124,7 @@
                             </tr>
                         </thead>
                         <tbody id="listaUsuariosLab">
-                            <!-- Ejemplo estático/simulado que se poblará por backend o JS -->
-                            <tr>
-                                <td>Carlos Ruiz</td>
-                                <td>cruiz_lab</td>
-                                <td><span class="badge bg-success-subtle text-success">Activo</span></td>
-                                <td class="text-end">
-                                    <form method="post" asp-page-handler="DesactivarUsuario" class="d-inline">
-                                        <input type="hidden" name="UsuarioId" value="1" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
-                                    </form>
-                                </td>
-                            </tr>
+                            <!-- Datos inyectados dinámicamente desde JS -->
                         </tbody>
                     </table>
                 </div>
