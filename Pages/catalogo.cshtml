@@ -1,4 +1,5 @@
 @page
+@model Proyecto.Pages.CatalogoModel
 @{
     ViewData["Title"] = "Catálogo de Productos";
 }
@@ -19,15 +20,17 @@
                     <h5 class="card-title mb-0">Nuevo Producto</h5>
                 </div>
                 <div class="card-body">
-                    <form>
+                    <form method="post">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nombre / Modelo</label>
-                            <input type="text" class="form-control" placeholder="Ej. Ray-Ban Aviator">
+                            <!-- Agregamos maxlength para respetar el tamaño de la base de datos -->
+                            <input type="text" class="form-control" asp-for="NombreNuevo"
+                                   placeholder="Ej. Ray-Ban Aviator" maxlength="50" required>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Categoría</label>
-                            <select class="form-select">
+                            <select class="form-select" asp-for="CategoriaNueva" required>
                                 <option value="" selected disabled>Selecciona una opción...</option>
                                 <option value="armazon">Armazón</option>
                                 <option value="gafas_sol">Gafas de sol</option>
@@ -40,36 +43,44 @@
                                 <label class="form-label fw-bold">Precio</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control" placeholder="0.00">
+                                    <input type="number" class="form-control" asp-for="PrecioNuevo" placeholder="0.00"
+                                           step="0.01" required>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold">Existencia</label>
-                                <input type="number" class="form-control" placeholder="0">
+                                <input type="number" class="form-control" asp-for="ExistenciaNueva" placeholder="0"
+                                       required>
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-primary w-100">Guardar Producto</button>
+                        <button type="submit" class="btn btn-primary w-100">Guardar Producto</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Panel Derecho: Vista del Inventario -->
+        <!-- Panel Derecho: Vista del Inventario Dinámico -->
         <div class="col-lg-8 col-md-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Inventario Actual</h5>
                     <!-- Contenedor de Búsqueda y Filtro -->
-                    <div class="d-flex gap-2 w-50">
-                        <select class="form-select form-select-sm" aria-label="Filtro de categoría">
-                            <option value="todas" selected>Todas las categorías</option>
+                    <!-- Contenedor de Búsqueda y Filtro -->
+                    <form method="get" class="d-flex gap-2 w-50 m-0">
+                        <select class="form-select form-select-sm" asp-for="FiltroCategoria"
+                                onchange="this.form.submit()">
+                            <option value="todas">Todas las categorías</option>
                             <option value="armazon">Armazón</option>
                             <option value="gafas_sol">Gafas de sol</option>
                             <option value="accesorio">Accesorios</option>
                         </select>
-                        <input type="text" class="form-control form-control-sm" placeholder="Buscar producto...">
-                    </div>
+    
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" asp-for="Buscar" placeholder="Buscar producto...">
+                            <button type="submit" class="btn btn-secondary">Buscar</button>
+                        </div>
+                    </form>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -85,45 +96,69 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>PRD-001</td>
-                                    <td class="text-start">Ray-Ban Aviator Classic</td>
-                                    <td><span class="badge bg-info text-dark">Gafas de sol</span></td>
-                                    <td>$2,500.00</td>
-                                    <td><span class="badge bg-success">15</span></td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                data-bs-toggle="modal" data-bs-target="#modalEditar">Editar</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>PRD-002</td>
-                                    <td class="text-start">Armazón Vogue Care</td>
-                                    <td><span class="badge bg-secondary">Armazón</span></td>
-                                    <td>$1,200.00</td>
-                                    <td><span class="badge bg-danger">2</span></td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                data-bs-toggle="modal" data-bs-target="#modalEditar">Editar</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>PRD-003</td>
-                                    <td class="text-start">Estuche Rígido Negro</td>
-                                    <td><span class="badge bg-warning text-dark">Accesorio</span></td>
-                                    <td>$250.00</td>
-                                    <td><span class="badge bg-success">30</span></td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                data-bs-toggle="modal" data-bs-target="#modalEditar">Editar</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                @if (Model.Productos != null && Model.Productos.Any())
+                                {
+                                    @foreach (var producto in Model.Productos)
+                                    {
+                                        <tr>
+                                            <td>PRD-@producto.IdProducto.ToString("D3")</td>
+                                            <td class="text-start">@producto.Nombre</td>
+                                            
+                                            <!-- Verificación de categoría mediante tablas relacionadas -->
+                                            <td>
+                                                @if (producto.Armazones != null && producto.Armazones.Any())
+                                                {
+                                                    <span class="badge bg-secondary">Armazón</span>
+                                                }
+                                                else if (producto.GafasSolList != null && producto.GafasSolList.Any())
+                                                {
+                                                    <span class="badge bg-info text-dark">Gafas de sol</span>
+                                                }
+                                                else if (producto.Accesorios != null && producto.Accesorios.Any())
+                                                {
+                                                    <span class="badge bg-warning text-dark">Accesorio</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark">General</span>
+                                                }
+                                            </td>
+                                            
+                                            <td>$@producto.Precio.ToString("0.00")</td>
+                                            
+                                            <td>
+                                                @if (producto.Existencia < 10)
+                                                {
+                                                    <span class="badge bg-danger">@producto.Existencia</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success">@producto.Existencia</span>
+                                                }
+                                            </td>
+                                            
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                        data-bs-toggle="modal" data-bs-target="#modalEditar">Editar</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">No hay productos registrados en
+                                            la base de datos.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    
+        <!-- Inyectamos tu modal -->
+        <partial name="~/Pages/Modales/ModalEditarCatalogo.cshtml" />
     </div>
-    <partial name="~/Pages/Modales/ModalEditarCatalogo.cshtml" />
-</div>
