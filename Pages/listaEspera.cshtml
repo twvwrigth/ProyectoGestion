@@ -1,0 +1,112 @@
+@page
+@model Proyecto.Pages.ListaEsperaModel
+@{
+    ViewData["Title"] = "Lista de Espera";
+}
+
+<div class="container mt-4">
+    <h2 class="border-bottom pb-2 mb-4">Lista de Espera del Optometrista</h2>
+
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <strong>¡Anotado!</strong> @TempData["MensajeExito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+            <strong>Retirado.</strong> @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Panel de Registro -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Registrar Llegada</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="Registrar">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre del Cliente</label>
+                            <input type="text" class="form-control" asp-for="NombreClienteNuevo" placeholder="Ej. Juan Pérez" maxlength="255" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Agregar a Fila</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitor de Turnos -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Turnos Activos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped mb-0 text-center align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th class="text-start">Paciente</th>
+                                <th>Hora</th>
+                                <th>Espera</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Turnos != null && Model.Turnos.Any())
+                            {
+                                int contador = 1;
+                                foreach (var turno in Model.Turnos)
+                                {
+                                    var tiempoEspera = (DateTime.Now - turno.HoraLlegada).TotalMinutes;
+                                    // Dependiendo de cómo generó EF tu modelo, ajusta "IdClienteNavigation" si es necesario
+                                    var nombreCliente = turno.IdClienteNavigation?.Nombre ?? "Desconocido";
+
+                                    <tr>
+                                        <td><span class="badge bg-secondary fs-6">@contador</span></td>
+                                        <td class="text-start fw-bold">@nombreCliente</td>
+                                        <td>@turno.HoraLlegada.ToString("hh:mm tt")</td>
+                                        <td>
+                                            @if (tiempoEspera > 20)
+                                            {
+                                                <span class="text-danger fw-bold">@Math.Round(tiempoEspera) min</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">@Math.Round(tiempoEspera) min</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2 justify-content-center">
+                                                <a href="/Examen?idCliente=@turno.IdCliente" class="btn btn-sm btn-success">Llamar a Examen</a>
+                                                
+                                                <form method="post" asp-page-handler="NoAtendido" class="m-0">
+                                                    <!-- Mandamos el idLista real para retirarlo -->
+                                                    <input type="hidden" name="idLista" value="@turno.IdLista" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Retirar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    contador++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="py-4 text-muted">No hay pacientes en la fila.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
