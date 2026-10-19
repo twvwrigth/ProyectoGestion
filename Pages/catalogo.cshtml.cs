@@ -22,6 +22,12 @@ namespace Proyecto.Pages
         [BindProperty] public int ExistenciaNueva { get; set; }
         [BindProperty(SupportsGet = true)] public string Buscar { get; set; }
         [BindProperty(SupportsGet = true)] public string FiltroCategoria { get; set; }
+        // --- VARIABLES PARA EL MODAL DE EDICIÓN ---
+        [BindProperty] public int IdProductoEdit { get; set; }
+        [BindProperty] public string NombreEdit { get; set; }
+        [BindProperty] public decimal PrecioEdit { get; set; }
+        [BindProperty] public int ExistenciaEdit { get; set; }
+        [BindProperty] public int IdProductoEliminar { get; set; }
 
         public async Task OnGetAsync()
         {
@@ -55,6 +61,12 @@ namespace Proyecto.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (PrecioNuevo <= 0 || ExistenciaNueva < 0)
+            {
+                TempData["MensajeError"] = "El precio debe ser mayor a $0 y la existencia no puede ser negativa.";
+                return RedirectToPage();
+            }
+
             if (string.IsNullOrEmpty(NombreNuevo) || string.IsNullOrEmpty(CategoriaNueva))
             {
                 return RedirectToPage();
@@ -104,6 +116,71 @@ namespace Proyecto.Pages
             }
 
             await _context.SaveChangesAsync();
+            TempData["MensajeExito"] = "El producto se ha guardado correctamente."; // Agrega esta línea
+            return RedirectToPage();
+        }
+
+        // --- MÉTODO PARA GUARDAR LA EDICIÓN ---
+        public async Task<IActionResult> OnPostEditarAsync()
+        {
+            // --- NUEVA VALIDACIÓN DE PRECIO Y EXISTENCIA ---
+            if (PrecioEdit <= 0 || ExistenciaEdit < 0)
+            {
+                TempData["MensajeError"] = "El precio debe ser mayor a $0 y la existencia no puede ser negativa.";
+                return RedirectToPage();
+            }
+
+            var producto = await _context.Productos.FindAsync(IdProductoEdit);
+
+            if (producto != null)
+            {
+                producto.Nombre = NombreEdit;
+                producto.Precio = PrecioEdit;
+                producto.Existencia = ExistenciaEdit;
+                // Nota: Cambiar de categoría implica borrar de una tabla e insertar en otra, 
+                // por seguridad y simplicidad, en la edición solo actualizamos la tabla principal.
+
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["MensajeExito"] = "Los cambios se guardaron correctamente.";
+            return RedirectToPage();
+        }
+        public async Task<IActionResult> OnPostEliminarAsync()
+        {
+            try
+            {
+                // Buscamos el producto y sus relaciones
+                var producto = await _context.Productos
+                    .Include(p => p.Armazones)
+                    .Include(p => p.GafasSolList)
+                    .Include(p => p.Accesorios)
+                    .FirstOrDefaultAsync(p => p.IdProducto == IdProductoEliminar);
+
+                if (producto != null)
+                {
+                    // 1. Primero borramos los detalles en la tabla "hija" (para no romper las llaves foráneas)
+                    if (producto.Armazones != null && producto.Armazones.Any())
+                        _context.Armazones.RemoveRange(producto.Armazones);
+
+                    if (producto.GafasSolList != null && producto.GafasSolList.Any())
+                        _context.GafasSolList.RemoveRange(producto.GafasSolList);
+
+                    if (producto.Accesorios != null && producto.Accesorios.Any())
+                        _context.Accesorios.RemoveRange(producto.Accesorios);
+
+                    // 2. Luego borramos el producto principal
+                    _context.Productos.Remove(producto);
+                    await _context.SaveChangesAsync();
+
+                    TempData["MensajeExito"] = "El producto fue eliminado correctamente.";
+                }
+            }
+            catch (DbUpdateException)
+            {
+                // Si el producto ya está en una venta, ticket o inventario, la base de datos bloqueará la eliminación.
+                TempData["MensajeError"] = "No se puede eliminar este producto porque ya tiene un historial de ventas o registros asociados en el sistema.";
+            }
 
             return RedirectToPage();
         }
