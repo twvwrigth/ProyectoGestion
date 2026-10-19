@@ -12,6 +12,22 @@
         </div>
     </div>
 
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <strong>¡Éxito!</strong> @TempData["MensajeExito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <strong>¡Atención!</strong> @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
     <div class="row">
         <!-- Panel Izquierdo: Formulario de Registro -->
         <div class="col-lg-4 col-md-12 mb-4">
@@ -44,12 +60,12 @@
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
                                     <input type="number" class="form-control" asp-for="PrecioNuevo" placeholder="0.00"
-                                           step="0.01" required>
+                                           step="0.01" min="0.01" required>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold">Existencia</label>
-                                <input type="number" class="form-control" asp-for="ExistenciaNueva" placeholder="0"
+                                <input type="number" class="form-control" asp-for="ExistenciaNueva" placeholder="0" min="0"
                                        required>
                             </div>
                         </div>
@@ -138,8 +154,19 @@
                                             </td>
                                             
                                             <td>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                        data-bs-toggle="modal" data-bs-target="#modalEditar">Editar</button>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                            data-bs-toggle="modal" data-bs-target="#modalEditar"
+                                                            data-id="@producto.IdProducto" data-nombre="@producto.Nombre"
+                                                            data-precio="@producto.Precio" data-existencia="@producto.Existencia">
+                                                        Editar
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal" data-bs-target="#modalEliminar"
+                                                            data-id="@producto.IdProducto" data-nombre="@producto.Nombre">
+                                                        Eliminar
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     }
@@ -161,4 +188,38 @@
     
         <!-- Inyectamos tu modal -->
         <partial name="~/Pages/Modales/ModalEditarCatalogo.cshtml" />
+
+
+        @section Scripts {
+            <script>
+                    var modalEditar = document.getElementById('modalEditar')
+                    modalEditar.addEventListener('show.bs.modal', function (event) {
+                        // Botón que activó el modal
+                        var button = event.relatedTarget
+            
+                        // Extraer la información de los atributos data-
+                        var id = button.getAttribute('data-id')
+                        var nombre = button.getAttribute('data-nombre')
+                        var precio = button.getAttribute('data-precio')
+                        var existencia = button.getAttribute('data-existencia')
+            
+                        // Inyectar los datos en los inputs del formulario del modal
+                        modalEditar.querySelector('#editId').value = id;
+                        modalEditar.querySelector('#editNombre').value = nombre;
+                        modalEditar.querySelector('#editPrecio').value = parseFloat(precio).toFixed(2);
+                        modalEditar.querySelector('#editExistencia').value = existencia;
+                    })
+                    
+                    var modalEliminar = document.getElementById('modalEliminar');
+                    modalEliminar.addEventListener('show.bs.modal', function (event) {
+                        var button = event.relatedTarget;
+        
+                        var id = button.getAttribute('data-id');
+                        var nombre = button.getAttribute('data-nombre');
+        
+                        modalEliminar.querySelector('#eliminarId').value = id;
+                        modalEliminar.querySelector('#nombreProductoEliminar').textContent = nombre;
+                    });
+            </script>
+        }
     </div>
