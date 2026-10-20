@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -344,6 +344,58 @@ LOCK TABLES `lista_espera` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `mica`
+--
+
+DROP TABLE IF EXISTS `mica`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mica` (
+  `idMica` int NOT NULL AUTO_INCREMENT,
+  `material` varchar(50) NOT NULL,
+  `tratamiento` varchar(50) NOT NULL,
+  `rangoGraduacion` varchar(50) NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`idMica`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mica`
+--
+
+LOCK TABLES `mica` WRITE;
+/*!40000 ALTER TABLE `mica` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mica` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `parametro_negocio`
+--
+
+DROP TABLE IF EXISTS `parametro_negocio`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `parametro_negocio` (
+  `idParametro` int NOT NULL AUTO_INCREMENT,
+  `precioExamen` decimal(10,2) NOT NULL DEFAULT '250.00',
+  `vigenciaBonificacion` int NOT NULL DEFAULT '30',
+  `anticipoMinimo` int NOT NULL DEFAULT '50',
+  PRIMARY KEY (`idParametro`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `parametro_negocio`
+--
+
+LOCK TABLES `parametro_negocio` WRITE;
+/*!40000 ALTER TABLE `parametro_negocio` DISABLE KEYS */;
+INSERT INTO `parametro_negocio` VALUES (1,250.00,30,50);
+/*!40000 ALTER TABLE `parametro_negocio` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pedido`
 --
 
@@ -422,10 +474,14 @@ DROP TABLE IF EXISTS `promocion`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `promocion` (
   `idPromocion` int NOT NULL AUTO_INCREMENT,
+  `nombrePromocion` varchar(100) DEFAULT NULL,
   `tipoPromocion` varchar(20) DEFAULT NULL,
-  `porcentajePromo` decimal(5,2) DEFAULT NULL,
+  `porcentajePromo` decimal(10,2) DEFAULT NULL,
+  `fechaInicio` date DEFAULT NULL,
+  `fechaFin` date DEFAULT NULL,
   `acumulable` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`idPromocion`)
+  PRIMARY KEY (`idPromocion`),
+  CONSTRAINT `chk_valor_promocion` CHECK ((((`tipoPromocion` = _utf8mb4'Porcentaje') and (`porcentajePromo` between 0.1 and 100.00)) or ((`tipoPromocion` in (_utf8mb4'MontoFijo',_utf8mb4'Paquete')) and (`porcentajePromo` between 0.1 and 1000000.00))))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -436,6 +492,32 @@ CREATE TABLE `promocion` (
 LOCK TABLES `promocion` WRITE;
 /*!40000 ALTER TABLE `promocion` DISABLE KEYS */;
 /*!40000 ALTER TABLE `promocion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `promocion_producto`
+--
+
+DROP TABLE IF EXISTS `promocion_producto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `promocion_producto` (
+  `idPromocion` int NOT NULL,
+  `idProducto` int NOT NULL,
+  PRIMARY KEY (`idPromocion`,`idProducto`),
+  KEY `fk_pp_producto` (`idProducto`),
+  CONSTRAINT `fk_pp_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pp_promocion` FOREIGN KEY (`idPromocion`) REFERENCES `promocion` (`idPromocion`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `promocion_producto`
+--
+
+LOCK TABLES `promocion_producto` WRITE;
+/*!40000 ALTER TABLE `promocion_producto` DISABLE KEYS */;
+/*!40000 ALTER TABLE `promocion_producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -603,4 +685,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-17 16:57:00
+-- Dump completed on 2026-10-20 17:21:07
