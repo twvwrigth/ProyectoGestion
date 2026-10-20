@@ -9,9 +9,9 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <h4 class="fw-bold mb-1">👤 @Model.Cliente.Nombre</h4>
+                <h4 class="fw-bold mb-1">@Model.Cliente.Nombre</h4>
                 <p class="text-muted mb-0 me-3 d-inline">
-                    📞 <strong>Teléfono:</strong> @(string.IsNullOrEmpty(Model.Cliente.Telefono) ? "Sin registrar" :
+                     <strong>Teléfono:</strong> @(string.IsNullOrEmpty(Model.Cliente.Telefono) ? "Sin registrar" :
                                         Model.Cliente.Telefono)
                 </p>
                 <span
@@ -30,7 +30,7 @@
     @if (pedidosEnCurso.Any())
     {
         <div class="alert alert-info border-info shadow-sm mb-4">
-            <h6 class="fw-bold text-info-emphasis mb-2">📦 Pedidos Activos / En Curso (@pedidosEnCurso.Count)</h6>
+            <h6 class="fw-bold text-info-emphasis mb-2">Pedidos Activos / En Curso (@pedidosEnCurso.Count)</h6>
             <div class="table-responsive">
                 <table class="table table-sm table-borderless align-middle mb-0">
                     <thead>
@@ -65,20 +65,20 @@
             <ul class="nav nav-tabs card-header-tabs" id="fichaTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active fw-semibold" id="recetas-tab" data-bs-toggle="tab"
-                            data-bs-target="#recetas" type="button" role="tab">📋 Recetas / Exámenes
+                            data-bs-target="#recetas" type="button" role="tab">Recetas / Exámenes
                         (@Model.Cliente.Receta.Count)</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link fw-semibold" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas"
-                                type="button" role="tab">🛍️ Historial de Ventas (@Model.Cliente.Venta.Count)</button>
+                                type="button" role="tab">Historial de Ventas (@Model.Cliente.Venta.Count)</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link fw-semibold" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos"
-                                type="button" role="tab">👓 Todos los Pedidos (@Model.Cliente.Pedidos.Count)</button>
+                                type="button" role="tab">Todos los Pedidos (@Model.Cliente.Pedidos.Count)</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link fw-semibold" id="reparaciones-tab" data-bs-toggle="tab"
-                                data-bs-target="#reparaciones" type="button" role="tab">🛠️ Reparaciones
+                                data-bs-target="#reparaciones" type="button" role="tab">Reparaciones
                             (@Model.Cliente.Reparacions.Count)</button>
                         </li>
                     </ul>

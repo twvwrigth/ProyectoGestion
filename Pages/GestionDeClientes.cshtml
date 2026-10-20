@@ -30,14 +30,14 @@
                 </div>
             </form>
 
-            <div class="table-responsive table-card">
-                <table class="table table-striped table-hover align-middle mb-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle w-100 mb-0">
                     <thead class="table-light">
                         <tr>
                             <th scope="col" class="ps-3">Nombre del Cliente</th>
                             <th scope="col">Teléfono</th>
                             <th scope="col">Aviso de Privacidad</th>
-                            <th scope="col" class="text-end pe-3">Acciones</th>
+                            <th scope="col" class="text-end pe-3" style="min-width: 180px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,7 +49,6 @@
                                     <td class="ps-3 fw-medium">@cliente.Nombre</td>
                                     <td>@(string.IsNullOrEmpty(cliente.Telefono) ? "Sin teléfono" : cliente.Telefono)</td>
                                     <td>
-                                        @* NOTA: Ajustar según cómo se haya mapeado AvisoPrivacidad (bool o sbyte/int) *@
                                         @if (cliente.AvisoPrivacidad == true || cliente.AvisoPrivacidad?.ToString() == "1")
                                         {
                                             <span class="badge bg-success-subtle text-success">Firmado</span>
@@ -60,28 +59,19 @@
                                         }
                                     </td>
                                     <td class="text-end pe-3">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-editar"
-                                                data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
-                                                data-id="@cliente.IdCliente" data-nombre="@cliente.Nombre"
-                                                data-telefono="@cliente.Telefono"
-                                                data-privacidad="@(cliente.AvisoPrivacidad == true || cliente.AvisoPrivacidad?.ToString() == "1" ? "true" : "false")">
-                                            Editar
-                                        </button>
-                                        <!-- Más adelante aquí irán botones como "Ver Historial" o "Crear Venta" -->
-                                    </td>
-                                    <td class="text-end pe-3">
-                                        <!-- Botón para abrir la Ficha Completa del Cliente (Criterio 4) -->
-                                        <a asp-page="/Clientes/Detalle" asp-route-id="@cliente.IdCliente"
-                                           class="btn btn-sm btn-primary me-1">
-                                            👁️ Ver Ficha
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-editar"
-                                                data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
-                                                data-id="@cliente.IdCliente" data-nombre="@cliente.Nombre"
-                                                data-telefono="@cliente.Telefono"
-                                                data-privacidad="@(cliente.AvisoPrivacidad == true || cliente.AvisoPrivacidad?.ToString() == "1" ? "true" : "false")">
-                                            Editar
-                                        </button>
+                                        <div class="d-inline-flex gap-1 justify-content-end">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-editar"
+                                                    data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
+                                                    data-id="@cliente.IdCliente" data-nombre="@cliente.Nombre"
+                                                    data-telefono="@cliente.Telefono"
+                                                    data-privacidad="@(cliente.AvisoPrivacidad == true || cliente.AvisoPrivacidad?.ToString() == "1" ? "true" : "false")">
+                                                Editar
+                                            </button>
+                                            <a asp-page="/Clientes/Detalle" asp-route-id="@cliente.IdCliente"
+                                               class="btn btn-sm btn-primary">
+                                                Ver Ficha
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             }
