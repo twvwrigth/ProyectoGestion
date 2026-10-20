@@ -17,6 +17,8 @@ public class GestionDeEmpleadosModel : PageModel
 
     public List<Empleado> EmpleadosList { get; set; } = new();
 
+    public List<Rol> RolesList { get; set; } = new();
+
     // ==========================================
     // PROPIEDADES PARA CREAR EMPLEADO
     // ==========================================
@@ -56,7 +58,11 @@ public class GestionDeEmpleadosModel : PageModel
     // ==========================================
     public async Task OnGetAsync()
     {
-        EmpleadosList = await _context.Empleados.ToListAsync();
+        EmpleadosList = await _context.Empleados
+            .Include(e => e.IdRolNavigation)
+            .ToListAsync();
+
+        RolesList = await _context.Roles.ToListAsync();
     }
 
     public async Task<IActionResult> OnPostCrearAsync()
@@ -69,6 +75,7 @@ public class GestionDeEmpleadosModel : PageModel
         if (!ModelState.IsValid)
         {
             EmpleadosList = await _context.Empleados.ToListAsync();
+            RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
         
@@ -76,6 +83,7 @@ public class GestionDeEmpleadosModel : PageModel
         {
             ModelState.AddModelError("Usuario", "El usuario ya existe.");
             EmpleadosList = await _context.Empleados.ToListAsync();
+            RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
 
@@ -95,15 +103,12 @@ public class GestionDeEmpleadosModel : PageModel
         _context.Empleados.Add(nuevoEmpleado);
         await _context.SaveChangesAsync();
         
-        // AGREGA ESTO:
         TempData["SuccessMessage"] = "El empleado ha sido registrado exitosamente.";
         return RedirectToPage();
     }
 
-    // MANEJADOR PARA EDITAR EMPLEADO
     public async Task<IActionResult> OnPostEditarAsync()
     {
-        // AGREGA ESTO PARA EVITAR ERRORES DE VALIDACIÓN:
         ModelState.Remove("Nombre");
         ModelState.Remove("Usuario");
         ModelState.Remove("ContrasenaTemporal");
@@ -113,6 +118,7 @@ public class GestionDeEmpleadosModel : PageModel
         {
             ViewData["ShowModal"] = "Editar";
             EmpleadosList = await _context.Empleados.ToListAsync();
+            RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
 
@@ -131,6 +137,7 @@ public class GestionDeEmpleadosModel : PageModel
             ModelState.AddModelError("EditUsuario", "El nombre de usuario ingresado ya está en uso.");
             ViewData["ShowModal"] = "Editar";
             EmpleadosList = await _context.Empleados.ToListAsync();
+            RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
 
@@ -140,12 +147,10 @@ public class GestionDeEmpleadosModel : PageModel
 
         await _context.SaveChangesAsync();
         
-        // AGREGA ESTO:
         TempData["SuccessMessage"] = "Los datos del empleado se actualizaron correctamente.";
         return RedirectToPage();
     }
 
-    // MANEJADOR PARA ACTIVAR/DESACTIVAR EMPLEADO
     public async Task<IActionResult> OnPostToggleEstadoAsync(int id)
     {
         var empleado = await _context.Empleados.FindAsync(id);
@@ -155,7 +160,6 @@ public class GestionDeEmpleadosModel : PageModel
             empleado.Activo = !empleado.Activo;
             await _context.SaveChangesAsync();
             
-            // AGREGA ESTO:
             string estado = empleado.Activo ? "activado" : "desactivado";
             TempData["SuccessMessage"] = $"El empleado fue {estado} exitosamente.";
         }

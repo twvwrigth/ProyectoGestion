@@ -28,7 +28,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.EmpleadosList.Any())
+                    @if (Model.EmpleadosList != null && Model.EmpleadosList.Any())
                     {
                         @foreach (var emp in Model.EmpleadosList)
                         {
@@ -36,10 +36,10 @@
                                 <td class="ps-3 fw-medium">@emp.Nombre</td>
                                 <td>@emp.Usuario</td>
                                 <td>
-                                    @{
-                                        string rolNombre = emp.IdRol == 1 ? "Admin" : emp.IdRol == 2 ? "Encargado" : emp.IdRol == 3 ? "Cajero" : "Almacenista";
-                                    }
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">@rolNombre</span>
+                                    <!-- Muestra el nombre exacto del rol almacenado en la base de datos -->
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
+                                        @(emp.IdRolNavigation?.NombreRol ?? "Sin Rol")
+                                    </span>
                                 </td>
                                 <td>
                                     @if (emp.Activo)
@@ -97,6 +97,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
+            // 1. Auto-completado de contraseña temporal al escribir el usuario
             const inputUsuario = document.getElementById("usuarioEmpleado");
             const inputPass = document.getElementById("contrasenaTemporal");
 
@@ -107,10 +108,11 @@
                 });
             }
 
+            // 2. Carga de datos al Modal de Edición desde el botón de la tabla
             const modalEditarEl = document.getElementById('modalEditarEmpleado');
             if (modalEditarEl) {
                 modalEditarEl.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget; // Botón presionado en la tabla
+                    const button = event.relatedTarget;
                     
                     const id = button.getAttribute('data-id');
                     const nombre = button.getAttribute('data-nombre');
@@ -120,10 +122,16 @@
                     modalEditarEl.querySelector('#editId').value = id;
                     modalEditarEl.querySelector('#editNombre').value = nombre;
                     modalEditarEl.querySelector('#editUsuario').value = usuario;
-                    modalEditarEl.querySelector('#editRol').value = rol;
+                    
+                    // Asigna el rol correspondiente
+                    const editRolSelect = modalEditarEl.querySelector('#editRol');
+                    if (editRolSelect) {
+                        editRolSelect.value = rol;
+                    }
                 });
             }
 
+            // 3. Limpieza de formularios y advertencias en rojo al cerrar cualquier modal
             const modales = document.querySelectorAll('.modal');
             modales.forEach(function (modal) {
                 modal.addEventListener('hidden.bs.modal', function () {
@@ -131,11 +139,11 @@
                     if (form) {
                         form.reset(); 
                         
-                        // Limpiar spans de advertencia
+                        // Limpiar mensajes de error
                         const spansError = form.querySelectorAll('span.text-danger');
                         spansError.forEach(span => span.textContent = '');
                         
-                        // Quitar bordes rojos
+                        // Remover clases de borde rojo en inputs
                         const inputsError = form.querySelectorAll('.input-validation-error');
                         inputsError.forEach(input => input.classList.remove('input-validation-error'));
                     }
@@ -144,6 +152,7 @@
         });
     </script>
 
+    <!-- 4. Reapertura de Modales en caso de error de validación -->
     @if (ViewData["ShowModal"]?.ToString() == "Crear")
     {
         <script>
@@ -163,6 +172,7 @@
         </script>
     }
 
+    <!-- 5. Apertura del Modal de Éxito al recibir mensaje en TempData -->
     @if (TempData["SuccessMessage"] != null)
     {
         <script>

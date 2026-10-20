@@ -1,0 +1,244 @@
+@page
+@model Proyecto.Pages.Clientes.DetalleModel
+@{
+    ViewData["Title"] = "Ficha del Cliente";
+}
+
+<div class="container-fluid py-4">
+    <!-- Encabezado Ficha del Cliente -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1">@Model.Cliente.Nombre</h4>
+                <p class="text-muted mb-0 me-3 d-inline">
+                     <strong>Teléfono:</strong> @(string.IsNullOrEmpty(Model.Cliente.Telefono) ? "Sin registrar" :
+                                        Model.Cliente.Telefono)
+                </p>
+                <span
+                    class="badge @(Model.Cliente.AvisoPrivacidad == true || Model.Cliente.AvisoPrivacidad?.ToString() == "1" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning")">
+                    @(Model.Cliente.AvisoPrivacidad == true || Model.Cliente.AvisoPrivacidad?.ToString() == "1" ? "Aviso de Privacidad Aceptado" : "Aviso Pendiente")
+                </span>
+            </div>
+            <a asp-page="/GestionDeClientes" class="btn btn-outline-secondary">← Volver al Listado</a>
+        </div>
+    </div>
+
+    <!-- Pedidos en Curso Destacados (Criterio 4) -->
+    @{
+        var pedidosEnCurso = Model.Cliente.Pedidos.Where(p => p.Estado != "Entregado" && p.Estado != "Cancelado").ToList();
+    }
+    @if (pedidosEnCurso.Any())
+    {
+        <div class="alert alert-info border-info shadow-sm mb-4">
+            <h6 class="fw-bold text-info-emphasis mb-2">Pedidos Activos / En Curso (@pedidosEnCurso.Count)</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-borderless align-middle mb-0">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>Folio</th>
+                            <th>Laboratorio</th>
+                            <th>Fecha Entrega</th>
+                            <th>Saldo Pendiente</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ped in pedidosEnCurso)
+                        {
+                            <tr>
+                                <td class="fw-bold">#@ped.FolioPedido</td>
+                                <td>@(ped.IdLaboratorioNavigation?.Nombre ?? "N/A")</td>
+                                <td>@(ped.FechaEntrega?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                                <td class="text-danger fw-bold">$@ped.SaldoPendiente</td>
+                                <td><span class="badge bg-primary">@ped.Estado</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Historial en Pestañas / Tabs (Criterio 4) -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent border-bottom-0 pt-3">
+            <ul class="nav nav-tabs card-header-tabs" id="fichaTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-semibold" id="recetas-tab" data-bs-toggle="tab"
+                            data-bs-target="#recetas" type="button" role="tab">Recetas / Exámenes
+                        (@Model.Cliente.Receta.Count)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas"
+                                type="button" role="tab">Historial de Ventas (@Model.Cliente.Venta.Count)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold" id="pedidos-tab" data-bs-toggle="tab" data-bs-target="#pedidos"
+                                type="button" role="tab">Todos los Pedidos (@Model.Cliente.Pedidos.Count)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold" id="reparaciones-tab" data-bs-toggle="tab"
+                                data-bs-target="#reparaciones" type="button" role="tab">Reparaciones
+                            (@Model.Cliente.Reparacions.Count)</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="fichaTabsContent">
+                
+                        <!-- Tab Recetas -->
+                        <div class="tab-pane fade show active" id="recetas" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Esfera</th>
+                                            <th>Cilindro</th>
+                                            <th>Eje</th>
+                                            <th>Distancia Pupilar</th>
+                                            <th>Emisor / Optometrista</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.Cliente.Receta.Any())
+                                        {
+                                            @foreach (var rec in Model.Cliente.Receta)
+                                            {
+                                                <tr>
+                                                    <td>@(rec.Fecha.ToString("dd/MM/yyyy"))</td>
+                                                    <td>@rec.Esfera</td>
+                                                    <td>@rec.Cilindro</td>
+                                                    <td>@rec.Eje</td>
+                                                    <td>@rec.DistanciaPupilar</td>
+                                                    <td>@rec.Emisor</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-3">No hay recetas o exámenes
+                                                    registrados.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab Ventas -->
+                            <div class="tab-pane fade" id="ventas" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Folio</th>
+                                                <th>Fecha</th>
+                                                <th>Forma de Pago</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.Cliente.Venta.Any())
+                                            {
+                                                @foreach (var vta in Model.Cliente.Venta)
+                                                {
+                                                    <tr>
+                                                        <td>#@vta.FolioVenta</td>
+                                                        <!-- Opción recomendada (si la propiedad Fecha no es nula): -->
+                                                        <td>@vta.Fecha.ToString("dd/MM/yyyy")</td>
+                                                        <td>@vta.FormaPago</td>
+                                                        <td class="fw-bold">$@vta.Total</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-3">Sin historial de ventas de
+                                                        mostrador.</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Todos los Pedidos -->
+                                <div class="tab-pane fade" id="pedidos" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Folio</th>
+                                                    <th>Estado</th>
+                                                    <th>Anticipo</th>
+                                                    <th>Saldo Pendiente</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.Cliente.Pedidos.Any())
+                                                {
+                                                    @foreach (var ped in Model.Cliente.Pedidos)
+                                                    {
+                                                        <tr>
+                                                            <td>#@ped.FolioPedido</td>
+                                                            <td><span class="badge bg-secondary">@ped.Estado</span></td>
+                                                            <td>$@ped.AnticipoTotal</td>
+                                                            <td>$@ped.SaldoPendiente</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="4" class="text-center text-muted py-3">Sin registro de pedidos.</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tab Reparaciones -->
+                                <div class="tab-pane fade" id="reparaciones" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Folio</th>
+                                                    <th>Descripción</th>
+                                                    <th>Estado Falla</th>
+                                                    <th>Precio Estimado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.Cliente.Reparacions.Any())
+                                                {
+                                                    @foreach (var rep in Model.Cliente.Reparacions)
+                                                    {
+                                                        <tr>
+                                                            <td>#@rep.FolioReparacion</td>
+                                                            <td>@rep.Descripcion</td>
+                                                            <td>@rep.EstadoFalla</td>
+                                                            <td>$@rep.PrecioEstimado</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="4" class="text-center text-muted py-3">Sin reparaciones registradas.
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
