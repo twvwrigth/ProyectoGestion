@@ -25,7 +25,7 @@
                 <h4 class="fw-bold mb-1">@Model.Cliente.Nombre</h4>
                 <p class="text-muted mb-0 me-3 d-inline">
                     <strong>Teléfono:</strong> @(string.IsNullOrEmpty(Model.Cliente.Telefono) ? "Sin registrar" :
-                                                            Model.Cliente.Telefono)
+                                                                                                    Model.Cliente.Telefono)
                 </p>
                 <span
                     class="badge @(Model.Cliente.AvisoPrivacidad == true || Model.Cliente.AvisoPrivacidad?.ToString() == "1" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning")">
@@ -120,9 +120,9 @@
                                             {
                                                 <tr>
                                                     <td>@(rec.Fecha.ToString("dd/MM/yyyy"))</td>
-                                                    <td>@rec.Esfera</td>
-                                                    <td>@rec.Cilindro</td>
-                                                    <td>@rec.Eje</td>
+                                                    <td>OD: @rec.EsferaOD | OI: @rec.EsferaOI</td>
+                                                    <td>OD: @rec.CilindroOD | OI: @rec.CilindroOI</td>
+                                                    <td>OD: @rec.EjeOD | OI: @rec.EjeOI</td>
                                                     <td>@rec.DistanciaPupilar</td>
                                                     <td>@rec.Emisor</td>
                                                 </tr>
