@@ -1,0 +1,183 @@
+@model Proyecto.Pages.CotizacionModel
+
+<!-- Modal HU-10: Cotización de lente graduado -->
+<div class="modal fade" id="modalCotizacion" tabindex="-1" aria-labelledby="modalCotizacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalCotizacionLabel">
+                    <i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado (HU-10)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Alerta: Estado de Receta -->
+                <div id="alertaRecetaModal" class="alert alert-warning d-none" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span id="mensajeRecetaModal">La receta seleccionada presenta observaciones.</span>
+                </div>
+
+                <form id="formCotizacionModal" method="post" asp-page="/cotizacion" asp-page-handler="GuardarCotizacion">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Sección 1: Cliente y Receta -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Input.IdCliente" class="form-label fw-bold">Cliente <span class="text-danger">*</span></label>
+                            <select asp-for="Input.IdCliente" asp-items="Model.ClientesSelectList" class="form-select" id="clienteSelectModal" onchange="cargarRecetasClienteModal(this.value)" required>
+                                <option value="" selected disabled>Seleccione un cliente...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Input.IdReceta" class="form-label fw-bold">Receta del Optometrista <span class="text-danger">*</span></label>
+                            <select asp-for="Input.IdReceta" class="form-select" id="recetaSelectModal" required>
+                                <option value="" selected disabled>Primero seleccione un cliente...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sección 2: Opciones Sugeridas (Modo Lectura) -->
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-info text-dark fw-bold">
+                            Opciones del Optometrista (Modo Lectura)
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 border-end">
+                                    <h6 class="text-secondary fw-bold">Opción Mínima</h6>
+                                    <p class="mb-1">CR-39 Monofocal / Antirreflejante Básico</p>
+                                    <h5 class="text-primary fw-bold">$850.00</h5>
+                                    <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="seleccionarOpcionModal(400, 200)">Seleccionar Mínima</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-success fw-bold">Opción Recomendada</h6>
+                                    <p class="mb-1">Policarbonato / Filtro Luz Azul + Antirreflejante</p>
+                                    <h5 class="text-success fw-bold">$1,450.00</h5>
+                                    <button type="button" class="btn btn-sm btn-success mt-1" onclick="seleccionarOpcionModal(750, 500)">Seleccionar Recomendada</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 3: Configuración del Producto y Materiales -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light fw-bold">Configuración de Armazón y Micas</div>
+                        <div class="card-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" asp-for="Input.ArmazonPropio" id="checkArmazonPropioModal" onchange="toggleArmazonModal()">
+                                        <label class="form-check-label fw-bold" asp-for="Input.ArmazonPropio">Cliente trae su armazón</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-8" id="divInventarioModal">
+                                    <label class="form-label fw-bold">Armazón de Inventario</label>
+                                    <select asp-for="Input.CodigoArmazon" asp-items="Model.ArmazonesSelectList" class="form-select" id="selectArmazonModal" onchange="recalcularTotalModal()">
+                                        <option value="">Seleccione armazón...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8 d-none" id="divPropioModal">
+                                    <label class="form-label fw-bold">Descripción de Armazón Propio</label>
+                                    <input type="text" asp-for="Input.DescripcionArmazonPropio" class="form-control" placeholder="Ej. Armazón metálico usado en buen estado">
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Material de Mica</label>
+                                    <select class="form-select" id="selectMaterialModal" onchange="recalcularTotalModal()">
+                                        <option value="400">CR-39 ($400)</option>
+                                        <option value="750">Policarbonato ($750)</option>
+                                        <option value="1200">Hi-Index ($1,200)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Tratamiento</label>
+                                    <select class="form-select" id="selectTratamientoModal" onchange="recalcularTotalModal()">
+                                        <option value="200">Antirreflejante ($200)</option>
+                                        <option value="500">Filtro Luz Azul ($500)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Examen Visual</label>
+                                    <input type="text" class="form-control" id="costoExamenModal" value="$250.00" readonly />
+                                    <input type="hidden" asp-for="Input.BonificacionExamen" id="bonificacionHiddenModal" value="false" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="card bg-light border-primary">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15 días</strong>.</small>
+                            <div class="text-end">
+                                <span class="text-uppercase fw-bold text-secondary">Total Calculado:</span>
+                                <h3 class="text-primary fw-bold mb-0" id="lblTotalModal">$0.00</h3>
+                                <input type="hidden" asp-for="Input.TotalCalculado" id="totalCalculadoInputModal" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('formCotizacionModal').submit();">
+                    <i class="bi bi-save me-1"></i> Guardar Cotización
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleArmazonModal() {
+        const propio = document.getElementById('checkArmazonPropioModal').checked;
+        document.getElementById('divInventarioModal').classList.toggle('d-none', propio);
+        document.getElementById('divPropioModal').classList.toggle('d-none', !propio);
+        recalcularTotalModal();
+    }
+
+    function cargarRecetasClienteModal(idCliente) {
+        if (!idCliente) return;
+        fetch(`/cotizacion?handler=RecetasPorCliente&idCliente=${idCliente}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('recetaSelectModal');
+                select.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
+                data.forEach(r => {
+                    let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
+                    if (r.esVencida) texto += " - [VENCIDA]";
+                    const opt = document.createElement('option');
+                    opt.value = r.idReceta;
+                    opt.textContent = texto;
+                    select.appendChild(opt);
+                });
+            });
+    }
+
+    function seleccionarOpcionModal(mat, trat) {
+        document.getElementById('selectMaterialModal').value = mat;
+        document.getElementById('selectTratamientoModal').value = trat;
+        recalcularTotalModal();
+    }
+
+    function recalcularTotalModal() {
+        const material = parseFloat(document.getElementById('selectMaterialModal').value) || 0;
+        const tratamiento = parseFloat(document.getElementById('selectTratamientoModal').value) || 0;
+        const propio = document.getElementById('checkArmazonPropioModal').checked;
+        let armazon = propio ? 0 : 300; 
+        const examen = 250;
+
+        const total = material + tratamiento + armazon + examen;
+        document.getElementById('lblTotalModal').innerText = `$${total.toFixed(2)} MXN`;
+        document.getElementById('totalCalculadoInputModal').value = total;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        recalcularTotalModal();
+    });
+</script>

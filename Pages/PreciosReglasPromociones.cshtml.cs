@@ -137,7 +137,7 @@ public class PreciosReglasPromocionesModel : PageModel
                 Acumulable = Acumulable
             };
 
-            _context.Promocions.Add(nuevaPromo);
+            _context.Promociones.Add(nuevaPromo);
             await _context.SaveChangesAsync();
 
             if (ProductosIds != null && ProductosIds.Any())
@@ -187,7 +187,7 @@ public class PreciosReglasPromocionesModel : PageModel
         var promo = await _context.Promocions.Include(p => p.IdProductos).FirstOrDefaultAsync(p => p.IdPromocion == id);
         if (promo != null)
         {
-            _context.Promocions.Remove(promo);
+            _context.Promociones.Remove(promo);
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Promoción eliminada de la base de datos.";
         }
@@ -214,8 +214,7 @@ public class PreciosReglasPromocionesModel : PageModel
              if (AnticipoMinimo == 0) AnticipoMinimo = 50;
         }
 
-        // Usamos IdProductos en el Include
-        ListaPromociones = await _context.Promocions.Include(p => p.IdProductos).ToListAsync();
+        ListaPromociones = await _context.Promociones.ToListAsync();
         ListaProductos = await _context.Productos.ToListAsync();
     }
 }
