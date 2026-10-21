@@ -38,13 +38,17 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<ListaEspera> ListaEsperas { get; set; }
 
+    public virtual DbSet<Mica> Micas { get; set; }
+
+    public virtual DbSet<ParametroNegocio> ParametroNegocios { get; set; }
+
     public virtual DbSet<Pedido> Pedidos { get; set; }
 
     public virtual DbSet<Producto> Productos { get; set; }
 
     public virtual DbSet<Promocion> Promociones { get; set; }
 
-    public virtual DbSet<Receta> Receta { get; set; }
+    public virtual DbSet<Recetum> Receta { get; set; }
 
     public virtual DbSet<Reparacion> Reparaciones { get; set; }
 
@@ -225,7 +229,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasPrecision(10, 2)
                 .HasColumnName("totalCalculado");
 
-            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Cotizaciones)
+            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Cotizacions)
                 .HasForeignKey(d => d.IdCliente)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_cotizacion_cliente");
@@ -334,6 +338,9 @@ public partial class MiApplicationDbContext : DbContext
             entity.ToTable("laboratorio");
 
             entity.Property(e => e.IdLaboratorio).HasColumnName("idLaboratorio");
+            entity.Property(e => e.Activo)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("activo");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(100)
                 .HasColumnName("nombre");
@@ -346,9 +353,6 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.TipoLaboratorio)
                 .HasMaxLength(7)
                 .HasColumnName("tipoLaboratorio");
-            entity.Property(e => e.Activo)
-                .HasDefaultValueSql("'1'")
-                .HasColumnName("activo");
         });
 
         modelBuilder.Entity<ListaEspera>(entity =>
@@ -370,6 +374,46 @@ public partial class MiApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdCliente)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_lista_cliente");
+        });
+
+        modelBuilder.Entity<Mica>(entity =>
+        {
+            entity.HasKey(e => e.IdMica).HasName("PRIMARY");
+
+            entity.ToTable("mica");
+
+            entity.Property(e => e.IdMica).HasColumnName("idMica");
+            entity.Property(e => e.Material)
+                .HasMaxLength(50)
+                .HasColumnName("material");
+            entity.Property(e => e.Precio)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio");
+            entity.Property(e => e.RangoGraduacion)
+                .HasMaxLength(50)
+                .HasColumnName("rangoGraduacion");
+            entity.Property(e => e.Tratamiento)
+                .HasMaxLength(50)
+                .HasColumnName("tratamiento");
+        });
+
+        modelBuilder.Entity<ParametroNegocio>(entity =>
+        {
+            entity.HasKey(e => e.IdParametro).HasName("PRIMARY");
+
+            entity.ToTable("parametro_negocio");
+
+            entity.Property(e => e.IdParametro).HasColumnName("idParametro");
+            entity.Property(e => e.AnticipoMinimo)
+                .HasDefaultValueSql("'50'")
+                .HasColumnName("anticipoMinimo");
+            entity.Property(e => e.PrecioExamen)
+                .HasPrecision(10, 2)
+                .HasDefaultValueSql("'250.00'")
+                .HasColumnName("precioExamen");
+            entity.Property(e => e.VigenciaBonificacion)
+                .HasDefaultValueSql("'30'")
+                .HasColumnName("vigenciaBonificacion");
         });
 
         modelBuilder.Entity<Pedido>(entity =>
@@ -467,15 +511,40 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.Acumulable)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("acumulable");
+            entity.Property(e => e.FechaFin).HasColumnName("fechaFin");
+            entity.Property(e => e.FechaInicio).HasColumnName("fechaInicio");
+            entity.Property(e => e.NombrePromocion)
+                .HasMaxLength(100)
+                .HasColumnName("nombrePromocion");
             entity.Property(e => e.PorcentajePromo)
-                .HasPrecision(5, 2)
+                .HasPrecision(10, 2)
                 .HasColumnName("porcentajePromo");
             entity.Property(e => e.TipoPromocion)
                 .HasMaxLength(20)
                 .HasColumnName("tipoPromocion");
+
+            entity.HasMany(d => d.IdProductos).WithMany(p => p.IdPromociones)
+                .UsingEntity<Dictionary<string, object>>(
+                    "PromocionProducto",
+                    r => r.HasOne<Producto>().WithMany()
+                        .HasForeignKey("IdProducto")
+                        .HasConstraintName("fk_pp_producto"),
+                    l => l.HasOne<Promocion>().WithMany()
+                        .HasForeignKey("IdPromocion")
+                        .HasConstraintName("fk_pp_promocion"),
+                    j =>
+                    {
+                        j.HasKey("IdPromocion", "IdProducto")
+                            .HasName("PRIMARY")
+                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                        j.ToTable("promocion_producto");
+                        j.HasIndex(new[] { "IdProducto" }, "fk_pp_producto");
+                        j.IndexerProperty<int>("IdPromocion").HasColumnName("idPromocion");
+                        j.IndexerProperty<int>("IdProducto").HasColumnName("idProducto");
+                    });
         });
 
-        modelBuilder.Entity<Receta>(entity =>
+        modelBuilder.Entity<Recetum>(entity =>
         {
             entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
 
@@ -554,7 +623,7 @@ public partial class MiApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_reparacion_cliente");
 
-            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Reparaciones)
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Reparacions)
                 .HasForeignKey(d => d.IdEmpleado)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_reparacion_empleado");

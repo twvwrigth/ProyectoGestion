@@ -29,6 +29,13 @@ namespace Proyecto.Pages
         [BindProperty] public int ExistenciaEdit { get; set; }
         [BindProperty] public int IdProductoEliminar { get; set; }
 
+        // --- CAMPOS ESPECÍFICOS PARA ARMAZÓN ---
+        [BindProperty] public int CodigoArmazonNuevo { get; set; }
+        [BindProperty] public string MarcaNueva { get; set; }
+        [BindProperty] public string ModeloNuevo { get; set; }
+        [BindProperty] public string MaterialNuevo { get; set; }
+        [BindProperty] public bool VentaSinGraduacionNueva { get; set; } = true;
+
         public async Task OnGetAsync()
         {
             // 1. Preparamos la consulta base con sus Includes
@@ -85,14 +92,39 @@ namespace Proyecto.Pages
             await _context.SaveChangesAsync();
 
             // 2. Guardar en la tabla hija correspondiente
+            // 2. Guardar en la tabla hija correspondiente
             if (CategoriaNueva == "armazon")
             {
                 var nuevoArmazon = new Armazon
                 {
+                    CodigoArmazon = CodigoArmazonNuevo, // Obligatorio según tu base de datos
                     IdProducto = nuevoProducto.IdProducto,
-                    VentaSinGraduacion = true
+                    Marca = MarcaNueva,
+                    Modelo = ModeloNuevo,
+                    Material = MaterialNuevo,
+                    VentaSinGraduacion = VentaSinGraduacionNueva
                 };
                 _context.Armazones.Add(nuevoArmazon);
+            }
+            else if (CategoriaNueva == "gafas_sol")
+            {
+                var nuevasGafas = new GafasSol
+                {
+                    IdProducto = nuevoProducto.IdProducto,
+                    Nombre = NombreNuevo,
+                    ExistenciaMinima = 5 // Valor por defecto según tu script SQL
+                };
+                _context.GafasSolList.Add(nuevasGafas);
+            }
+            else if (CategoriaNueva == "accesorio")
+            {
+                var nuevoAccesorio = new Accesorio
+                {
+                    IdProducto = nuevoProducto.IdProducto,
+                    Nombre = NombreNuevo,
+                    ExistenciaMinima = 5 // Valor por defecto según tu script SQL
+                };
+                _context.Accesorios.Add(nuevoAccesorio);
             }
             else if (CategoriaNueva == "gafas_sol")
             {

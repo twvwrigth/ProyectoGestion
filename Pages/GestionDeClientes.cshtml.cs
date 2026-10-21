@@ -54,7 +54,9 @@ namespace Proyecto.Pages
 
                     if (clienteExistente != null)
                     {
-                        // Si ya existe, redirigimos directamente a su ficha existente para no duplicarlo
+                        // Guardamos un aviso temporal para mostrarlo en la ficha
+                        TempData["MensajeDuplicado"] = $"El teléfono {nuevoCliente.Telefono} ya pertenece al cliente '{clienteExistente.Nombre}'. Te redirigimos a su ficha para evitar registros duplicados.";
+
                         return RedirectToPage("/Clientes/Detalle", new { id = clienteExistente.IdCliente });
                     }
                 }
