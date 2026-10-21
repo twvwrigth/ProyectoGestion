@@ -18,7 +18,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Accesorio> Accesorios { get; set; }
 
-    public virtual DbSet<Armazon> Armazons { get; set; }
+    public virtual DbSet<Armazon> Armazones { get; set; }
 
     public virtual DbSet<Bitacora> Bitacoras { get; set; }
 
@@ -30,7 +30,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Empleado> Empleados { get; set; }
 
-    public virtual DbSet<GafasSol> GafasSols { get; set; }
+    public virtual DbSet<GafasSol> GafasSolList { get; set; }
 
     public virtual DbSet<Inventario> Inventarios { get; set; }
 
@@ -303,7 +303,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasMaxLength(30)
                 .HasColumnName("nombre");
 
-            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.GafasSols)
+            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.GafasSolList)
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_gafas_producto");
@@ -523,7 +523,7 @@ public partial class MiApplicationDbContext : DbContext
                 .HasMaxLength(20)
                 .HasColumnName("tipoPromocion");
 
-            entity.HasMany(d => d.IdProductos).WithMany(p => p.IdPromocions)
+            entity.HasMany(d => d.IdProductos).WithMany(p => p.IdPromociones)
                 .UsingEntity<Dictionary<string, object>>(
                     "PromocionProducto",
                     r => r.HasOne<Producto>().WithMany()
