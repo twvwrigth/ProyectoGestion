@@ -26,7 +26,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Cliente> Clientes { get; set; }
 
-    public virtual DbSet<Cotizacion> Cotizacions { get; set; }
+    public virtual DbSet<Cotizacion> Cotizaciones { get; set; }
 
     public virtual DbSet<Empleado> Empleados { get; set; }
 
@@ -46,11 +46,11 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Producto> Productos { get; set; }
 
-    public virtual DbSet<Promocion> Promocions { get; set; }
+    public virtual DbSet<Promocion> Promociones { get; set; }
 
     public virtual DbSet<Recetum> Receta { get; set; }
 
-    public virtual DbSet<Reparacion> Reparacions { get; set; }
+    public virtual DbSet<Reparacion> Reparaciones { get; set; }
 
     public virtual DbSet<Rol> Roles { get; set; }
 

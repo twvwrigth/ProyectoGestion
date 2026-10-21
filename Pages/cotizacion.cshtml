@@ -1,0 +1,209 @@
+@page
+@model Proyecto.Pages.CotizacionModel
+@{
+    ViewData["Title"] = "Cotización de Lente Graduado";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado (HU-10)</h4>
+            <a asp-page="/Index" class="btn btn-light btn-sm">Regresar</a>
+        </div>
+        
+        <div class="card-body">
+            @if (TempData["MensajeExito"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["MensajeExito"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Alerta de Receta -->
+            <div id="alertaReceta" class="alert alert-warning d-none" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span id="mensajeReceta">La receta seleccionada presenta observaciones.</span>
+            </div>
+
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Sección 1: Cliente y Receta -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Input.IdCliente" class="form-label fw-bold">Cliente <span
+                            class="text-danger">*</span></label>
+                            <select asp-for="Input.IdCliente" asp-items="Model.ClientesSelectList" class="form-select"
+                                    id="clienteSelect" onchange="cargarRecetasCliente(this.value)" required>
+                                <option value="" selected disabled>Seleccione un cliente...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Input.IdReceta" class="form-label fw-bold">Receta del Optometrista <span
+                                class="text-danger">*</span></label>
+                                <select asp-for="Input.IdReceta" class="form-select" id="recetaSelect" required>
+                                    <option value="" selected disabled>Primero seleccione un cliente...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sección 2: Opciones Sugeridas (Modo Lectura)[cite: 6] -->
+                        <div class="card mb-4 border-info">
+                            <div class="card-header bg-info text-dark fw-bold">
+                                Opciones del Optometrista (Modo Lectura)
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-6 border-end">
+                                        <h6 class="text-secondary fw-bold">Opción Mínima</h6>
+                                        <p class="mb-1">CR-39 Monofocal / Antirreflejante Básico</p>
+                                        <h5 class="text-primary fw-bold">$850.00</h5>
+                                        <!-- Pasa 400 (CR-39) y 200 (Antirreflejante) -->
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1"
+                                                onclick="seleccionarOpcion(400, 200)">
+                                            Seleccionar Mínima
+                                        </button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-success fw-bold">Opción Recomendada</h6>
+                                        <p class="mb-1">Policarbonato / Filtro Luz Azul + Antirreflejante</p>
+                                        <h5 class="text-success fw-bold">$1,450.00</h5>
+                                        <!-- Pasa 750 (Policarbonato) y 500 (Filtro Luz Azul) -->
+                                        <button type="button" class="btn btn-sm btn-success mt-1"
+                                                onclick="seleccionarOpcion(750, 500)">
+                                            Seleccionar Recomendada
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 3: Configuración del Producto y Materiales -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light fw-bold">Configuración de Armazón y Micas</div>
+                            <div class="card-body">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch mt-4">
+                                            <input class="form-check-input" type="checkbox" asp-for="Input.ArmazonPropio"
+                                                   id="checkArmazonPropio" onchange="toggleArmazon()">
+                                            <label class="form-check-label fw-bold" asp-for="Input.ArmazonPropio">Cliente trae
+                                                su armazón</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8" id="divInventario">
+                                            <label class="form-label fw-bold">Armazón de Inventario</label>
+                                            <select asp-for="Input.CodigoArmazon" asp-items="Model.ArmazonesSelectList"
+                                                    class="form-select" id="selectArmazon" onchange="recalcularTotal()">
+                                                <option value="">Seleccione armazón...</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-8 d-none" id="divPropio">
+                                            <label class="form-label fw-bold">Descripción de Armazón Propio</label>
+                                            <input type="text" asp-for="Input.DescripcionArmazonPropio" class="form-control"
+                                                   placeholder="Ej. Armazón metálico usado en buen estado">
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Material de Mica</label>
+                                            <select class="form-select" id="selectMaterial" onchange="recalcularTotal()">
+                                                <option value="400">CR-39 ($400)</option>
+                                                <option value="750">Policarbonato ($750)</option>
+                                                <option value="1200">Hi-Index ($1,200)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Tratamiento</label>
+                                            <select class="form-select" id="selectTratamiento" onchange="recalcularTotal()">
+                                                <option value="200">Antirreflejante ($200)</option>
+                                                <option value="500">Filtro Luz Azul ($500)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-bold">Examen Visual</label>
+                                            <input type="text" class="form-control" id="costoExamen" value="$250.00" readonly />
+                                            <input type="hidden" asp-for="Input.BonificacionExamen" id="bonificacionHidden"
+                                                   value="false" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total y Guardado -->
+                            <div class="card bg-light border-primary">
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15
+                                        días</strong>[cite: 6].</small>
+                                        <div class="text-end">
+                                            <span class="text-uppercase fw-bold text-secondary">Total Calculado:</span>
+                                            <h3 class="text-primary fw-bold mb-0" id="lblTotal">$0.00</h3>
+                                            <input type="hidden" asp-for="Input.TotalCalculado" id="totalCalculadoInput" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 text-end">
+                                    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+                                        <i class="bi bi-save me-1"></i> Guardar Cotización
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                @section Scripts {
+                    <script>
+                        function toggleArmazon() {
+                            const propio = document.getElementById('checkArmazonPropio').checked;
+                            document.getElementById('divInventario').classList.toggle('d-none', propio);
+                            document.getElementById('divPropio').classList.toggle('d-none', !propio);
+                            recalcularTotal();
+                        }
+
+                        function cargarRecetasCliente(idCliente) {
+                            if (!idCliente) return;
+                            fetch(`?handler=RecetasPorCliente&idCliente=${idCliente}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const select = document.getElementById('recetaSelect');
+                                    select.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
+                                    data.forEach(r => {
+                                        let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
+                                        if (r.esVencida) texto += " - [VENCIDA]";
+                                        const opt = document.createElement('option');
+                                        opt.value = r.idReceta;
+                                        opt.textContent = texto;
+                                        select.appendChild(opt);
+                                    });
+                                });
+                        }
+
+                        function recalcularTotal() {
+                            const material = parseFloat(document.getElementById('selectMaterial').value) || 0;
+                            const tratamiento = parseFloat(document.getElementById('selectTratamiento').value) || 0;
+                            const propio = document.getElementById('checkArmazonPropio').checked;
+                            let armazon = 0;
+                            if (!propio) {
+                                // Aquí puedes sumar el precio del armazón seleccionado si usas un select estructurado con precios
+                                armazon = 300; // Valor base ilustrativo
+                            }
+                            const examen = 250; // O 0 si está bonificado
+
+                            const total = material + tratamiento + armazon + examen;
+                            document.getElementById('lblTotal').innerText = `$${total.toFixed(2)} MXN`;
+                            document.getElementById('totalCalculadoInput').value = total;
+                        }
+                        function seleccionarOpcion(mat, trat) {
+                            document.getElementById('selectMaterial').value = mat;
+                            document.getElementById('selectTratamiento').value = trat;
+                            recalcularTotal(); // Actualiza el total de inmediato en la pantalla
+                        }
+                        recalcularTotal();
+        
+                    </script>
+                }
