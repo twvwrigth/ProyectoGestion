@@ -1,0 +1,356 @@
+@page
+@model Proyecto.Pages.PreciosReglasPromocionesModel
+@{
+    ViewData["Title"] = "Gestión de Precios, Parámetros y Promociones";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Encabezado Principal de la Vista -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="h5 mb-1 fw-bold">Gestión de Precios, Parámetros y Promociones</h2>
+                <p class="text-muted small mb-0">HU-08: Configuración general de la óptica</p>
+            </div>
+            <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2">Rol: Encargado</span>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal con Pestañas -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
+            <ul class="nav nav-tabs card-header-tabs" id="huTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "micas" ? "active fw-semibold" : "fw-semibold text-secondary")" id="micas-tab" data-bs-toggle="tab" data-bs-target="#micas" type="button" role="tab" aria-controls="micas" aria-selected="@(Model.ActiveTab == "micas" ? "true" : "false")">
+                        Precios de Micas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "parametros" ? "active fw-semibold" : "fw-semibold text-secondary")" id="parametros-tab" data-bs-toggle="tab" data-bs-target="#parametros" type="button" role="tab" aria-controls="parametros" aria-selected="@(Model.ActiveTab == "parametros" ? "true" : "false")">
+                        Parámetros del Negocio
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(Model.ActiveTab == "promociones" ? "active fw-semibold" : "fw-semibold text-secondary")" id="promociones-tab" data-bs-toggle="tab" data-bs-target="#promociones" type="button" role="tab" aria-controls="promociones" aria-selected="@(Model.ActiveTab == "promociones" ? "true" : "false")">
+                        Promociones
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="tab-content" id="huTabsContent">
+
+                <!-- ================= Pestaña 1: Precios de Micas ================= -->
+                <div class="tab-pane fade @(Model.ActiveTab == "micas" ? "show active" : "")" id="micas" role="tabpanel" aria-labelledby="micas-tab">
+                    <h5 class="fw-bold mb-3">Matriz de Precios</h5>
+
+                    <form method="post" asp-page-handler="CrearMica" class="row g-3 mb-4 align-items-end">
+                        <div class="col-md-3">
+                            <label for="material" class="form-label">Material</label>
+                            <select id="material" name="Material" class="form-select" required>
+                                <option value="" selected disabled>Seleccionar...</option>
+                                <option value="CR-39">CR-39</option>
+                                <option value="Policarbonato">Policarbonato</option>
+                                <option value="Poliuretano">Poliuretano</option>
+                                <option value="Alto Índice">Alto Índice</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tratamiento" class="form-label">Tratamiento</label>
+                            <select id="tratamiento" name="Tratamiento" class="form-select" required>
+                                <option value="Ninguno" selected>Ninguno</option>
+                                <option value="Antirreflejante">Antirreflejante</option>
+                                <option value="Fotocromático">Fotocromático</option>
+                                <option value="Filtro Luz Azul">Filtro Luz Azul</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="rangoGrad" class="form-label">Rango Grad.</label>
+                            <input type="text" id="rangoGrad" name="RangoGraduacion" class="form-control" placeholder="Ej. ±2.00 a ±4.00" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label for="precioMica" class="form-label">Precio (MXN)</label>
+                            <input type="number" id="precioMica" name="Precio" class="form-control" placeholder="0.00" step="0.01" min="0.01" required />
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">+ Agregar</button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive table-card border rounded">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-3">Material</th>
+                                    <th scope="col">Tratamiento</th>
+                                    <th scope="col">Rango de Graduación</th>
+                                    <th scope="col">Precio Autorizado</th>
+                                    <th scope="col" class="text-end pe-3">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ListaMicas != null && Model.ListaMicas.Any())
+                                {
+                                    foreach (var mica in Model.ListaMicas)
+                                    {
+                                        <tr>
+                                            <td class="ps-3 fw-medium">@mica.Material</td>
+                                            <td>@mica.Tratamiento</td>
+                                            <td>@mica.RangoGraduacion</td>
+                                            <td class="fw-bold text-success">$@mica.Precio.ToString("0.00")</td>
+                                            <td class="text-end pe-3">
+                                                <form method="post" asp-page-handler="EliminarMica" class="d-inline">
+                                                    <input type="hidden" name="id" value="@mica.IdMica" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar esta mica?');">Eliminar</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-3">No hay micas registradas en la base de datos.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================= Pestaña 2: Parámetros del Negocio ================= -->
+                <div class="tab-pane fade @(Model.ActiveTab == "parametros" ? "show active" : "")" id="parametros" role="tabpanel" aria-labelledby="parametros-tab">
+                    <h5 class="fw-bold mb-3">Reglas de Operación y Cobros</h5>
+
+                    <form method="post" asp-page-handler="GuardarParametros">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card h-100 border bg-light-subtle">
+                                    <div class="card-body">
+                                        <label for="precioExamen" class="form-label fw-bold">Precio Base del Examen</label>
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" id="precioExamen" name="PrecioExamen" class="form-control" value="@Model.PrecioExamen.ToString("0.00")" step="0.01" min="0" required />
+                                            <span class="input-group-text">MXN</span>
+                                        </div>
+                                        <small class="text-muted">Costo si el cliente no realiza compra de lentes.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card h-100 border bg-light-subtle">
+                                    <div class="card-body">
+                                        <label for="vigenciaBonif" class="form-label fw-bold">Vigencia de Bonificación</label>
+                                        <div class="input-group mb-2">
+                                            <input type="number" id="vigenciaBonif" name="VigenciaBonificacion" class="form-control" value="@Model.VigenciaBonificacion" min="1" required />
+                                            <span class="input-group-text">Días</span>
+                                        </div>
+                                        <small class="text-muted">Días válidos para abonar el costo del examen a la compra.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card h-100 border bg-light-subtle">
+                                    <div class="card-body">
+                                        <label for="anticipoMin" class="form-label fw-bold">Anticipo Mínimo Requerido</label>
+                                        <div class="input-group mb-2">
+                                            <input type="number" id="anticipoMin" name="AnticipoMinimo" class="form-control" value="@Model.AnticipoMinimo" min="1" max="100" required />
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                        <small class="text-muted">Porcentaje inicial requerido para laboratorio.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary px-4">Guardar Parámetros</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ================= Pestaña 3: Promociones ================= -->
+                <div class="tab-pane fade @(Model.ActiveTab == "promociones" ? "show active" : "")" id="promociones" role="tabpanel" aria-labelledby="promociones-tab">
+                    <h5 class="fw-bold mb-3">Crear Nueva Promoción o Paquete</h5>
+
+                    <form method="post" asp-page-handler="CrearPromocion" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="nombrePromo" class="form-label">Nombre de Promoción</label>
+                            <input type="text" id="nombrePromo" name="NombrePromocion" class="form-control" placeholder="Ej. Paquete Escolar" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label for="tipoPromo" class="form-label">Tipo</label>
+                            <select id="tipoPromo" name="TipoPromocion" class="form-select" required onchange="cambiarSimbologia(this)">
+                                <option value="Porcentaje">Porcentaje (%)</option>
+                                <option value="MontoFijo">Monto Fijo ($)</option>
+                                <option value="Paquete">Paquete ($)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="valorPromo" class="form-label">Valor</label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="simboloPromo">%</span>
+                                <input type="number" id="valorPromo" name="PorcentajePromo" class="form-control" placeholder="15" step="0.01" min="0.1" required />
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="productosPromo" class="form-label">Aplica a (Selecciona los productos)</label>
+                            <select id="productosPromo" name="ProductosIds" class="form-select" multiple size="2" required>
+                                @if (Model.ListaProductos != null && Model.ListaProductos.Count > 0)
+                                {
+                                    foreach (var prod in Model.ListaProductos)
+                                    {
+                                        <option value="@prod.IdProducto">@prod.Nombre</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="" disabled>No hay productos en BD</option>
+                                }
+                            </select>
+                            <small class="text-muted" style="font-size: 0.75rem;">Mantén presionado Ctrl (o Cmd) para elegir varios.</small>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
+                            <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vigenciaPromo" class="form-label">Vigencia (Fin)</label>
+                            <input type="date" id="vigenciaPromo" name="FechaFin" class="form-control" required />
+                        </div>
+                        <div class="col-md-3 d-flex align-items-center">
+                            <div class="form-check pt-4">
+                                <input class="form-check-input" type="checkbox" id="acumulable" name="Acumulable" value="true" />
+                                <label class="form-check-label fw-medium" for="acumulable">
+                                    ¿Acumulable con otras promociones?
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 pt-4">
+                            <button type="submit" class="btn btn-primary w-100">Registrar Promoción</button>
+                        </div>
+                    </form>
+
+                    <h5 class="fw-bold mb-3">Promociones Activas</h5>
+                    <div class="table-responsive table-card border rounded">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-3">Nombre</th>
+                                    <th scope="col">Tipo</th>
+                                    <th scope="col">Valor</th>
+                                    <th scope="col">Vigencia</th>
+                                    <th scope="col" class="text-center">Acumulable</th>
+                                    <th scope="col" class="text-end pe-3">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ListaPromociones != null && Model.ListaPromociones.Any())
+                                {
+                                    foreach (var promo in Model.ListaPromociones)
+                                    {
+                                        <tr>
+                                            <td class="ps-3 fw-medium">@promo.NombrePromocion</td>
+                                            <td>@promo.TipoPromocion</td>
+                                            <td class="fw-bold text-primary">
+                                                @(promo.TipoPromocion == "Porcentaje"
+    ? Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00") + "%"
+    : "$" + Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00"))
+                                            </td>
+                                            <td>
+                                                @(promo.FechaInicio.HasValue ? promo.FechaInicio.Value.ToString() : "-") 
+                                                al 
+                                                @(promo.FechaFin.HasValue ? promo.FechaFin.Value.ToString() : "-")
+                                            </td>
+                                            <td class="text-center">
+                                                @if (promo.Acumulable == true)
+                                                {
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Sí</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">No</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-3">
+                                            
+                                            
+                                            
+                                                <form method="post" asp-page-handler="EliminarPromocion" class="d-inline">
+                                                    <input type="hidden" name="id" value="@promo.IdPromocion" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar esta promoción?');">Eliminar</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-3">No hay promociones registradas.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL DE OPERACIÓN EXITOSA -->
+    <div class="modal fade" id="modalExito" tabindex="-1" aria-labelledby="modalExitoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center border-0 shadow">
+                <div class="modal-header border-0 pb-0 justify-content-between" style="background-color: #198754;">
+                    <h5 class="modal-title text-white fw-bold ps-3" id="modalExitoLabel">Operación Exitosa</h5>
+                    <button type="button" class="btn-close btn-close-white me-2 mt-2" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-5">
+                    <div class="mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" fill="#6f42c1" class="bi bi-check-lg" viewBox="0 0 16 16" style="stroke: #6f42c1; stroke-width: 1.5;">
+                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                        </svg>
+                    </div>
+                    <p class="fs-5 text-dark mb-0" id="mensajeExitoTexto">El registro fue guardado exitosamente.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pb-4 pt-0">
+                    <button type="button" class="btn btn-success px-5" data-bs-dismiss="modal" style="background-color: #198754; border-color: #198754;">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Función para cambiar dinámicamente el símbolo % a $ en el formulario de Promociones
+        function cambiarSimbologia(selectElement) {
+            var simbolo = document.getElementById('simboloPromo');
+            if (selectElement.value === 'Porcentaje') {
+                simbolo.textContent = '%';
+            } else {
+                simbolo.textContent = '$';
+            }
+        }
+    </script>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                document.getElementById('mensajeExitoTexto').innerHTML = "@Html.Raw(TempData["SuccessMessage"])";
+                var modalExitoEl = document.getElementById('modalExito');
+                if (modalExitoEl) {
+                    var modalExito = new bootstrap.Modal(modalExitoEl);
+                    modalExito.show();
+                }
+            });
+        </script>
+    }
+}
