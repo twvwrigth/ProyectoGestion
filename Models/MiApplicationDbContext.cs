@@ -711,3 +711,4 @@ public partial class MiApplicationDbContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+ 
