@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Proyecto.Models; // <-- CORREGIDO: Este es el namespace real donde están tus clases
+using Proyecto.Models; 
 using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto.Pages;
@@ -24,9 +24,9 @@ public class PreciosReglasPromocionesModel : PageModel
     public string ActiveTab { get; set; } = "micas";
 
     // --- PROPIEDADES MICA ---
-    [BindProperty] [Required] public string Material { get; set; } = "";
-    [BindProperty] [Required] public string Tratamiento { get; set; } = "";
-    [BindProperty] [Required] public string RangoGraduacion { get; set; } = "";
+    [BindProperty] public string Material { get; set; } = "";
+    [BindProperty] public string Tratamiento { get; set; } = "";
+    [BindProperty] public string RangoGraduacion { get; set; } = "";
     [BindProperty] public decimal Precio { get; set; }
 
     // --- PROPIEDADES PARÁMETROS ---
@@ -35,11 +35,11 @@ public class PreciosReglasPromocionesModel : PageModel
     [BindProperty] public int AnticipoMinimo { get; set; }
 
     // --- PROPIEDADES PROMOCIÓN ---
-    [BindProperty] [Required] public string NombrePromocion { get; set; } = "";
+    [BindProperty] public string NombrePromocion { get; set; } = "";
     [BindProperty] public string TipoPromocion { get; set; } = "";
     [BindProperty] public decimal PorcentajePromo { get; set; }
     [BindProperty] public DateOnly FechaInicio { get; set; } = DateOnly.FromDateTime(DateTime.Today);
-[BindProperty] public DateOnly FechaFin { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddMonths(1));
+    [BindProperty] public DateOnly FechaFin { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddMonths(1));
     [BindProperty] public bool Acumulable { get; set; }
     [BindProperty] public List<int> ProductosIds { get; set; } = new();
 
@@ -51,12 +51,23 @@ public class PreciosReglasPromocionesModel : PageModel
     public async Task<IActionResult> OnPostCrearMicaAsync()
     {
         ActiveTab = "micas";
-        ModelState.Remove("NombrePromocion");
-        
-        if (!ModelState.IsValid)
+        ModelState.Clear();
+
+        if (string.IsNullOrWhiteSpace(Material) || Precio <= 0)
         {
-            await CargarDatosBasicosAsync();
-            return Page();
+            TempData["ErrorMessage"] = "Los datos ingresados no son válidos.";
+            return RedirectToPage();
+        }
+
+        bool existeCombinacion = await _context.Micas.AnyAsync(m => 
+            m.Material == Material && 
+            m.Tratamiento == Tratamiento && 
+            m.RangoGraduacion == RangoGraduacion);
+
+        if (existeCombinacion)
+        {
+            TempData["ErrorMessage"] = "Esta combinación de Mica ya está registrada en la matriz de precios.";
+            return RedirectToPage();
         }
 
         var nuevaMica = new Mica
@@ -77,10 +88,7 @@ public class PreciosReglasPromocionesModel : PageModel
     public async Task<IActionResult> OnPostGuardarParametrosAsync()
     {
         ActiveTab = "parametros";
-        ModelState.Remove("Material");
-        ModelState.Remove("Tratamiento");
-        ModelState.Remove("RangoGraduacion");
-        ModelState.Remove("NombrePromocion");
+        ModelState.Clear();
 
         var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
         if (param != null)
@@ -101,18 +109,16 @@ public class PreciosReglasPromocionesModel : PageModel
         }
 
         await _context.SaveChangesAsync();
-        TempData["SuccessMessage"] = "Parámetros actualizados exitosamente.";
+        TempData["SuccessMessage"] = "Parámetros actualizados exitosamente en la base de datos.";
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostCrearPromocionAsync()
     {
         ActiveTab = "promociones";
-        ModelState.Remove("Material");
-        ModelState.Remove("Tratamiento");
-        ModelState.Remove("RangoGraduacion");
+        ModelState.Clear();
 
-        if (!ModelState.IsValid)
+        if (string.IsNullOrWhiteSpace(NombrePromocion))
         {
             await CargarDatosBasicosAsync();
             return Page();
@@ -141,19 +147,21 @@ public class PreciosReglasPromocionesModel : PageModel
                     var producto = await _context.Productos.FindAsync(prodId);
                     if (producto != null)
                     {
-                        nuevaPromo.Productos.Add(producto);
+                        // EF Core mapeó la colección como "IdProductos"
+                        nuevaPromo.IdProductos.Add(producto);
                     }
                 }
                 await _context.SaveChangesAsync();
             }
 
             await transaction.CommitAsync();
-            TempData["SuccessMessage"] = "Promoción registrada exitosamente.";
+            TempData["SuccessMessage"] = "Promoción registrada exitosamente en la base de datos.";
         }
-        catch
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw;
+            Console.WriteLine($"Error en transacción: {ex.Message}");
+            TempData["ErrorMessage"] = "Hubo un error al guardar la promoción en la base de datos.";
         }
 
         return RedirectToPage();
@@ -167,7 +175,7 @@ public class PreciosReglasPromocionesModel : PageModel
         {
             _context.Micas.Remove(mica);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Mica eliminada exitosamente.";
+            TempData["SuccessMessage"] = "Mica eliminada de la base de datos.";
         }
         return RedirectToPage();
     }
@@ -175,12 +183,13 @@ public class PreciosReglasPromocionesModel : PageModel
     public async Task<IActionResult> OnPostEliminarPromocionAsync(int id)
     {
         ActiveTab = "promociones";
-        var promo = await _context.Promociones.FindAsync(id);
+        // Usamos IdProductos en el Include
+        var promo = await _context.Promociones.Include(p => p.IdProductos).FirstOrDefaultAsync(p => p.IdPromocion == id);
         if (promo != null)
         {
             _context.Promociones.Remove(promo);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Promoción eliminada exitosamente.";
+            TempData["SuccessMessage"] = "Promoción eliminada de la base de datos.";
         }
         return RedirectToPage();
     }

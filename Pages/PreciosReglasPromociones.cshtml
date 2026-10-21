@@ -11,9 +11,7 @@
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="h5 mb-1 fw-bold">Gestión de Precios, Parámetros y Promociones</h2>
-                <p class="text-muted small mb-0">HU-08: Configuración general de la óptica</p>
             </div>
-            <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2">Rol: Encargado</span>
         </div>
     </div>
 
@@ -187,41 +185,57 @@
                             <select id="tipoPromo" name="TipoPromocion" class="form-select" required onchange="cambiarSimbologia(this)">
                                 <option value="Porcentaje">Porcentaje (%)</option>
                                 <option value="MontoFijo">Monto Fijo ($)</option>
-                                <option value="Paquete">Paquete ($)</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <label for="valorPromo" class="form-label">Valor</label>
                             <div class="input-group">
                                 <span class="input-group-text" id="simboloPromo">%</span>
-                                <input type="number" id="valorPromo" name="PorcentajePromo" class="form-control" placeholder="15" step="0.01" min="0.1" required />
+                                <input type="number" id="valorPromo" name="PorcentajePromo" class="form-control" placeholder="" step="0.01" min="0.1" required />
                             </div>
                         </div>
                         <div class="col-md-5">
-                            <label for="productosPromo" class="form-label">Aplica a (Selecciona los productos)</label>
-                            <select id="productosPromo" name="ProductosIds" class="form-select" multiple size="2" required>
-                                @if (Model.ListaProductos != null && Model.ListaProductos.Count > 0)
-                                {
-                                    foreach (var prod in Model.ListaProductos)
-                                    {
-                                        <option value="@prod.IdProducto">@prod.Nombre</option>
-                                    }
-                                }
-                                else
-                                {
-                                    <option value="" disabled>No hay productos en BD</option>
-                                }
-                            </select>
-                            <small class="text-muted" style="font-size: 0.75rem;">Mantén presionado Ctrl (o Cmd) para elegir varios.</small>
-                        </div>
+        <label class="form-label">Aplica a (Selecciona los productos)</label>
+        <div class="dropdown w-100">
+            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start bg-white text-dark border" type="button" id="dropdownProductos" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                Seleccionar productos...
+            </button>
+            <ul class="dropdown-menu w-100 shadow p-2" aria-labelledby="dropdownProductos" style="max-height: 250px; overflow-y: auto;">
+                <li class="mb-2">
+                    <input type="text" class="form-control form-control-sm" id="buscarProducto" placeholder="Buscar por nombre..." oninput="filtrarProductos()">
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <div id="listaProductos">
+                    @if (Model.ListaProductos != null && Model.ListaProductos.Count > 0)
+                    {
+                        foreach (var prod in Model.ListaProductos)
+                        {
+                            <li class="dropdown-item px-2 py-1" style="cursor: pointer;" onclick="toggleCheckbox('prod_@prod.IdProducto')">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input check-producto" type="checkbox" name="ProductosIds" value="@prod.IdProducto" id="prod_@prod.IdProducto" onclick="event.stopPropagation(); actualizarTextoDropdown();">
+                                    <label class="form-check-label w-100" for="prod_@prod.IdProducto" style="cursor: pointer;" onclick="event.stopPropagation();">
+                                        @prod.Nombre
+                                    </label>
+                                </div>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li><span class="dropdown-item-text text-muted small">No hay productos en BD</span></li>
+                    }
+                </div>
+            </ul>
+        </div>
+    </div>
 
                         <div class="col-md-3">
                             <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
-                            <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" required />
+                            <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
                         <div class="col-md-3">
                             <label for="vigenciaPromo" class="form-label">Vigencia (Fin)</label>
-                            <input type="date" id="vigenciaPromo" name="FechaFin" class="form-control" required />
+                            <input type="date" id="vigenciaPromo" name="FechaFin" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
                         <div class="col-md-3 d-flex align-items-center">
                             <div class="form-check pt-4">
@@ -304,42 +318,106 @@
         </div>
     </div>
     
-    <!-- MODAL DE OPERACIÓN EXITOSA -->
-    <div class="modal fade" id="modalExito" tabindex="-1" aria-labelledby="modalExitoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center border-0 shadow">
-                <div class="modal-header border-0 pb-0 justify-content-between" style="background-color: #198754;">
-                    <h5 class="modal-title text-white fw-bold ps-3" id="modalExitoLabel">Operación Exitosa</h5>
-                    <button type="button" class="btn-close btn-close-white me-2 mt-2" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-5">
-                    <div class="mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" fill="#6f42c1" class="bi bi-check-lg" viewBox="0 0 16 16" style="stroke: #6f42c1; stroke-width: 1.5;">
-                            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
-                        </svg>
-                    </div>
-                    <p class="fs-5 text-dark mb-0" id="mensajeExitoTexto">El registro fue guardado exitosamente.</p>
-                </div>
-                <div class="modal-footer justify-content-center border-0 pb-4 pt-0">
-                    <button type="button" class="btn btn-success px-5" data-bs-dismiss="modal" style="background-color: #198754; border-color: #198754;">Aceptar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<partial name="Modales/_ModalesPreciosReglasPromociones" />
 </div>
 
 @section Scripts {
     <script>
-        // Función para cambiar dinámicamente el símbolo % a $ en el formulario de Promociones
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Limpieza de capas oscuras o clases huérfanas de Bootstrap
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            // 2. Control dinámico de Fechas (Inicio vs Fin)
+            const fechaInicio = document.getElementById('fechaInicio');
+            const fechaFin = document.getElementById('vigenciaPromo');
+
+            if (fechaInicio && fechaFin) {
+                fechaInicio.addEventListener('change', function() {
+                    fechaFin.min = this.value;
+                    if (fechaFin.value && fechaFin.value < this.value) {
+                        fechaFin.value = this.value;
+                    }
+                });
+            }
+
+            // 3. Mostrar Modal de Éxito de forma segura sin duplicar el fondo gris
+            var mensajeExito = "@Html.Raw(TempData["SuccessMessage"])";
+            if (mensajeExito && mensajeExito.trim() !== "") {
+                var modalExitoEl = document.getElementById('modalExito');
+                if (modalExitoEl) {
+                    var textoEl = document.getElementById('mensajeExitoTexto');
+                    if (textoEl) {
+                        textoEl.innerHTML = mensajeExito;
+                    }
+                    // Usa getOrCreateInstance para evitar duplicar .modal-backdrop
+                    var modalExito = bootstrap.Modal.getOrCreateInstance(modalExitoEl);
+                    modalExito.show();
+                }
+            }
+
+            // 4. Alertas de Error
+            var mensajeError = "@Html.Raw(TempData["ErrorMessage"])";
+            if (mensajeError && mensajeError.trim() !== "") {
+                alert(mensajeError);
+            }
+        });
+
+        // Cambiar símbolo de Promoción (% o $)
         function cambiarSimbologia(selectElement) {
             var simbolo = document.getElementById('simboloPromo');
-            if (selectElement.value === 'Porcentaje') {
-                simbolo.textContent = '%';
+            if (simbolo) {
+                simbolo.textContent = selectElement.value === 'Porcentaje' ? '%' : '$';
+            }
+        }
+
+        // Buscador de Productos en tiempo real
+        function filtrarProductos() {
+            var input = document.getElementById("buscarProducto").value.toLowerCase().trim();
+            var lista = document.getElementById("listaProductos");
+            if (!lista) return;
+            var items = lista.getElementsByTagName("li");
+
+            for (var i = 0; i < items.length; i++) {
+                var label = items[i].getElementsByTagName("label")[0];
+                if (label) {
+                    var texto = label.textContent || label.innerText;
+                    if (texto.toLowerCase().indexOf(input) > -1) {
+                        items[i].style.setProperty("display", "", "important");
+                    } else {
+                        items[i].style.setProperty("display", "none", "important");
+                    }
+                }
+            }
+        }
+
+        // Selección visual de checkboxes
+        function toggleCheckbox(id) {
+            var checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                actualizarTextoDropdown();
+            }
+        }
+
+        function actualizarTextoDropdown() {
+            var seleccionados = document.querySelectorAll('.check-producto:checked').length;
+            var btn = document.getElementById('dropdownProductos');
+            if (!btn) return;
+            
+            if (seleccionados === 0) {
+                btn.textContent = "Seleccionar productos...";
+            } else if (seleccionados === 1) {
+                btn.textContent = "1 producto seleccionado";
             } else {
-                simbolo.textContent = '$';
+                btn.textContent = seleccionados + " productos seleccionados";
             }
         }
     </script>
+}
+    
     @if (TempData["SuccessMessage"] != null)
     {
         <script>
@@ -353,4 +431,11 @@
             });
         </script>
     }
+    @if (TempData["ErrorMessage"] != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            alert("@Html.Raw(TempData["ErrorMessage"])");
+        });
+    </script>
 }

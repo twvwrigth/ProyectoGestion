@@ -22,11 +22,11 @@ namespace Proyecto.Pages
         public Cliente ClienteActual { get; set; }
 
         // Historial de recetas anteriores del cliente
-        public List<Recetum> RecetasAnteriores { get; set; } = new List<Recetum>();
+        public List<Receta> RecetasAnteriores { get; set; } = new List<Receta>();
 
         // Variables ligadas al formulario HTML
         [BindProperty]
-        public Recetum NuevaReceta { get; set; }
+        public Receta NuevaReceta { get; set; }
 
         // --- MÉTODO 1: SE EJECUTA AL ABRIR LA PÁGINA ---
         public async Task<IActionResult> OnGetAsync(int idCliente)

@@ -27,7 +27,7 @@ public partial class Cotizacion
 
     public virtual Empleado IdEmpleadoNavigation { get; set; } = null!;
 
-    public virtual Recetum IdRecetaNavigation { get; set; } = null!;
+    public virtual Receta IdRecetaNavigation { get; set; } = null!;
 
     public virtual ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 }

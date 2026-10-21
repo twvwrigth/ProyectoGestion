@@ -48,7 +48,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Promocion> Promociones { get; set; }
 
-    public virtual DbSet<Recetum> Receta { get; set; }
+    public virtual DbSet<Receta> Receta { get; set; }
 
     public virtual DbSet<Reparacion> Reparaciones { get; set; }
 
@@ -97,8 +97,6 @@ public partial class MiApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.IdProducto, "fk_armazon_producto");
 
-            entity.HasIndex(e => e.IdPromocion, "fk_armazon_promo");
-
             entity.Property(e => e.CodigoArmazon)
                 .ValueGeneratedNever()
                 .HasColumnName("codigoArmazon");
@@ -107,7 +105,6 @@ public partial class MiApplicationDbContext : DbContext
                 .HasColumnName("clase");
             entity.Property(e => e.IdClasePrecio).HasColumnName("idClasePrecio");
             entity.Property(e => e.IdProducto).HasColumnName("idProducto");
-            entity.Property(e => e.IdPromocion).HasColumnName("idPromocion");
             entity.Property(e => e.Marca)
                 .HasMaxLength(20)
                 .HasColumnName("marca");
@@ -133,9 +130,7 @@ public partial class MiApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_armazon_producto");
 
-            entity.HasOne(d => d.IdPromocionNavigation).WithMany(p => p.Armazones)
-                .HasForeignKey(d => d.IdPromocion)
-                .HasConstraintName("fk_armazon_promo");
+
         });
 
         modelBuilder.Entity<Bitacora>(entity =>
@@ -474,14 +469,12 @@ public partial class MiApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.IdClasePrecio, "fk_producto_clase");
 
-            entity.HasIndex(e => e.IdPromocion, "fk_producto_promo");
 
             entity.Property(e => e.IdProducto).HasColumnName("idProducto");
             entity.Property(e => e.Existencia)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("existencia");
             entity.Property(e => e.IdClasePrecio).HasColumnName("idClasePrecio");
-            entity.Property(e => e.IdPromocion).HasColumnName("idPromocion");
             entity.Property(e => e.Nombre)
                 .HasMaxLength(20)
                 .HasColumnName("nombre");
@@ -496,9 +489,6 @@ public partial class MiApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdClasePrecio)
                 .HasConstraintName("fk_producto_clase");
 
-            entity.HasOne(d => d.IdPromocionNavigation).WithMany(p => p.Productos)
-                .HasForeignKey(d => d.IdPromocion)
-                .HasConstraintName("fk_producto_promo");
         });
 
         modelBuilder.Entity<Promocion>(entity =>
@@ -544,9 +534,9 @@ public partial class MiApplicationDbContext : DbContext
                     });
         });
 
-        modelBuilder.Entity<Recetum>(entity =>
-{
-    entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
+        modelBuilder.Entity<Receta>(entity =>
+        {
+            entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
 
     entity.ToTable("receta");
 
@@ -721,3 +711,4 @@ public partial class MiApplicationDbContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+ 

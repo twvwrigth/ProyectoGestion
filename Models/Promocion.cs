@@ -21,7 +21,5 @@ public partial class Promocion
 
     public virtual ICollection<Armazon> Armazones { get; set; } = new List<Armazon>();
 
-    public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
-
     public virtual ICollection<Producto> IdProductos { get; set; } = new List<Producto>();
 }

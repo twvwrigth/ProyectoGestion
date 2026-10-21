@@ -19,7 +19,7 @@ public partial class Cliente
 
     public virtual ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 
-    public virtual ICollection<Recetum> Receta { get; set; } = new List<Recetum>();
+    public virtual ICollection<Receta> Receta { get; set; } = new List<Receta>();
 
     public virtual ICollection<Reparacion> Reparacions { get; set; } = new List<Reparacion>();
 
