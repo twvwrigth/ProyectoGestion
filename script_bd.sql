@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.46
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -78,6 +78,7 @@ CREATE TABLE `armazon` (
 
 LOCK TABLES `armazon` WRITE;
 /*!40000 ALTER TABLE `armazon` DISABLE KEYS */;
+INSERT INTO `armazon` VALUES (1,1,NULL,NULL,'Timberland','01','Pasta',NULL,NULL,1);
 /*!40000 ALTER TABLE `armazon` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -150,7 +151,7 @@ CREATE TABLE `cliente` (
   `telefono` varchar(10) DEFAULT NULL,
   `avisoPrivacidad` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idCliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -159,6 +160,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
+INSERT INTO `cliente` VALUES (1,'Edgar Alejandro Cortez martinez',NULL,0);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -220,7 +222,7 @@ CREATE TABLE `empleado` (
   KEY `fk_empleado_laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -229,7 +231,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,4,1,'Sosa Seso','sosasosa','1234',1,0),(3,3,NULL,'Ximena','ximenaximena','contrasenaximenaximena',1,0);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -248,7 +250,7 @@ CREATE TABLE `gafas_sol` (
   PRIMARY KEY (`idGafasSol`),
   KEY `fk_gafas_producto` (`idProducto`),
   CONSTRAINT `fk_gafas_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -257,6 +259,7 @@ CREATE TABLE `gafas_sol` (
 
 LOCK TABLES `gafas_sol` WRITE;
 /*!40000 ALTER TABLE `gafas_sol` DISABLE KEYS */;
+INSERT INTO `gafas_sol` VALUES (1,2,'asdas',5);
 /*!40000 ALTER TABLE `gafas_sol` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -331,7 +334,7 @@ CREATE TABLE `lista_espera` (
   PRIMARY KEY (`idLista`),
   KEY `fk_lista_cliente` (`idCliente`),
   CONSTRAINT `fk_lista_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -340,6 +343,7 @@ CREATE TABLE `lista_espera` (
 
 LOCK TABLES `lista_espera` WRITE;
 /*!40000 ALTER TABLE `lista_espera` DISABLE KEYS */;
+INSERT INTO `lista_espera` VALUES (1,1,'2026-10-20 17:59:46',0);
 /*!40000 ALTER TABLE `lista_espera` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -453,7 +457,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_promo` (`idPromocion`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`),
   CONSTRAINT `fk_producto_promo` FOREIGN KEY (`idPromocion`) REFERENCES `promocion` (`idPromocion`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -462,6 +466,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
+INSERT INTO `producto` VALUES (1,NULL,NULL,'Timberland 01',6,0,2500.00),(2,NULL,NULL,'asdas',12,0,2222.00);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -531,14 +536,23 @@ CREATE TABLE `receta` (
   `idReceta` int NOT NULL AUTO_INCREMENT,
   `idCliente` int NOT NULL,
   `idEmpleado` int NOT NULL,
-  `esfera` varchar(15) DEFAULT NULL,
-  `cilindro` varchar(15) DEFAULT NULL,
-  `eje` varchar(15) DEFAULT NULL,
   `distanciaPupilar` varchar(15) DEFAULT NULL,
   `fecha` date NOT NULL,
   `vigencia` date NOT NULL,
   `recetaExterna` tinyint(1) DEFAULT '0',
   `emisor` varchar(50) DEFAULT NULL,
+  `esferaOD` varchar(15) DEFAULT NULL,
+  `cilindroOD` varchar(15) DEFAULT NULL,
+  `ejeOD` varchar(15) DEFAULT NULL,
+  `adicionOD` varchar(15) DEFAULT NULL,
+  `esferaOI` varchar(15) DEFAULT NULL,
+  `cilindroOI` varchar(15) DEFAULT NULL,
+  `ejeOI` varchar(15) DEFAULT NULL,
+  `adicionOI` varchar(15) DEFAULT NULL,
+  `altura` varchar(15) DEFAULT NULL,
+  `tipoMica` varchar(50) DEFAULT NULL,
+  `micaMinima` varchar(100) DEFAULT NULL,
+  `micaRecomendada` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`idReceta`),
   KEY `fk_receta_cliente` (`idCliente`),
   KEY `fk_receta_empleado` (`idEmpleado`),
@@ -685,4 +699,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-20 17:21:07
+-- Dump completed on 2026-10-20 18:22:05
