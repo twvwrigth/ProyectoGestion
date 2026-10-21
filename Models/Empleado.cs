@@ -31,9 +31,9 @@ public partial class Empleado
 
     public virtual Rol IdRolNavigation { get; set; } = null!;
 
-    public virtual ICollection<Receta> Receta { get; set; } = new List<Receta>();
+    public virtual ICollection<Recetum> Receta { get; set; } = new List<Recetum>();
 
-    public virtual ICollection<Reparacion> Reparaciones { get; set; } = new List<Reparacion>();
+    public virtual ICollection<Reparacion> Reparacions { get; set; } = new List<Reparacion>();
 
     public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
 }

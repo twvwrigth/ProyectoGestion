@@ -1,0 +1,193 @@
+@page
+@model Proyecto.Pages.ExamenModel
+@{
+    ViewData["Title"] = "Examen Visual";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+        <h2>Examen Visual - @Model.ClienteActual?.Nombre</h2>
+        <span class="badge bg-primary fs-6">Optometría</span>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <strong>Atención:</strong> @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    <form method="post" asp-page-handler="GuardarReceta" id="formExamen">
+        <input type="hidden" name="idCliente" value="@Model.ClienteActual?.IdCliente" />
+
+        <div class="row">
+            <!-- Panel Central: Graduación -->
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between">
+                        <h5 class="mb-0">Captura de Graduación</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" asp-for="NuevaReceta.RecetaExterna" id="checkExterna">
+                            <label class="form-check-label text-white" for="checkExterna">Es Receta Externa</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Datos Externos (Ocultos por defecto) -->
+                        <div id="datosExterna" class="row mb-3 p-3 bg-light rounded" style="display: none;">
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">Emisor (Clínica/Doctor)</label>
+                                <input type="text" class="form-control form-control-sm" asp-for="NuevaReceta.Emisor" id="inputEmisor">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold small">Fecha de la Receta</label>
+                                <input type="date" class="form-control form-control-sm" asp-for="NuevaReceta.Fecha" id="inputFechaExterna" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+
+                        <!-- Cuadrícula de Ojos -->
+                        <table class="table table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ojo</th>
+                                    <th>Esfera (ESF)</th>
+                                    <th>Cilindro (CIL)</th>
+                                    <th>Eje</th>
+                                    <th>Adición (ADD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold bg-light">Derecho (OD)</td>
+                                    <td><input type="text" class="form-control text-center" asp-for="NuevaReceta.EsferaOD" placeholder="0.00"></td>
+                                    <td><input type="text" class="form-control text-center cil-input" asp-for="NuevaReceta.CilindroOD" data-ojo="OD" placeholder="0.00"></td>
+                                    <td><input type="text" class="form-control text-center eje-input" asp-for="NuevaReceta.EjeOD" id="ejeOD" placeholder="°"></td>
+                                    <td><input type="text" class="form-control text-center" asp-for="NuevaReceta.AdicionOD" placeholder="+0.00"></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold bg-light">Izquierdo (OI)</td>
+                                    <td><input type="text" class="form-control text-center" asp-for="NuevaReceta.EsferaOI" placeholder="0.00"></td>
+                                    <td><input type="text" class="form-control text-center cil-input" asp-for="NuevaReceta.CilindroOI" data-ojo="OI" placeholder="0.00"></td>
+                                    <td><input type="text" class="form-control text-center eje-input" asp-for="NuevaReceta.EjeOI" id="ejeOI" placeholder="°"></td>
+                                    <td><input type="text" class="form-control text-center" asp-for="NuevaReceta.AdicionOI" placeholder="+0.00"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Distancia Pupilar (DP)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" asp-for="NuevaReceta.DistanciaPupilar" placeholder="Ej. 62/60">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Altura</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" asp-for="NuevaReceta.Altura" placeholder="Ej. 22">
+                                    <span class="input-group-text">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Opciones de Mica y Guardar -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-info mb-3">
+                    <div class="card-header bg-info text-dark fw-bold">
+                        Opciones para Ventas
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Tipo de Mica</label>
+                            <select class="form-select" asp-for="NuevaReceta.TipoMica" required>
+                                <option value="" selected disabled>Seleccione...</option>
+                                <option value="Monofocal">Monofocal</option>
+                                <option value="Bifocal">Bifocal</option>
+                                <option value="Progresivo">Progresivo</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Opción Mínima (Obligatorio)</label>
+                            <input type="text" class="form-control" asp-for="NuevaReceta.MicaMinima" placeholder="Ej. CR-39 Blanco" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Opción Recomendada (Obligatorio)</label>
+                            <input type="text" class="form-control" asp-for="NuevaReceta.MicaRecomendada" placeholder="Ej. Policarbonato Antirreflejante" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm">Guardar Receta y Finalizar</button>
+                <a href="/ListaEspera" class="btn btn-outline-secondary w-100 mt-2">Cancelar y Volver</a>
+            </div>
+        </div>
+    </form>
+    @section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Lógica para Receta Externa
+            const checkExterna = document.getElementById('checkExterna');
+            const datosExterna = document.getElementById('datosExterna');
+            const inputEmisor = document.getElementById('inputEmisor');
+
+            checkExterna.addEventListener('change', function () {
+                if (this.checked) {
+                    datosExterna.style.display = 'flex';
+                    inputEmisor.setAttribute('required', 'required');
+                } else {
+                    datosExterna.style.display = 'none';
+                    inputEmisor.removeAttribute('required');
+                }
+            });
+
+            // Regla de Negocio: Exigir Eje si hay Cilindro
+            const formExamen = document.getElementById('formExamen');
+            const inputsCilindro = document.querySelectorAll('.cil-input');
+            
+            inputsCilindro.forEach(input => {
+                input.addEventListener('input', function() {
+                    const ojo = this.getAttribute('data-ojo');
+                    const inputEje = document.getElementById('eje' + ojo);
+                    
+                    // Si el cilindro tiene algún valor que no sea 0 o vacío, el eje es obligatorio
+                    const valor = parseFloat(this.value);
+                    if (this.value.trim() !== '' && !isNaN(valor) && valor !== 0) {
+                        inputEje.setAttribute('required', 'required');
+                        inputEje.classList.add('border-danger'); // Indicador visual
+                    } else {
+                        inputEje.removeAttribute('required');
+                        inputEje.classList.remove('border-danger');
+                    }
+                });
+            });
+
+            // Validación final antes de enviar
+            formExamen.addEventListener('submit', function(event) {
+                let valid = true;
+                inputsCilindro.forEach(input => {
+                    const ojo = input.getAttribute('data-ojo');
+                    const inputEje = document.getElementById('eje' + ojo);
+                    const valorCilindro = parseFloat(input.value);
+                    
+                    if (input.value.trim() !== '' && !isNaN(valorCilindro) && valorCilindro !== 0) {
+                        if (inputEje.value.trim() === '') {
+                            valid = false;
+                            inputEje.focus();
+                        }
+                    }
+                });
+
+                if (!valid) {
+                    event.preventDefault();
+                    alert("Regla del sistema: Si capturas un Cilindro, el Eje correspondiente es obligatorio.");
+                }
+            });
+        });
+    </script>
+}
+</div>

@@ -32,4 +32,6 @@ public partial class Producto
     public virtual ICollection<Inventario> Inventarios { get; set; } = new List<Inventario>();
 
     public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
+
+    public virtual ICollection<Promocion> IdPromociones { get; set; } = new List<Promocion>();
 }
