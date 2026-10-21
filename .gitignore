@@ -33,6 +33,7 @@ artifacts/
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 .env
-appsettings.Development.json
-Program.cs
+
+# Ignorar archivos de configuración para no subir credenciales reales de BD
 appsettings.json
+appsettings.Development.json
