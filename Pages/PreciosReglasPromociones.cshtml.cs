@@ -184,7 +184,7 @@ public class PreciosReglasPromocionesModel : PageModel
     {
         ActiveTab = "promociones";
         // Usamos IdProductos en el Include
-        var promo = await _context.Promocions.Include(p => p.IdProductos).FirstOrDefaultAsync(p => p.IdPromocion == id);
+        var promo = await _context.Promociones.Include(p => p.IdProductos).FirstOrDefaultAsync(p => p.IdPromocion == id);
         if (promo != null)
         {
             _context.Promociones.Remove(promo);
