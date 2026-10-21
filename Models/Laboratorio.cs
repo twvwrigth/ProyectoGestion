@@ -15,7 +15,7 @@ public partial class Laboratorio
 
     public string? TipoLaboratorio { get; set; }
 
-    public bool Activo { get; set; } = true;
+    public bool? Activo { get; set; }
 
     public virtual ICollection<Empleado> Empleados { get; set; } = new List<Empleado>();
 
