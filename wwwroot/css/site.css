@@ -1,5 +1,7 @@
+/* Responsive font scaling */
 html {
   font-size: 14px;
+  height: 100%; /* Requerido para ajustar a la pantalla */
 }
 
 @media (min-width: 768px) {
@@ -8,19 +10,28 @@ html {
   }
 }
 
+/* Estructura Flexbox para evitar scroll falso en pantallas vacías */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  overflow-x: hidden;
+  /* Se eliminó margin-bottom: 60px; que causaba la barra de desplazamiento */
+}
+
+.main-wrapper, .cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Focus styles */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
+/* Floating labels placeholder alignment */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;

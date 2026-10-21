@@ -11,9 +11,9 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <!-- Se retiró mb-3 del nav para evitar scroll innecesario -->
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container">
-                <!-- Marca / Logo de la Óptica -->
                 <a class="navbar-brand d-flex align-items-center fw-bold text-primary" asp-area="" asp-page="/Index">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
                         <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
@@ -29,7 +29,6 @@
                     <ul class="navbar-nav flex-grow-1">
                         @if (User.Identity!.IsAuthenticated)
                         {
-                            <!-- VISTAS EXCLUSIVAS DEL ENCARGADO -->
                             @if (User.IsInRole("Encargado"))
                             {
                                 <li class="nav-item">
@@ -46,14 +45,13 @@
                                 </li>
                             }
 
-                            <!-- VISTAS COMPARTIDAS (Encargado y Vendedor) -->
                             @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/catalogo">Catálogo</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeClientes">Clientes</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/clientes">Clientes</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/listaespera">Lista de espera</a>
@@ -62,7 +60,6 @@
                         }
                     </ul>
                     
-                    <!-- Menú de Usuario (Derecha) -->
                     <ul class="navbar-nav">
                         @if (User.Identity!.IsAuthenticated)
                         {
@@ -91,18 +88,13 @@
         </nav>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="main-wrapper container-fluid px-0">
+        <main role="main" class="cuerpo">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-light mt-auto">
-        <div class="container text-center py-3">
-            &copy; 2026 - Sistema de Gestión Óptica
-        </div>
-    </footer>
-
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

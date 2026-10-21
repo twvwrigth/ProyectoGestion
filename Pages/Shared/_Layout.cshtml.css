@@ -1,7 +1,9 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
+
+/* Asegura que la página ocupe al menos el 100% del alto de la pantalla */
 html {
-  height: 100vh;
+  height: 100%;
 }
 
 body {
@@ -9,6 +11,20 @@ body {
   display: flex;
   flex-direction: column;
   margin: 0;
+}
+
+/* El contenedor intermedio se expande verticalmente */
+.main-wrapper {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* El cuerpo principal ocupa todo el espacio vertical disponible */
+.cuerpo {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
 a.navbar-brand {
@@ -49,18 +65,20 @@ button.accept-policy {
   line-height: inherit;
 }
 
+/* Pie de página dinámico (Sticky Footer) */
 .footer {
-  position: absolute;
-  bottom: 0;
+  position: static;
   width: 100%;
   white-space: nowrap;
   line-height: 60px;
+  margin-top: auto;
 }
-
 
 /*Gestion De empleados*/
 .contenedor {
   background-color: gray;
+  display: flex;
+  flex: 1;
 }
 
 .contenido {
