@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Proyecto</title>
+    <title>@ViewData["Title"] - Óptica</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -13,7 +13,13 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Proyecto</a>
+                <!-- Marca / Logo de la Óptica -->
+                <a class="navbar-brand d-flex align-items-center fw-bold text-primary" asp-area="" asp-page="/Index">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
+                        <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
+                    </svg>
+                    Óptica
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,30 +27,22 @@
                 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <!-- Vistas Públicas / Generales -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
-                        </li>
-
                         @if (User.Identity!.IsAuthenticated)
                         {
                             <!-- VISTAS EXCLUSIVAS DEL ENCARGADO -->
                             @if (User.IsInRole("Encargado"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/GestionDeEmpleados">Gestión de empleados</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeEmpleados">Gestión de empleados</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/PreciosReglasPromociones">Precios y promociones</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/PreciosReglasPromociones">Precios y promociones</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/GestionDeLaboratorios">Gestión de laboratorios</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeLaboratorios">Gestión de laboratorios</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/cotizacion">Cotización</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/cotizacion">Cotización</a>
                                 </li>
                             }
 
@@ -52,13 +50,13 @@
                             @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/catalogo">Catálogo</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/catalogo">Catálogo</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/clientes">Clientes</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/clientes">Clientes</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-page="/listaespera">Lista de espera</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/listaespera">Lista de espera</a>
                                 </li>
                             }
                         }
@@ -69,18 +67,22 @@
                         @if (User.Identity!.IsAuthenticated)
                         {
                             <li class="nav-item d-flex align-items-center">
-                                <span class="navbar-text me-3">
+                                <span class="navbar-text me-3 text-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1 mb-1" viewBox="0 0 16 16">
+                                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                    </svg>
                                     Hola, <strong>@User.Identity.Name</strong>
                                 </span>
                                 <form method="post" asp-page="/Logout" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Cerrar Sesión</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark fw-bold" asp-area="" asp-page="/Login">Iniciar Sesión</a>
+                                <a class="btn btn-primary btn-sm rounded-pill px-4 mt-1" asp-area="" asp-page="/Login">Iniciar Sesión</a>
                             </li>
                         }
                     </ul>
@@ -95,9 +97,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Proyecto - <a asp-area="" asp-page="/Privacy">Privacy</a>
+    <footer class="border-top footer text-muted bg-light mt-auto">
+        <div class="container text-center py-3">
+            &copy; 2026 - Sistema de Gestión Óptica
         </div>
     </footer>
 
