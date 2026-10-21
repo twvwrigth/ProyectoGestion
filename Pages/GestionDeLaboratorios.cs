@@ -69,25 +69,47 @@ namespace Proyecto.Pages.Laboratorios
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostCrearUsuarioLaboratorioAsync(int laboratorioId, string nombreEmpleado, string usuario, string passwordTemporal)
+        public async Task<IActionResult> OnPostCrearUsuarioLaboratorioAsync(int laboratorioId, string nombreEmpleado, string usuario, string? passwordTemporal)
         {
+            // Validar formato de correo electrónico
+            var emailAttribute = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (string.IsNullOrWhiteSpace(usuario) || !emailAttribute.IsValid(usuario))
+            {
+                TempData["ErrorUsuario"] = "El formato del correo electrónico no es válido.";
+                return RedirectToPage();
+            }
+
+            // Verificar si el correo ya existe
+            if (await _context.Empleados.AnyAsync(e => e.Usuario.ToLower() == usuario.Trim().ToLower()))
+            {
+                TempData["ErrorUsuario"] = "El correo electrónico ya se encuentra registrado.";
+                return RedirectToPage();
+            }
+
             var rolLab = await _context.Roles.FirstOrDefaultAsync(r => r.NombreRol == "Laboratorista");
 
             if (rolLab != null)
             {
+                string passwordAsignada = string.IsNullOrWhiteSpace(passwordTemporal)
+                                            ? "contrasena" + usuario.Trim()
+                                            : passwordTemporal.Trim();
+
                 var nuevoEmpleado = new Empleado
                 {
                     IdLaboratorio = laboratorioId,
                     IdRol = rolLab.IdRol,
-                    Nombre = nombreEmpleado,
-                    Usuario = usuario,
-                    Contrasena = passwordTemporal,
+                    Nombre = nombreEmpleado.Trim(),
+                    Usuario = usuario.Trim(),
+                    Contrasena = passwordAsignada,
                     Activo = true,
                     IntentosContrasena = 0
                 };
 
                 _context.Empleados.Add(nuevoEmpleado);
                 await _context.SaveChangesAsync();
+
+                // Mensaje de éxito guardado en TempData
+                TempData["MensajeUsuarioCreado"] = $"El laboratorista '{nuevoEmpleado.Nombre}' ha sido creado exitosamente.";
             }
 
             return RedirectToPage();
