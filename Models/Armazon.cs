@@ -11,8 +11,6 @@ public partial class Armazon
 
     public int? IdClasePrecio { get; set; }
 
-    public int? IdPromocion { get; set; }
-
     public string? Marca { get; set; }
 
     public string? Modelo { get; set; }
@@ -29,5 +27,4 @@ public partial class Armazon
 
     public virtual Producto IdProductoNavigation { get; set; } = null!;
 
-    public virtual Promocion? IdPromocionNavigation { get; set; }
 }

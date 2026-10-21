@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Proyecto.Models;
 
-public partial class Recetum
+public partial class Receta
 {
     public int IdReceta { get; set; }
 

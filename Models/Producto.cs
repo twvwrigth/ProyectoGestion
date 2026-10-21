@@ -9,8 +9,6 @@ public partial class Producto
 
     public int? IdClasePrecio { get; set; }
 
-    public int? IdPromocion { get; set; }
-
     public string Nombre { get; set; } = null!;
 
     public int? Existencia { get; set; }
@@ -26,8 +24,6 @@ public partial class Producto
     public virtual ICollection<GafasSol> GafasSolList { get; set; } = new List<GafasSol>();
 
     public virtual ClasePrecio? IdClasePrecioNavigation { get; set; }
-
-    public virtual Promocion? IdPromocionNavigation { get; set; }
 
     public virtual ICollection<Inventario> Inventarios { get; set; } = new List<Inventario>();
 
