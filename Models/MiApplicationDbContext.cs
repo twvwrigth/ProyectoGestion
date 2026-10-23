@@ -22,6 +22,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Bitacora> Bitacoras { get; set; }
 
+    public virtual DbSet<CajaTurno> CajaTurno { get; set; }
+
     public virtual DbSet<ClasePrecio> ClasePrecios { get; set; }
 
     public virtual DbSet<Cliente> Clientes { get; set; }
@@ -39,6 +41,8 @@ public partial class MiApplicationDbContext : DbContext
     public virtual DbSet<ListaEspera> ListaEsperas { get; set; }
 
     public virtual DbSet<Mica> Micas { get; set; }
+
+    public virtual DbSet<MovimientoCaja> MovimientoCaja { get; set; }
 
     public virtual DbSet<ParametroNegocio> ParametroNegocios { get; set; }
 

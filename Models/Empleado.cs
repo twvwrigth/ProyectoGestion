@@ -31,6 +31,8 @@ public partial class Empleado
 
     public virtual Rol IdRolNavigation { get; set; } = null!;
 
+    public virtual ICollection<CajaTurno> CajaTurnos { get; set; } = new List<CajaTurno>();
+
     public virtual ICollection<Receta> Receta { get; set; } = new List<Receta>();
 
     public virtual ICollection<Reparacion> Reparacions { get; set; } = new List<Reparacion>();
