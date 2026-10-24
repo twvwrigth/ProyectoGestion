@@ -21,14 +21,13 @@ namespace Proyecto.Pages
         public string Usuario { get; set; } = "";
 
         [BindProperty]
-        public string Password { get; set; } = "";
+        public string Contrasena { get; set; } = "";
 
         public IActionResult OnGet()
         {
-            // Si ya tiene sesión iniciada, enviarlo al inicio
             if (User.Identity!.IsAuthenticated)
             {
-                return RedirectToPage("/Index");
+                return RedirigirSegunRol(User);
             }
             return Page();
         }
@@ -37,10 +36,9 @@ namespace Proyecto.Pages
         {
             if (!ModelState.IsValid) return Page();
 
-            // Buscar al empleado e incluir su tabla de roles para saber qué rol tiene
             var empleado = await _context.Empleados
-                .Include(e => e.IdRolNavigation) // Ajusta si tu propiedad de navegación se llama diferente
-                .FirstOrDefaultAsync(e => e.Usuario == Usuario && e.Contrasena == Password);
+                .Include(e => e.IdRolNavigation)
+                .FirstOrDefaultAsync(e => e.Usuario == Usuario && e.Contrasena == Contrasena);
 
             if (empleado == null)
             {
@@ -50,26 +48,32 @@ namespace Proyecto.Pages
 
             if (!empleado.Activo)
             {
-                ModelState.AddModelError(string.Empty, "Su cuenta está inactiva.");
+                ModelState.AddModelError(string.Empty, "Esta cuenta está desactivada.");
                 return Page();
             }
 
-            // Construir la identidad del usuario y asignar su ROL
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, empleado.IdEmpleado.ToString()),
                 new Claim(ClaimTypes.Name, empleado.Nombre),
-                // Asignamos el rol basándonos en la base de datos (Ej: "Encargado", "Vendedor")
-                new Claim(ClaimTypes.Role, empleado.IdRolNavigation?.NombreRol ?? "SinRol") 
+                new Claim(ClaimTypes.Role, empleado.IdRolNavigation.NombreRol)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
-            // Generar la Cookie de sesión
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            return RedirectToPage("/Index");
+            return RedirigirSegunRol(principal);
+        }
+
+        private IActionResult RedirigirSegunRol(ClaimsPrincipal usuario)
+        {
+            if (usuario.IsInRole("Encargado") || usuario.IsInRole("Vendedor"))
+            {
+                return RedirectToPage("/Index");
+            }
+            return RedirectToPage("/catalogo"); 
         }
     }
 }

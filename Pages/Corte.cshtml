@@ -1,0 +1,97 @@
+@page
+@model Proyecto.Pages.Caja.CorteModel
+@{
+    ViewData["Title"] = "Corte de Caja";
+}
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 700px;">
+        <div class="card-header bg-primary text-white border-0 py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>Corte de Turno</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row mb-4 text-center">
+                <div class="col-4">
+                    <p class="text-muted small text-uppercase mb-1">Fondo Inicial</p>
+                    <h5 class="fw-bold">$@Model.CajaAbierta!.FondoInicial.ToString("0.00")</h5>
+                </div>
+                <div class="col-4">
+                    <p class="text-muted small text-uppercase mb-1">Movimientos</p>
+                    <h5 class="fw-bold text-primary">
+                        + $@Model.TotalEntradas.ToString("0.00") <br>
+                        <span class="text-danger">- $@Model.TotalSalidas.ToString("0.00")</span>
+                    </h5>
+                </div>
+                <div class="col-4 bg-light rounded pt-2 pb-1">
+                    <p class="text-muted small text-uppercase mb-1 fw-bold">Efectivo Esperado</p>
+                    <h4 class="text-dark fw-bold">$@Model.SaldoEsperado.ToString("0.00")</h4>
+                </div>
+            </div>
+
+            <hr class="mb-4">
+
+            <form method="post" asp-page-handler="CerrarTurno">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger p-2 small mb-3"></div>
+
+                <div class="mb-4">
+                    <label for="efectivoContado" class="form-label fw-bold">¿Cuánto efectivo físico hay en caja?</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white">$</span>
+                        <input type="number" id="efectivoContado" asp-for="EfectivoContado" class="form-control text-end fw-bold" step="0.01" min="0" required placeholder="0.00" />
+                    </div>
+                </div>
+
+                <!-- Esta sección solo se mostrará por JavaScript si hay diferencia -->
+                <div id="seccionDiferencia" class="mb-4 d-none p-3 rounded bg-warning-subtle border border-warning-subtle">
+                    <h6 class="fw-bold text-dark mb-2">¡Atención! Hay una diferencia de: <span id="montoDiferencia"></span></h6>
+                    <label for="comentarioDiferencia" class="form-label small">Por favor, justifica el motivo del sobrante o faltante:</label>
+                    <textarea id="comentarioDiferencia" asp-for="ComentarioDiferencia" class="form-control" rows="2" maxlength="500"></textarea>
+                    <span asp-validation-for="ComentarioDiferencia" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="d-flex justify-content-between mt-5">
+                    <a asp-page="/Index" class="btn btn-light px-4">Cancelar</a>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">Confirmar Corte y Cerrar Turno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputContado = document.getElementById("efectivoContado");
+            const seccionDiferencia = document.getElementById("seccionDiferencia");
+            const txtComentario = document.getElementById("comentarioDiferencia");
+            const labelDiferencia = document.getElementById("montoDiferencia");
+            const esperado = @Model.SaldoEsperado;
+
+            inputContado.addEventListener("input", function () {
+                const contado = parseFloat(this.value) || 0;
+                const diferencia = contado - esperado;
+
+                if (Math.abs(diferencia) > 0.01) { // Tolerancia de 1 centavo
+                    seccionDiferencia.classList.remove("d-none");
+                    txtComentario.setAttribute("required", "required");
+                    
+                    if(diferencia > 0) {
+                        labelDiferencia.textContent = "+ $" + diferencia.toFixed(2) + " (Sobrante)";
+                        labelDiferencia.className = "text-success";
+                    } else {
+                        labelDiferencia.textContent = "- $" + Math.abs(diferencia).toFixed(2) + " (Faltante)";
+                        labelDiferencia.className = "text-danger";
+                    }
+                } else {
+                    seccionDiferencia.classList.add("d-none");
+                    txtComentario.removeAttribute("required");
+                    txtComentario.value = "";
+                }
+            });
+            
+            // Disparar evento al inicio por si regresa de un error
+            inputContado.dispatchEvent(new Event('input'));
+        });
+    </script>
+}

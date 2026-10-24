@@ -10,12 +10,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Login";
-        options.AccessDeniedPath = "/Index";
+        options.AccessDeniedPath = "/Login"; 
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 builder.Services.AddDbContext<MiApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
