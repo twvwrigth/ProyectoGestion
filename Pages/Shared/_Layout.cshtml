@@ -58,7 +58,7 @@
                                     <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeClientes">Clientes</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/listaespera">Lista de espera</a>
+                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/listaEspera">Lista de espera</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/Index">Caja</a>
@@ -78,7 +78,7 @@
                                     </svg>
                                     Hola, <strong>@User.Identity.Name</strong>
                                 </span>
-                                <form method="post" asp-page="/Logout" class="d-inline">
+                                <form method="post" asp-page="/logout" class="d-inline">
                                     <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Cerrar Sesión</button>
                                 </form>
                             </li>
@@ -86,7 +86,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="btn btn-primary btn-sm rounded-pill px-4 mt-1" asp-area="" asp-page="/Login">Iniciar Sesión</a>
+                                <a class="btn btn-primary btn-sm rounded-pill px-4 mt-1" asp-area="" asp-page="/login">Iniciar Sesión</a>
                             </li>
                         }
                     </ul>

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 using System.Security.Claims;
 
-namespace Proyecto.Pages.Caja
+namespace Proyecto.Pages
 {
     [Authorize(Roles = "Encargado,Vendedor")]
     public class CorteModel : PageModel

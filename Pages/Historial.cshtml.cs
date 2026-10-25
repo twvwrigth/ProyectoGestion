@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 
-namespace Proyecto.Pages.Caja
+namespace Proyecto.Pages
 {
     [Authorize(Roles = "Encargado")] // Restringido solo a encargados
     public class HistorialModel : PageModel
