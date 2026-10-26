@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.44
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -109,40 +109,6 @@ CREATE TABLE `bitacora` (
 LOCK TABLES `bitacora` WRITE;
 /*!40000 ALTER TABLE `bitacora` DISABLE KEYS */;
 /*!40000 ALTER TABLE `bitacora` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `cajaturno`
---
-
-DROP TABLE IF EXISTS `cajaturno`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `cajaturno` (
-  `idCajaTurno` int NOT NULL AUTO_INCREMENT,
-  `idEmpleado` int NOT NULL,
-  `fechaApertura` datetime NOT NULL,
-  `fondoInicial` decimal(10,2) NOT NULL,
-  `estado` varchar(20) NOT NULL DEFAULT 'Abierta',
-  `fechaCierre` datetime DEFAULT NULL,
-  `efectivoEsperado` decimal(10,2) DEFAULT NULL,
-  `efectivoContado` decimal(10,2) DEFAULT NULL,
-  `diferencia` decimal(10,2) DEFAULT NULL,
-  `comentarioDiferencia` text,
-  PRIMARY KEY (`idCajaTurno`),
-  KEY `fk_caja_empleado` (`idEmpleado`),
-  CONSTRAINT `fk_caja_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `cajaturno`
---
-
-LOCK TABLES `cajaturno` WRITE;
-/*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
-/*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -253,7 +219,7 @@ CREATE TABLE `empleado` (
   KEY `fk_empleado_laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -262,7 +228,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,1,'Edgar','edgar','1',1,0),(3,2,1,'dos','dos','2',1,0),(4,3,1,'tres','tres','3',1,0),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -403,36 +369,6 @@ LOCK TABLES `mica` WRITE;
 /*!40000 ALTER TABLE `mica` DISABLE KEYS */;
 INSERT INTO `mica` VALUES (7,'CR-39','Ninguno','2',1.00),(8,'CR-39','Ninguno','3',1.00);
 /*!40000 ALTER TABLE `mica` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `movimientocaja`
---
-
-DROP TABLE IF EXISTS `movimientocaja`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `movimientocaja` (
-  `idMovimiento` int NOT NULL AUTO_INCREMENT,
-  `idCajaTurno` int NOT NULL,
-  `tipo` varchar(20) NOT NULL,
-  `monto` decimal(10,2) NOT NULL,
-  `motivo` varchar(255) NOT NULL,
-  `fecha` datetime NOT NULL,
-  PRIMARY KEY (`idMovimiento`),
-  KEY `fk_movimiento_caja` (`idCajaTurno`),
-  CONSTRAINT `fk_movimiento_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `movimientocaja`
---
-
-LOCK TABLES `movimientocaja` WRITE;
-/*!40000 ALTER TABLE `movimientocaja` DISABLE KEYS */;
-INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19'),(2,3,'Entrada',1.00,'1','2026-10-24 11:21:55'),(3,3,'Entrada',1.00,'1','2026-10-24 11:22:23'),(4,3,'Entrada',1.00,'1','2026-10-24 12:09:03');
-/*!40000 ALTER TABLE `movimientocaja` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -740,6 +676,10 @@ LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping events for database 'dboptica'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -750,4 +690,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-26 17:26:19
+-- Dump completed on 2026-10-21 15:49:02
