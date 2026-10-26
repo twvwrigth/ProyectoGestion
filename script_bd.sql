@@ -596,14 +596,23 @@ CREATE TABLE `receta` (
   `idReceta` int NOT NULL AUTO_INCREMENT,
   `idCliente` int NOT NULL,
   `idEmpleado` int NOT NULL,
-  `esfera` varchar(15) DEFAULT NULL,
-  `cilindro` varchar(15) DEFAULT NULL,
-  `eje` varchar(15) DEFAULT NULL,
   `distanciaPupilar` varchar(15) DEFAULT NULL,
   `fecha` date NOT NULL,
   `vigencia` date NOT NULL,
   `recetaExterna` tinyint(1) DEFAULT '0',
   `emisor` varchar(50) DEFAULT NULL,
+  `esferaOD` varchar(15) DEFAULT NULL,
+  `cilindroOD` varchar(15) DEFAULT NULL,
+  `ejeOD` varchar(15) DEFAULT NULL,
+  `adicionOD` varchar(15) DEFAULT NULL,
+  `esferaOI` varchar(15) DEFAULT NULL,
+  `cilindroOI` varchar(15) DEFAULT NULL,
+  `ejeOI` varchar(15) DEFAULT NULL,
+  `adicionOI` varchar(15) DEFAULT NULL,
+  `altura` varchar(15) DEFAULT NULL,
+  `tipoMica` varchar(50) DEFAULT NULL,
+  `micaMinima` varchar(100) DEFAULT NULL,
+  `micaRecomendada` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`idReceta`),
   KEY `fk_receta_cliente` (`idCliente`),
   KEY `fk_receta_empleado` (`idEmpleado`),
@@ -750,5 +759,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-26 17:26:19
-/**/
+-- Dump completed on 2026-10-26 17:43:20
