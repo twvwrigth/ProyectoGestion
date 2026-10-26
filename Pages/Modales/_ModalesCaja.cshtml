@@ -1,0 +1,89 @@
+@model Proyecto.Pages.IndexModel
+
+<!-- Modal Reutilizable de Éxito -->
+<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow text-center p-3">
+            <div class="modal-body">
+                <div class="mb-3 text-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l5-5.25a.75.75 0 0 0-.019-1.06z"/>
+                    </svg>
+                </div>
+                <h5 class="fw-bold mb-2">¡Éxito!</h5>
+                <p class="text-muted small mb-0">@TempData["SuccessMessage"]</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pt-0">
+                <button type="button" class="btn btn-success px-4 rounded-pill" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Abrir Caja -->
+<div class="modal fade" id="modalAbrirCaja" tabindex="-1" aria-labelledby="modalAbrirCajaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="AbrirCaja">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalAbrirCajaLabel">Abrir Turno de Caja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="fondoInicial" class="form-label">¿Con cuánto efectivo inicias tu turno?</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="fondoInicial" asp-for="FondoInicial" class="form-control" step="0.01" min="0" required placeholder="0.00" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Abrir Caja</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Registrar Movimiento Extra -->
+<div class="modal fade" id="modalMovimiento" tabindex="-1" aria-labelledby="modalMovimientoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="RegistrarMovimiento">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalMovimientoLabel">Registrar Movimiento Extra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tipoMovimiento" class="form-label">Tipo de Movimiento</label>
+                        <select id="tipoMovimiento" asp-for="TipoMovimiento" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Entrada">Entrada de efectivo (+)</option>
+                            <option value="Salida">Salida / Retiro de efectivo (-)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="montoMovimiento" class="form-label">Monto</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="montoMovimiento" asp-for="MontoMovimiento" class="form-control" step="0.01" min="0.01" required placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="motivoMovimiento" class="form-label">Motivo (Breve descripción)</label>
+                        <input type="text" id="motivoMovimiento" asp-for="MotivoMovimiento" class="form-control" required placeholder="Ej. Pago de garrafón de agua" maxlength="255" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

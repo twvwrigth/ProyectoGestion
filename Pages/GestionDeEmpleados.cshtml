@@ -97,92 +97,50 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
-            // 1. Auto-completado de contraseña temporal al escribir el usuario
-            const inputUsuario = document.getElementById("usuarioEmpleado");
-            const inputPass = document.getElementById("contrasenaTemporal");
-
-            if (inputUsuario && inputPass) {
-                inputUsuario.addEventListener("input", function () {
-                    const usuarioVal = this.value.trim();
-                    inputPass.value = usuarioVal.length > 0 ? "contrasena" + usuarioVal : "";
-                });
+            // 1. Mostrar mensaje de éxito si existe
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
+                modalExito.show();
+                </text>
             }
 
-            // 2. Carga de datos al Modal de Edición desde el botón de la tabla
-            const modalEditarEl = document.getElementById('modalEditarEmpleado');
-            if (modalEditarEl) {
-                modalEditarEl.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget;
-                    
-                    const id = button.getAttribute('data-id');
-                    const nombre = button.getAttribute('data-nombre');
-                    const usuario = button.getAttribute('data-usuario');
-                    const rol = button.getAttribute('data-rol');
+            // 2. Reabrir modal de Crear si hubo error
+            @if (ViewData["ShowModal"]?.ToString() == "Crear")
+            {
+                <text>
+                var modalCrear = new bootstrap.Modal(document.getElementById('modalCrearEmpleado'));
+                modalCrear.show();
+                </text>
+            }
+            // 3. Reabrir modal de Editar si hubo error
+            else if (ViewData["ShowModal"]?.ToString() == "Editar")
+            {
+                <text>
+                var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarEmpleado'));
+                modalEditar.show();
+                </text>
+            }
 
-                    modalEditarEl.querySelector('#editId').value = id;
-                    modalEditarEl.querySelector('#editNombre').value = nombre;
-                    modalEditarEl.querySelector('#editUsuario').value = usuario;
-                    
-                    // Asigna el rol correspondiente
-                    const editRolSelect = modalEditarEl.querySelector('#editRol');
-                    if (editRolSelect) {
-                        editRolSelect.value = rol;
+            // Lógica para llenar el modal de edición al hacer clic en el botón "Editar" de la tabla
+            var modalEditarElement = document.getElementById('modalEditarEmpleado');
+            if (modalEditarElement) {
+                modalEditarElement.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    if (button) {
+                        var id = button.getAttribute('data-id');
+                        var nombre = button.getAttribute('data-nombre');
+                        var usuario = button.getAttribute('data-usuario');
+                        var rol = button.getAttribute('data-rol');
+
+                        modalEditarElement.querySelector('#editId').value = id;
+                        modalEditarElement.querySelector('#editNombre').value = nombre;
+                        modalEditarElement.querySelector('#editUsuario').value = usuario;
+                        modalEditarElement.querySelector('#editRol').value = rol;
                     }
                 });
             }
-
-            // 3. Limpieza de formularios y advertencias en rojo al cerrar cualquier modal
-            const modales = document.querySelectorAll('.modal');
-            modales.forEach(function (modal) {
-                modal.addEventListener('hidden.bs.modal', function () {
-                    const form = modal.querySelector('form');
-                    if (form) {
-                        form.reset(); 
-                        
-                        // Limpiar mensajes de error
-                        const spansError = form.querySelectorAll('span.text-danger');
-                        spansError.forEach(span => span.textContent = '');
-                        
-                        // Remover clases de borde rojo en inputs
-                        const inputsError = form.querySelectorAll('.input-validation-error');
-                        inputsError.forEach(input => input.classList.remove('input-validation-error'));
-                    }
-                });
-            });
         });
     </script>
-
-    <!-- 4. Reapertura de Modales en caso de error de validación -->
-    @if (ViewData["ShowModal"]?.ToString() == "Crear")
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modal = new bootstrap.Modal(document.getElementById('modalCrearEmpleado'));
-                modal.show();
-            });
-        </script>
-    }
-    else if (ViewData["ShowModal"]?.ToString() == "Editar")
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modal = new bootstrap.Modal(document.getElementById('modalEditarEmpleado'));
-                modal.show();
-            });
-        </script>
-    }
-
-    <!-- 5. Apertura del Modal de Éxito al recibir mensaje en TempData -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modalExitoEl = document.getElementById('modalExito');
-                if (modalExitoEl) {
-                    var modalExito = new bootstrap.Modal(modalExitoEl);
-                    modalExito.show();
-                }
-            });
-        </script>
-    }
 }

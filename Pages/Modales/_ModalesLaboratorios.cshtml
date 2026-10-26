@@ -1,5 +1,6 @@
 <!-- Modal para Crear Laboratorio -->
-<div class="modal fade" id="modalCrearLaboratorio" tabindex="-1" aria-labelledby="modalCrearLaboratorioLabel" aria-hidden="true">
+<div class="modal fade" id="modalCrearLaboratorio" tabindex="-1" aria-labelledby="modalCrearLaboratorioLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <form method="post" asp-page-handler="Crear">
@@ -11,7 +12,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="nombreLab" class="form-label">Nombre del Laboratorio</label>
-                        <input type="text" id="nombreLab" name="Nombre" class="form-control" required placeholder="Ej. Laboratorio Central" />
+                        <input type="text" id="nombreLab" name="Nombre" class="form-control" required
+                               placeholder="Ej. Laboratorio Central" />
                     </div>
                     <div class="mb-3">
                         <label for="tipoLab" class="form-label">Tipo</label>
@@ -22,11 +24,13 @@
                     </div>
                     <div class="mb-3">
                         <label for="telLab" class="form-label">Teléfono</label>
-                        <input type="tel" id="telLab" name="Telefono" class="form-control" placeholder="Ej. 2281234567" />
+                        <input type="tel" id="telLab" name="Telefono" class="form-control"
+                               placeholder="Ej. 2281234567" />
                     </div>
                     <div class="mb-3">
                         <label for="tiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="tiempoLab" name="TiempoEntrega" class="form-control" maxlength="50" placeholder="Ej. 3 a 5 días" />
+                        <input type="text" id="tiempoLab" name="TiempoEntrega" class="form-control" maxlength="50"
+                               placeholder="Ej. 3 a 5 días" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -39,7 +43,8 @@
 </div>
 
 <!-- Modal para Editar Laboratorio -->
-<div class="modal fade" id="modalEditarLaboratorio" tabindex="-1" aria-labelledby="modalEditarLaboratorioLabel" aria-hidden="true">
+<div class="modal fade" id="modalEditarLaboratorio" tabindex="-1" aria-labelledby="modalEditarLaboratorioLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <form method="post" asp-page-handler="Editar">
@@ -67,7 +72,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="editTiempoLab" class="form-label">Tiempo Promedio de Entrega</label>
-                        <input type="text" id="editTiempoLab" name="TiempoEntrega" class="form-control" maxlength="50" />
+                        <input type="text" id="editTiempoLab" name="TiempoEntrega" class="form-control"
+                               maxlength="50" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -80,7 +86,8 @@
 </div>
 
 <!-- Modal para Gestionar Usuarios del Laboratorio -->
-<div class="modal fade" id="modalGestionarUsuarios" tabindex="-1" aria-labelledby="modalGestionarUsuariosLabel" aria-hidden="true">
+<div class="modal fade" id="modalGestionarUsuarios" tabindex="-1" aria-labelledby="modalGestionarUsuariosLabel"
+     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header">
@@ -91,18 +98,23 @@
                 <div class="card mb-4 bg-light border-0">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3">Registrar Nuevo Laboratorista</h6>
+                        <!-- Formulario dentro de #modalGestionarUsuarios -->
                         <form method="post" asp-page-handler="CrearUsuarioLaboratorio">
                             @Html.AntiForgeryToken()
                             <input type="hidden" id="labIdForUser" name="laboratorioId" />
                             <div class="row g-2">
                                 <div class="col-md-4">
-                                    <input type="text" name="nombreEmpleado" class="form-control form-control-sm" placeholder="Nombre completo" required />
+                                    <input type="text" name="nombreEmpleado" class="form-control form-control-sm"
+                                           placeholder="Nombre completo" required />
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" name="usuario" class="form-control form-control-sm" placeholder="Usuario único" required />
+                                    <input type="email" id="emailLaboratorista" name="usuario"
+                                           class="form-control form-control-sm" placeholder="correo@ejemplo.com"
+                                           required />
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="password" name="passwordTemporal" class="form-control form-control-sm" placeholder="Contraseña temporal" required />
+                                    <input type="text" id="passLaboratorista" name="passwordTemporal"class="form-control form-control-sm" placeholder="Contraseña asignada" />
+                                    <div class="form-text">(Puedes cambiar la contraseña asignada si lo prefieres)</div>
                                 </div>
                             </div>
                             <div class="mt-3 text-end">
@@ -118,7 +130,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Nombre</th>
-                                <th>Usuario</th>
+                                <th>Correo Electronico</th>
                                 <th>Estado</th>
                                 <th class="text-end">Acción</th>
                             </tr>

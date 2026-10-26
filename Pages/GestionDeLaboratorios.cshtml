@@ -5,6 +5,21 @@
 }
 
 <div class="container-fluid py-4">
+    @if (TempData["MensajeUsuarioCreado"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensajeUsuarioCreado"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorUsuario"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorUsuario"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
     <!-- Contenedor Principal estilo Card / Table-Card -->
     <div class="card shadow-sm border-0">
         <!-- Encabezado de la Tarjeta -->
@@ -13,10 +28,15 @@
                 <h5 class="mb-1 fw-bold">Gestión de Laboratorios</h5>
                 <p class="text-muted small mb-0">Administración de laboratorios internos y externos</p>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalCrearLaboratorio">
-                + Nuevo Laboratorio
-            </button>
+            <div>
+                <button type="button" id="btnToggleDesactivados" class="btn btn-outline-secondary me-2">
+                    Mostrar desactivados
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#modalCrearLaboratorio">
+                    + Nuevo Laboratorio
+                </button>
+            </div>
         </div>
 
         <!-- Cuerpo de la Tarjeta con la Tabla Responsiva -->
@@ -29,6 +49,7 @@
                             <th scope="col">Tipo</th>
                             <th scope="col">Teléfono</th>
                             <th scope="col">Tiempo Prom. Entrega</th>
+                            <th scope="col">Laboratoristas</th>
                             <th scope="col">Estado</th>
                             <th scope="col" class="text-end pe-3">Acciones</th>
                         </tr>
@@ -38,7 +59,7 @@
                         {
                             @foreach (var lab in Model.Laboratorios)
                             {
-                                <tr>
+                                <tr class="@(!lab.Activo ? "fila-inactiva d-none" : "")">
                                     <td class="ps-3 fw-medium">@lab.Nombre</td>
                                     <td>
                                         @if (lab.TipoLaboratorio == "Interno")
@@ -54,6 +75,24 @@
                                     </td>
                                     <td>@lab.Telefono</td>
                                     <td>@lab.TiempoEntrega</td>
+                                    <!-- Columna de Laboratoristas -->
+                                    <td>
+                                        @if (lab.Empleados != null && lab.Empleados.Any(e => e.Activo))
+                                        {
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach (var emp in lab.Empleados.Where(e => e.Activo))
+                                                {
+                                                    <span class="badge bg-light text-dark border" title="@emp.Usuario">
+                                                        @emp.Nombre
+                                                    </span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Sin asignar</span>
+                                        }
+                                    </td>
                                     <td>
                                         @if (lab.Activo)
                                         {
@@ -99,7 +138,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">No hay laboratorios registrados.</td>
+                                <td colspan="7" class="text-center py-4 text-muted">No hay laboratorios registrados.</td>
                             </tr>
                         }
                     </tbody>
@@ -146,8 +185,8 @@
                 const laboratorios = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Laboratorios.Select(l => new
                     {
                         id = l.IdLaboratorio,
-                            empleados = l.Empleados.Select(e => new { id = e.IdEmpleado, nombre = e.Nombre, usuario = e.Usuario, activo = e.Activo })
-                    })));
+                                                            empleados = l.Empleados.Select(e => new { id = e.IdEmpleado, nombre = e.Nombre, usuario = e.Usuario, activo = e.Activo })
+                                    })));
 
                 const labEncontrado = laboratorios.find(l => l.id == labId);
 
@@ -155,23 +194,23 @@
                     labEncontrado.empleados.forEach(emp => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                <td>${emp.nombre}</td>
-                <td>${emp.usuario}</td>
-                <td><span class="badge ${emp.activo ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}">${emp.activo ? 'Activo' : 'Inactivo'}</span></td>
-                <td class="text-end">
-                    ${emp.activo ? `
-                    <form method="post" action="?handler=DesactivarUsuario" class="d-inline">
-                        ${tokenHtml}
-                        <input type="hidden" name="usuarioId" value="${emp.id}" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
-                    </form>` : `
-                    <form method="post" action="?handler=ActivarUsuario" class="d-inline">
-                        ${tokenHtml}
-                        <input type="hidden" name="usuarioId" value="${emp.id}" />
-                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
-                    </form>`}
-                </td>
-            `;
+                                                <td>${emp.nombre}</td>
+                                                <td>${emp.usuario}</td>
+                                                <td><span class="badge ${emp.activo ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}">${emp.activo ? 'Activo' : 'Inactivo'}</span></td>
+                                                <td class="text-end">
+                                                    ${emp.activo ? `
+                                                    <form method="post" action="?handler=DesactivarUsuario" class="d-inline">
+                                                        ${tokenHtml}
+                                                        <input type="hidden" name="usuarioId" value="${emp.id}" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                                    </form>` : `
+                                                    <form method="post" action="?handler=ActivarUsuario" class="d-inline">
+                                                        ${tokenHtml}
+                                                        <input type="hidden" name="usuarioId" value="${emp.id}" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                                                    </form>`}
+                                                </td>
+                                            `;
                         tbody.appendChild(tr);
                     });
                 } else {
@@ -179,7 +218,47 @@
                 }
             });
         }
+
+        // Toggle para mostrar u ocultar laboratorios desactivados
+        const btnToggle = document.getElementById('btnToggleDesactivados');
+        if (btnToggle) {
+            let mostrandoInactivos = false;
+            btnToggle.addEventListener('click', function () {
+                mostrandoInactivos = !mostrandoInactivos;
+                const filasInactivas = document.querySelectorAll('.fila-inactiva');
+
+                filasInactivas.forEach(fila => {
+                    if (mostrandoInactivos) {
+                        fila.classList.remove('d-none');
+                    } else {
+                        fila.classList.add('d-none');
+                    }
+                });
+
+                this.textContent = mostrandoInactivos ? 'Ocultar desactivados' : 'Mostrar desactivados';
+                this.classList.toggle('btn-outline-secondary', !mostrandoInactivos);
+                this.classList.toggle('btn-secondary', mostrandoInactivos);
+            });
+        }
+        // Autogenerar contraseña temporal al escribir el correo del laboratorista
+        const inputEmail = document.getElementById('emailLaboratorista');
+        const inputPass = document.getElementById('passLaboratorista');
+
+        if (inputEmail && inputPass) {
+            let editadoManualmente = false;
+
+            // Detectar si el usuario escribió manualmente en el campo de contraseña
+            inputPass.addEventListener('input', function () {
+                editadoManualmente = this.value.trim() !== '';
+            });
+
+            // Actualizar el valor automáticamente según lo que escriba en el correo
+            inputEmail.addEventListener('input', function () {
+                if (!editadoManualmente) {
+                    const correo = this.value.trim();
+                    inputPass.value = correo ? 'contrasena' + correo : '';
+                }
+            });
+        }
     </script>
 }
-
-

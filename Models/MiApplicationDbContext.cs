@@ -22,6 +22,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Bitacora> Bitacoras { get; set; }
 
+    public virtual DbSet<CajaTurno> CajaTurno { get; set; }
+
     public virtual DbSet<ClasePrecio> ClasePrecios { get; set; }
 
     public virtual DbSet<Cliente> Clientes { get; set; }
@@ -39,6 +41,8 @@ public partial class MiApplicationDbContext : DbContext
     public virtual DbSet<ListaEspera> ListaEsperas { get; set; }
 
     public virtual DbSet<Mica> Micas { get; set; }
+
+    public virtual DbSet<MovimientoCaja> MovimientoCaja { get; set; }
 
     public virtual DbSet<ParametroNegocio> ParametroNegocios { get; set; }
 
@@ -131,6 +135,50 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_armazon_producto");
 
 
+        });
+
+        modelBuilder.Entity<CajaTurno>(entity =>
+        {
+            entity.HasKey(e => e.IdCajaTurno).HasName("PRIMARY");
+
+            entity.ToTable("CajaTurno");
+
+            entity.Property(e => e.IdCajaTurno).HasColumnName("idCajaTurno");
+            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            entity.Property(e => e.FechaApertura).HasColumnType("datetime").HasColumnName("fechaApertura");
+            entity.Property(e => e.FondoInicial).HasPrecision(10, 2).HasColumnName("fondoInicial");
+            entity.Property(e => e.Estado).HasMaxLength(20).HasDefaultValueSql("'Abierta'").HasColumnName("estado");
+            entity.Property(e => e.FechaCierre).HasColumnType("datetime").HasColumnName("fechaCierre");
+            entity.Property(e => e.EfectivoEsperado).HasPrecision(10, 2).HasColumnName("efectivoEsperado");
+            entity.Property(e => e.EfectivoContado).HasPrecision(10, 2).HasColumnName("efectivoContado");
+            entity.Property(e => e.Diferencia).HasPrecision(10, 2).HasColumnName("diferencia");
+            entity.Property(e => e.ComentarioDiferencia).HasColumnType("text").HasColumnName("comentarioDiferencia");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.CajaTurnos)
+                .HasForeignKey(d => d.IdEmpleado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_caja_empleado");
+        });
+
+        modelBuilder.Entity<MovimientoCaja>(entity =>
+        {
+            entity.HasKey(e => e.IdMovimiento).HasName("PRIMARY");
+
+            entity.ToTable("MovimientoCaja");
+
+            entity.Property(e => e.IdMovimiento).HasColumnName("idMovimiento");
+            entity.Property(e => e.IdCajaTurno).HasColumnName("idCajaTurno");
+            entity.Property(e => e.Tipo).HasMaxLength(20).HasColumnName("tipo");
+            entity.Property(e => e.Monto).HasPrecision(10, 2).HasColumnName("monto");
+            entity.Property(e => e.Motivo).HasMaxLength(255).HasColumnName("motivo");
+            entity.Property(e => e.Fecha).HasColumnType("datetime").HasColumnName("fecha");
+
+            entity.HasOne(d => d.IdCajaTurnoNavigation)
+                .WithMany(p => p.MovimientoCajas)
+                .HasForeignKey(d => d.IdCajaTurno)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_movimiento_caja");
         });
 
         modelBuilder.Entity<Bitacora>(entity =>
