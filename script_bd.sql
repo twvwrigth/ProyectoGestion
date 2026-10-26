@@ -132,7 +132,7 @@ CREATE TABLE `cajaturno` (
   PRIMARY KEY (`idCajaTurno`),
   KEY `fk_caja_empleado` (`idEmpleado`),
   CONSTRAINT `fk_caja_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,7 +141,7 @@ CREATE TABLE `cajaturno` (
 
 LOCK TABLES `cajaturno` WRITE;
 /*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL);
+INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -253,7 +253,7 @@ CREATE TABLE `empleado` (
   KEY `fk_empleado_laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -262,7 +262,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,1,'Edgar','edgar','1',1,0);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,1,'Edgar','edgar','1',1,0),(3,2,1,'dos','dos','2',1,0),(4,3,1,'tres','tres','3',1,0),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -422,7 +422,7 @@ CREATE TABLE `movimientocaja` (
   PRIMARY KEY (`idMovimiento`),
   KEY `fk_movimiento_caja` (`idCajaTurno`),
   CONSTRAINT `fk_movimiento_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -431,7 +431,7 @@ CREATE TABLE `movimientocaja` (
 
 LOCK TABLES `movimientocaja` WRITE;
 /*!40000 ALTER TABLE `movimientocaja` DISABLE KEYS */;
-INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19');
+INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19'),(2,3,'Entrada',1.00,'1','2026-10-24 11:21:55'),(3,3,'Entrada',1.00,'1','2026-10-24 11:22:23'),(4,3,'Entrada',1.00,'1','2026-10-24 12:09:03');
 /*!40000 ALTER TABLE `movimientocaja` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -750,4 +750,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-24 11:19:49
+-- Dump completed on 2026-10-26 17:26:19
