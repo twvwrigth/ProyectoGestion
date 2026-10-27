@@ -20,6 +20,12 @@ namespace Proyecto.Pages
         public CajaTurno? CajaAbierta { get; set; }
         public decimal TotalEntradas { get; set; }
         public decimal TotalSalidas { get; set; }
+        
+        // Desglose de ventas
+        public decimal VentasEfectivo { get; set; }
+        public decimal VentasTarjeta { get; set; }
+        public decimal VentasTransferencia { get; set; }
+        
         public decimal SaldoEsperado { get; set; }
 
         [BindProperty]
@@ -34,18 +40,20 @@ namespace Proyecto.Pages
 
             CajaAbierta = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
+                .Include(c => c.Ventas) // Traer las ventas asociadas al turno
                 .FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
 
-            if (CajaAbierta == null)
-            {
-                return RedirectToPage("/Index");
-            }
+            if (CajaAbierta == null) return RedirectToPage("/Index");
 
             TotalEntradas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
             TotalSalidas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
             
-            // Requisito 3: Calcular esperado
-            SaldoEsperado = CajaAbierta.FondoInicial + TotalEntradas - TotalSalidas;
+            VentasEfectivo = CajaAbierta.Ventas.Where(v => v.FormaPago == "Efectivo").Sum(v => v.Total);
+            VentasTarjeta = CajaAbierta.Ventas.Where(v => v.FormaPago == "Tarjeta").Sum(v => v.Total);
+            VentasTransferencia = CajaAbierta.Ventas.Where(v => v.FormaPago == "Transferencia").Sum(v => v.Total);
+
+            // El saldo físico esperado suma el fondo, las entradas manuales y ventas en EFECTIVO, menos salidas
+            SaldoEsperado = CajaAbierta.FondoInicial + TotalEntradas + VentasEfectivo - TotalSalidas;
 
             return Page();
         }
@@ -55,30 +63,31 @@ namespace Proyecto.Pages
             var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var caja = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
+                .Include(c => c.Ventas)
                 .FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
 
             if (caja == null) return RedirectToPage("/Index");
 
             var entradas = caja.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
             var salidas = caja.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
-            var esperado = caja.FondoInicial + entradas - salidas;
+            var ventasEf = caja.Ventas.Where(v => v.FormaPago == "Efectivo").Sum(v => v.Total);
             
+            var esperado = caja.FondoInicial + entradas + ventasEf - salidas;
             var diferencia = EfectivoContado - esperado;
 
-            // Requisito 3: Comentario obligatorio si no cuadra
             if (diferencia != 0 && string.IsNullOrWhiteSpace(ComentarioDiferencia))
             {
                 ModelState.AddModelError("ComentarioDiferencia", "Debes justificar el sobrante/faltante con un comentario.");
-                
-                // Recargar valores para la vista
                 CajaAbierta = caja;
                 TotalEntradas = entradas;
                 TotalSalidas = salidas;
+                VentasEfectivo = ventasEf;
+                VentasTarjeta = caja.Ventas.Where(v => v.FormaPago == "Tarjeta").Sum(v => v.Total);
+                VentasTransferencia = caja.Ventas.Where(v => v.FormaPago == "Transferencia").Sum(v => v.Total);
                 SaldoEsperado = esperado;
                 return Page();
             }
 
-            // Actualizar registro
             caja.FechaCierre = DateTime.Now;
             caja.EfectivoEsperado = esperado;
             caja.EfectivoContado = EfectivoContado;

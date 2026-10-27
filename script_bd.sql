@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.44
+-- Server version	8.0.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,69 +16,6 @@ USE `dboptica`;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Table structure for table `accesorios`
---
-
-DROP TABLE IF EXISTS `accesorios`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `accesorios` (
-  `idAccesorios` int NOT NULL AUTO_INCREMENT,
-  `idProducto` int NOT NULL,
-  `nombre` varchar(30) NOT NULL,
-  `existenciaMinima` int DEFAULT '5',
-  PRIMARY KEY (`idAccesorios`),
-  KEY `fk_accesorio_producto` (`idProducto`),
-  CONSTRAINT `fk_accesorio_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `accesorios`
---
-
-LOCK TABLES `accesorios` WRITE;
-/*!40000 ALTER TABLE `accesorios` DISABLE KEYS */;
-INSERT INTO `accesorios` VALUES (1,1,'siiiiiiiiiiiii',5);
-/*!40000 ALTER TABLE `accesorios` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `armazon`
---
-
-DROP TABLE IF EXISTS `armazon`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `armazon` (
-  `codigoArmazon` int NOT NULL,
-  `idProducto` int NOT NULL,
-  `idClasePrecio` int DEFAULT NULL,
-  `marca` varchar(20) DEFAULT NULL,
-  `modelo` varchar(15) DEFAULT NULL,
-  `material` varchar(100) DEFAULT NULL,
-  `clase` varchar(15) DEFAULT NULL,
-  `precio` decimal(10,2) DEFAULT NULL,
-  `ventaSinGraduacion` tinyint(1) DEFAULT '1',
-  PRIMARY KEY (`codigoArmazon`),
-  KEY `fk_armazon_producto` (`idProducto`),
-  KEY `fk_armazon_clase` (`idClasePrecio`),
-  CONSTRAINT `fk_armazon_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`),
-  CONSTRAINT `fk_armazon_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `armazon`
---
-
-LOCK TABLES `armazon` WRITE;
-/*!40000 ALTER TABLE `armazon` DISABLE KEYS */;
-INSERT INTO `armazon` VALUES (0,2,NULL,'123','456','CRY',NULL,NULL,1);
-/*!40000 ALTER TABLE `armazon` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `bitacora`
@@ -141,8 +78,33 @@ CREATE TABLE `cajaturno` (
 
 LOCK TABLES `cajaturno` WRITE;
 /*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Cerrada','2026-10-26 18:37:02',0.00,0.00,0.00,NULL);
 /*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `categoria`
+--
+
+DROP TABLE IF EXISTS `categoria`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `categoria` (
+  `idCategoria` int NOT NULL AUTO_INCREMENT,
+  `nombreCategoria` varchar(50) NOT NULL,
+  `camposRequeridos` json DEFAULT NULL,
+  PRIMARY KEY (`idCategoria`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `categoria`
+--
+
+LOCK TABLES `categoria` WRITE;
+/*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
+INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]');
+/*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -183,7 +145,7 @@ CREATE TABLE `cliente` (
   `telefono` varchar(10) DEFAULT NULL,
   `avisoPrivacidad` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idCliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -192,6 +154,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
+INSERT INTO `cliente` VALUES (1,'tahci',NULL,0);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -267,34 +230,6 @@ INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,
 UNLOCK TABLES;
 
 --
--- Table structure for table `gafas_sol`
---
-
-DROP TABLE IF EXISTS `gafas_sol`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `gafas_sol` (
-  `idGafasSol` int NOT NULL AUTO_INCREMENT,
-  `idProducto` int NOT NULL,
-  `nombre` varchar(30) NOT NULL,
-  `existenciaMinima` int DEFAULT '5',
-  PRIMARY KEY (`idGafasSol`),
-  KEY `fk_gafas_producto` (`idProducto`),
-  CONSTRAINT `fk_gafas_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `gafas_sol`
---
-
-LOCK TABLES `gafas_sol` WRITE;
-/*!40000 ALTER TABLE `gafas_sol` DISABLE KEYS */;
-INSERT INTO `gafas_sol` VALUES (1,3,'NOSE',5);
-/*!40000 ALTER TABLE `gafas_sol` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `inventario`
 --
 
@@ -365,7 +300,7 @@ CREATE TABLE `lista_espera` (
   PRIMARY KEY (`idLista`),
   KEY `fk_lista_cliente` (`idCliente`),
   CONSTRAINT `fk_lista_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -375,34 +310,6 @@ CREATE TABLE `lista_espera` (
 LOCK TABLES `lista_espera` WRITE;
 /*!40000 ALTER TABLE `lista_espera` DISABLE KEYS */;
 /*!40000 ALTER TABLE `lista_espera` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `mica`
---
-
-DROP TABLE IF EXISTS `mica`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `mica` (
-  `idMica` int NOT NULL AUTO_INCREMENT,
-  `material` varchar(50) NOT NULL,
-  `tratamiento` varchar(50) NOT NULL,
-  `rangoGraduacion` varchar(50) NOT NULL,
-  `precio` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`idMica`),
-  UNIQUE KEY `uk_mica_combinacion` (`material`,`tratamiento`,`rangoGraduacion`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mica`
---
-
-LOCK TABLES `mica` WRITE;
-/*!40000 ALTER TABLE `mica` DISABLE KEYS */;
-INSERT INTO `mica` VALUES (7,'CR-39','Ninguno','2',1.00),(8,'CR-39','Ninguno','3',1.00);
-/*!40000 ALTER TABLE `mica` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -508,13 +415,17 @@ DROP TABLE IF EXISTS `producto`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `producto` (
   `idProducto` int NOT NULL AUTO_INCREMENT,
+  `idCategoria` int NOT NULL DEFAULT '1',
   `idClasePrecio` int DEFAULT NULL,
   `nombre` varchar(20) NOT NULL,
   `existencia` int DEFAULT '0',
   `promocion` tinyint(1) DEFAULT '0',
   `precio` decimal(10,2) NOT NULL,
+  `detallesTecnicos` json DEFAULT NULL,
   PRIMARY KEY (`idProducto`),
   KEY `fk_producto_clase` (`idClasePrecio`),
+  KEY `fk_producto_categoria` (`idCategoria`),
+  CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -525,7 +436,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,NULL,'siiiiiiiiiiiii',5,0,100.00),(2,NULL,'nooooooooo',5,0,100.00),(3,NULL,'NOSE',5,0,100.00);
+INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -724,6 +635,7 @@ DROP TABLE IF EXISTS `venta`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `venta` (
   `folioVenta` int NOT NULL AUTO_INCREMENT,
+  `idCajaTurno` int DEFAULT NULL,
   `idCliente` int NOT NULL,
   `idEmpleado` int NOT NULL,
   `idProducto` int NOT NULL,
@@ -735,6 +647,8 @@ CREATE TABLE `venta` (
   KEY `fk_venta_cliente` (`idCliente`),
   KEY `fk_venta_empleado` (`idEmpleado`),
   KEY `fk_venta_producto` (`idProducto`),
+  KEY `fk_venta_caja` (`idCajaTurno`),
+  CONSTRAINT `fk_venta_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`),
   CONSTRAINT `fk_venta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_venta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_venta_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
@@ -759,4 +673,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-26 17:43:20
+-- Dump completed on 2026-10-27 17:18:58
