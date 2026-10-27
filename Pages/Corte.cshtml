@@ -5,25 +5,50 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="card shadow-sm border-0 mx-auto" style="max-width: 700px;">
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 800px;">
         <div class="card-header bg-primary text-white border-0 py-3">
             <h5 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>Corte de Turno</h5>
         </div>
         <div class="card-body p-4">
+            <h6 class="fw-bold text-secondary mb-3">Ventas Registradas</h6>
+            <div class="row mb-4 text-center g-3">
+                <div class="col-4">
+                    <div class="p-3 border rounded bg-light">
+                        <p class="text-muted small text-uppercase mb-1">Efectivo</p>
+                        <h5 class="fw-bold text-success">$@Model.VentasEfectivo.ToString("0.00")</h5>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 border rounded bg-light">
+                        <p class="text-muted small text-uppercase mb-1">Tarjeta</p>
+                        <h5 class="fw-bold text-primary">$@Model.VentasTarjeta.ToString("0.00")</h5>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 border rounded bg-light">
+                        <p class="text-muted small text-uppercase mb-1">Transferencia</p>
+                        <h5 class="fw-bold text-info">$@Model.VentasTransferencia.ToString("0.00")</h5>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="mb-4">
+
+            <h6 class="fw-bold text-secondary mb-3">Flujo Físico en Cajón</h6>
             <div class="row mb-4 text-center">
                 <div class="col-4">
                     <p class="text-muted small text-uppercase mb-1">Fondo Inicial</p>
                     <h5 class="fw-bold">$@Model.CajaAbierta!.FondoInicial.ToString("0.00")</h5>
                 </div>
                 <div class="col-4">
-                    <p class="text-muted small text-uppercase mb-1">Movimientos</p>
-                    <h5 class="fw-bold text-primary">
-                        + $@Model.TotalEntradas.ToString("0.00") <br>
+                    <p class="text-muted small text-uppercase mb-1">Mov. Manuales</p>
+                    <h5 class="fw-bold">
+                        <span class="text-success">+ $@Model.TotalEntradas.ToString("0.00")</span> <br>
                         <span class="text-danger">- $@Model.TotalSalidas.ToString("0.00")</span>
                     </h5>
                 </div>
-                <div class="col-4 bg-light rounded pt-2 pb-1">
-                    <p class="text-muted small text-uppercase mb-1 fw-bold">Efectivo Esperado</p>
+                <div class="col-4 bg-warning-subtle rounded pt-2 pb-1 border border-warning-subtle">
+                    <p class="text-dark small text-uppercase mb-1 fw-bold">Efectivo Esperado</p>
                     <h4 class="text-dark fw-bold">$@Model.SaldoEsperado.ToString("0.00")</h4>
                 </div>
             </div>
@@ -41,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Esta sección solo se mostrará por JavaScript si hay diferencia -->
                 <div id="seccionDiferencia" class="mb-4 d-none p-3 rounded bg-warning-subtle border border-warning-subtle">
                     <h6 class="fw-bold text-dark mb-2">¡Atención! Hay una diferencia de: <span id="montoDiferencia"></span></h6>
                     <label for="comentarioDiferencia" class="form-label small">Por favor, justifica el motivo del sobrante o faltante:</label>
@@ -72,7 +96,7 @@
                 const contado = parseFloat(this.value) || 0;
                 const diferencia = contado - esperado;
 
-                if (Math.abs(diferencia) > 0.01) { // Tolerancia de 1 centavo
+                if (Math.abs(diferencia) > 0.01) {
                     seccionDiferencia.classList.remove("d-none");
                     txtComentario.setAttribute("required", "required");
                     
@@ -90,7 +114,6 @@
                 }
             });
             
-            // Disparar evento al inicio por si regresa de un error
             inputContado.dispatchEvent(new Event('input'));
         });
     </script>

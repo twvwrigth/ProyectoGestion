@@ -727,6 +727,11 @@ public partial class MiApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.FolioVenta).HasName("PRIMARY");
 
+            entity.HasOne(d => d.IdCajaTurnoNavigation)
+                .WithMany(p => p.Ventas)
+                .HasForeignKey(d => d.IdCajaTurno)
+                .HasConstraintName("fk_venta_caja");
+
             entity.ToTable("venta");
 
             entity.HasIndex(e => e.IdCliente, "fk_venta_cliente");
