@@ -40,7 +40,9 @@ namespace Proyecto.Pages
                     r.IdReceta,
                     fechaStr = r.Fecha.ToString("dd/MM/yyyy"),
                     vigenciaStr = r.Vigencia.ToString("dd/MM/yyyy"),
-                    esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now)
+                    esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now),
+                    micaMinima = r.MicaMinima ?? "CR-39 Blanco",
+                    micaRecomendada = r.MicaRecomendada ?? "Policarbonato Antireflejante"
                 })
                 .ToListAsync();
 
@@ -50,6 +52,7 @@ namespace Proyecto.Pages
         public async Task<IActionResult> OnPostAsync()
         {
             ModelState.Remove("Input.IdReceta");
+
             if (!ModelState.IsValid)
             {
                 await CargarCatalogosAsync();
@@ -76,13 +79,13 @@ namespace Proyecto.Pages
                 FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)), // Vigencia exacta de 15 días[cite: 8]
                 TotalCalculado = Input.TotalCalculado,
                 BonificacionExamen = false,
-                Receta = Input.IdReceta.HasValue 
+                Receta = Input.IdReceta.HasValue && Input.IdReceta.Value > 0
             };
 
             _context.Cotizaciones.Add(cotizacion);
             await _context.SaveChangesAsync();
 
-            TempData["MensajeExito"] = "¡Cotización guardada exitosamente con vigencia de 15 días!";
+            TempData["MensajeExito"] = "La cotización fue registrada exitosamente con una vigencia de 15 días.";
             return RedirectToPage();
         }
 

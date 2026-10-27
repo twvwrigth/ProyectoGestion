@@ -4,19 +4,18 @@
     ViewData["Title"] = "Cotización de Lente Graduado";
 }
 
-<!-- Incluir SweetAlert2 y Bootstrap Icons -->
+<!-- Incluir SweetAlert2 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado</h4>
+            <h4 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado (HU-10)</h4>
             <a asp-page="/Index" class="btn btn-light btn-sm">Regresar</a>
         </div>
         
         <div class="card-body">
-
             <!-- Alerta de Receta -->
             <div id="alertaReceta" class="alert alert-warning d-none" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -53,19 +52,19 @@
                         <div class="row text-center">
                             <div class="col-md-6 border-end">
                                 <h6 class="text-secondary fw-bold">Opción Mínima</h6>
-                                <p class="mb-1">CR-39 Monofocal / Antirreflejante Básico</p>
-                                <h5 class="text-primary fw-bold">$850.00</h5>
+                                <p class="mb-1" id="lblMicaMinima">Seleccione un cliente con receta...</p>
+                                <h5 class="text-primary fw-bold" id="precioMinimaText">$600.00</h5>
                                 <button type="button" class="btn btn-sm btn-outline-primary mt-1"
-                                        onclick="seleccionarOpcion(400, 200)">
+                                        onclick="seleccionarOpcionDinamica('minima')">
                                     Seleccionar Mínima
                                 </button>
                             </div>
                             <div class="col-md-6">
                                 <h6 class="text-success fw-bold">Opción Recomendada</h6>
-                                <p class="mb-1">Policarbonato / Filtro Luz Azul + Antirreflejante</p>
-                                <h5 class="text-success fw-bold">$1,450.00</h5>
+                                <p class="mb-1" id="lblMicaRecomendada">Seleccione un cliente con receta...</p>
+                                <h5 class="text-success fw-bold" id="precioRecomendadaText">$1,250.00</h5>
                                 <button type="button" class="btn btn-sm btn-success mt-1"
-                                        onclick="seleccionarOpcion(750, 500)">
+                                        onclick="seleccionarOpcionDinamica('recomendada')">
                                     Seleccionar Recomendada
                                 </button>
                             </div>
@@ -126,7 +125,7 @@
                 <!-- Total y Guardado -->
                 <div class="card bg-light border-primary">
                     <div class="card-body d-flex justify-content-between align-items-center">
-                        <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15 días</strong>.</small>
+                        <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15 días</strong>[cite: 8].</small>
                         <div class="text-end">
                             <span class="text-uppercase fw-bold text-secondary">Total Calculado:</span>
                             <h3 class="text-primary fw-bold mb-0" id="lblTotal">$0.00</h3>
@@ -147,7 +146,8 @@
 
 @section Scripts {
     <script>
-        // Si viene un mensaje de éxito desde TempData, mostramos el diálogo modal de éxito
+        let recetaActualData = null;
+
         @if (TempData["MensajeExito"] != null)
         {
             <text>
@@ -161,10 +161,8 @@
             </text>
         }
 
-        // Interceptamos el evento Submit del formulario para mostrar el diálogo de confirmación
         document.getElementById('formCotizacion').addEventListener('submit', function (e) {
-            e.preventDefault(); // Detenemos el envío automático
-
+            e.preventDefault();
             const total = document.getElementById('lblTotal').innerText;
 
             Swal.fire({
@@ -178,7 +176,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    this.submit(); // Si hace clic en Confirmar, enviamos el formulario
+                    this.submit();
                 }
             });
         });
@@ -211,11 +209,9 @@
                                 <a href="/Recetas/Create?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
                                     <i class="bi bi-plus-circle"></i> Registrar Receta Externa
                                 </a>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="mandarAExamen()">
-                                    <i class="bi bi-eye"></i> Enviar a Examen Visual
-                                </button>
                             </div>`;
                         select.innerHTML += '<option value="" disabled>-- Sin recetas disponibles --</option>';
+                        limpiarOpcionesOptometrista();
                         return;
                     }
 
@@ -228,11 +224,15 @@
                             texto += " - [VENCIDA]";
                         } else if (index === 0) {
                             recetaSeleccionadaId = r.idReceta;
+                            recetaActualData = r;
+                            actualizarTarjetaOptometrista(r);
                         }
 
                         const opt = document.createElement('option');
                         opt.value = r.idReceta;
                         opt.textContent = texto;
+                        opt.dataset.minima = r.micaMinima;
+                        opt.dataset.recomendada = r.micaRecomendada;
                         select.appendChild(opt);
                     });
 
@@ -242,19 +242,52 @@
                 });
         }
 
-        function mandarAExamen() {
-            Swal.fire({
-                title: 'Examen Visual',
-                text: 'El cliente será derivado al módulo de Examen Visual.',
-                icon: 'info',
-                confirmButtonColor: '#0d6efd'
-            });
+        document.getElementById('recetaSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.dataset.minima) {
+                recetaActualData = {
+                    micaMinima: selectedOption.dataset.minima,
+                    micaRecomendada: selectedOption.dataset.recomendada
+                };
+                actualizarTarjetaOptometrista(recetaActualData);
+            }
+        });
+
+        function actualizarTarjetaOptometrista(r) {
+            document.getElementById('lblMicaMinima').innerText = r.micaMinima;
+            document.getElementById('lblMicaRecomendada').innerText = r.micaRecomendada;
         }
 
-        function seleccionarOpcion(mat, trat) {
-            document.getElementById('selectMaterial').value = mat;
-            document.getElementById('selectTratamiento').value = trat;
-            recalcularTotal();
+        function limpiarOpcionesOptometrista() {
+            document.getElementById('lblMicaMinima').innerText = 'Sin receta disponible';
+            document.getElementById('lblMicaRecomendada').innerText = 'Sin receta disponible';
+            recetaActualData = null;
+        }
+
+        function seleccionarOpcionDinamica(tipo) {
+            if (!recetaActualData) {
+                Swal.fire('Aviso', 'Por favor seleccione un cliente con una receta válida primero.', 'warning');
+                return;
+            }
+
+            if (tipo === 'recomendada') {
+                document.getElementById('selectMaterial').value = "750";  // Policarbonato
+                document.getElementById('selectTratamiento').value = "500"; // Filtro Luz Azul
+            } else {
+                document.getElementById('selectMaterial').value = "400";  // CR-39
+                document.getElementById('selectTratamiento').value = "200"; // Antirreflejante Básico
+            }
+
+            recalcularTotal(); // Recalcula el total automáticamente en pantalla[cite: 14]
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Opción ${tipo === 'recomendada' ? 'Recomendada' : 'Mínima'} aplicada`,
+                showConfirmButton: false,
+                timer: 1500
+            });
         }
 
         function recalcularTotal() {
