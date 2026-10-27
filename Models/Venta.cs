@@ -7,6 +7,8 @@ public partial class Venta
 {
     public int FolioVenta { get; set; }
 
+    public int? IdCajaTurno { get; set; }
+
     public int IdCliente { get; set; }
 
     public int IdEmpleado { get; set; }
@@ -20,6 +22,8 @@ public partial class Venta
     public decimal Total { get; set; }
 
     public bool? ExamenComprado { get; set; }
+
+    public virtual CajaTurno? IdCajaTurnoNavigation { get; set; }
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 

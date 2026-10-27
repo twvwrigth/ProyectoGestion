@@ -16,6 +16,7 @@ public partial class CajaTurno
     public decimal? Diferencia { get; set; }
     public string? ComentarioDiferencia { get; set; }
 
+    public virtual ICollection<Venta> Ventas { get; set; } = new List<Venta>();
     public virtual Empleado IdEmpleadoNavigation { get; set; } = null!;
     public virtual ICollection<MovimientoCaja> MovimientoCajas { get; set; } = new List<MovimientoCaja>();
 }
