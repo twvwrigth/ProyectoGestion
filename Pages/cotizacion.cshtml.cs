@@ -76,18 +76,18 @@ namespace Proyecto.Pages
             var clientes = await _context.Clientes.OrderBy(c => c.Nombre).ToListAsync();
             ClientesSelectList = new SelectList(clientes, nameof(Cliente.IdCliente), nameof(Cliente.Nombre));
 
-            // Carga de Armazones vinculados con su respectivo Producto para obtener nombre y precio
-            var armazones = await _context.Armazones
-                .Include(a => a.IdProductoNavigation)
-                .Select(a => new {
-                    a.CodigoArmazon,
-                    Descripcion = a.IdProductoNavigation != null 
-                        ? $"{a.IdProductoNavigation.Nombre} - ${a.IdProductoNavigation.Precio}" 
-                        : $"Armazón ID: {a.CodigoArmazon} - ${a.Precio}"
-                })
-                .ToListAsync();
+            // LINEAS COMENTADAS TEMPORALMENTE PARA EVITAR ERROR CS1061:
+            // var armazones = await _context.Armazones
+            //     .Include(a => a.IdProductoNavigation)
+            //     .Select(a => new {
+            //         a.CodigoArmazon,
+            //         Descripcion = a.IdProductoNavigation != null 
+            //             ? $"{a.IdProductoNavigation.Nombre} - ${a.IdProductoNavigation.Precio}" 
+            //             : $"Armazón ID: {a.CodigoArmazon} - ${a.Precio}"
+            //     })
+            //     .ToListAsync();
 
-            ArmazonesSelectList = new SelectList(armazones, "CodigoArmazon", "Descripcion");
+            // ArmazonesSelectList = new SelectList(armazones, "CodigoArmazon", "Descripcion");
         }
     }
 
