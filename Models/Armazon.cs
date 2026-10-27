@@ -23,8 +23,12 @@ public partial class Armazon
 
     public bool? VentaSinGraduacion { get; set; }
 
+    // --- PROPIEDADES NUEVAS AGREGADAS ---
+    public int? IdPromocion { get; set; }
+    public virtual Promocion? Promocion { get; set; }
+
+    // --- NAVEGACIÓN EXISTENTE ---
     public virtual ClasePrecio? IdClasePrecioNavigation { get; set; }
 
     public virtual Producto IdProductoNavigation { get; set; } = null!;
-
 }

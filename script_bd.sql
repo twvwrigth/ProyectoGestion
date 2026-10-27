@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.44
+-- Server version	8.0.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -55,6 +55,7 @@ DROP TABLE IF EXISTS `armazon`;
 CREATE TABLE `armazon` (
   `codigoArmazon` int NOT NULL,
   `idProducto` int NOT NULL,
+  `idPromocion` int DEFAULT NULL,
   `idClasePrecio` int DEFAULT NULL,
   `marca` varchar(20) DEFAULT NULL,
   `modelo` varchar(15) DEFAULT NULL,
@@ -65,8 +66,10 @@ CREATE TABLE `armazon` (
   PRIMARY KEY (`codigoArmazon`),
   KEY `fk_armazon_producto` (`idProducto`),
   KEY `fk_armazon_clase` (`idClasePrecio`),
+  KEY `fk_armazon_promocion` (`idPromocion`),
   CONSTRAINT `fk_armazon_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`),
-  CONSTRAINT `fk_armazon_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
+  CONSTRAINT `fk_armazon_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`),
+  CONSTRAINT `fk_armazon_promocion` FOREIGN KEY (`idPromocion`) REFERENCES `promocion` (`idPromocion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -76,7 +79,7 @@ CREATE TABLE `armazon` (
 
 LOCK TABLES `armazon` WRITE;
 /*!40000 ALTER TABLE `armazon` DISABLE KEYS */;
-INSERT INTO `armazon` VALUES (0,2,NULL,'123','456','CRY',NULL,NULL,1);
+INSERT INTO `armazon` VALUES (0,2,NULL,NULL,'123','456','CRY',NULL,NULL,1);
 /*!40000 ALTER TABLE `armazon` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -525,7 +528,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,NULL,'siiiiiiiiiiiii',5,0,100.00),(2,NULL,'nooooooooo',5,0,100.00),(3,NULL,'NOSE',5,0,100.00);
+INSERT INTO `producto` VALUES (1,NULL,'nooooo',10,0,100.00),(2,NULL,'nooooooooo',5,0,100.00),(3,NULL,'NOSE',5,0,100.00);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -759,4 +762,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-26 17:43:20
+-- Dump completed on 2026-10-26 18:15:56
