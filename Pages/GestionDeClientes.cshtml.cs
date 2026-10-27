@@ -77,7 +77,7 @@ namespace Proyecto.Pages
                 var cliente = await _context.Clientes.FindAsync(clienteEditado.IdCliente);
                 if (cliente != null)
                 {
-                    // Validar formato de teléfono al editar
+                    // Validar formato de teléfono al editar (si se ingresó uno)
                     if (!string.IsNullOrWhiteSpace(clienteEditado.Telefono))
                     {
                         clienteEditado.Telefono = clienteEditado.Telefono.Trim();
@@ -95,8 +95,8 @@ namespace Proyecto.Pages
 
                     await _context.SaveChangesAsync();
 
-                    // Alerta verde de confirmación al editar
-                    TempData["MensajeUsuarioCreado"] = "Los datos del cliente se actualizaron correctamente.";
+                    // 🟢 Mensaje verde de éxito al actualizar datos
+                    TempData["MensajeUsuarioCreado"] = $"¡Los datos del cliente '{cliente.Nombre}' se actualizaron correctamente!";
                 }
             }
             return RedirectToPage();

@@ -30,7 +30,7 @@ public partial class Receta
     // --- Control y Vigencia ---
     public DateOnly Fecha { get; set; }
     public DateOnly Vigencia { get; set; }
-    public bool? RecetaExterna { get; set; }
+    public bool RecetaExterna { get; set; }
     public string? Emisor { get; set; }
 
     // --- Opciones de Mica ---
