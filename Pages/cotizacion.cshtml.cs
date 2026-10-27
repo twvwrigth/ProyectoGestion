@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Proyecto.Models;
 
 namespace Proyecto.Pages
@@ -17,6 +18,9 @@ namespace Proyecto.Pages
 
         public SelectList ClientesSelectList { get; set; } = default!;
         public SelectList ArmazonesSelectList { get; set; } = default!;
+
+        // Lista personalizada para manejar el precio real en los atributos data-precio de la vista
+        public List<ArmazonViewModel> ArmazonesListCustom { get; set; } = new();
 
         [BindProperty]
         public CotizacionInputModel Input { get; set; } = new CotizacionInputModel();
@@ -45,22 +49,34 @@ namespace Proyecto.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
+            ModelState.Remove("Input.IdReceta");
             if (!ModelState.IsValid)
             {
                 await CargarCatalogosAsync();
                 return Page();
             }
 
+            // Obtenemos dinámicamente el ID del empleado autenticado actualmente
+            int idEmpleadoLogueado = 1; // Valor por defecto de respaldo
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                var claimId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(claimId, out int parsedId))
+                {
+                    idEmpleadoLogueado = parsedId;
+                }
+            }
+
             var cotizacion = new Cotizacion
             {
                 IdCliente = Input.IdCliente,
-                IdEmpleado = 1, // ID por defecto para pruebas
-                IdReceta = Input.IdReceta,
+                IdEmpleado = idEmpleadoLogueado, // Asignado dinámicamente desde la sesión del usuario
+                IdReceta = Input.IdReceta ?? 0, 
                 FechaCotizo = DateOnly.FromDateTime(DateTime.Now),
-                FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)), // Vigencia de 15 días
+                FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)), // Vigencia exacta de 15 días[cite: 8]
                 TotalCalculado = Input.TotalCalculado,
-                BonificacionExamen = Input.BonificacionExamen,
-                Receta = true
+                BonificacionExamen = false,
+                Receta = Input.IdReceta.HasValue 
             };
 
             _context.Cotizaciones.Add(cotizacion);
@@ -72,29 +88,40 @@ namespace Proyecto.Pages
 
         private async Task CargarCatalogosAsync()
         {
-            // Carga de Clientes usando la propiedad en plural del DbContext
             var clientes = await _context.Clientes.OrderBy(c => c.Nombre).ToListAsync();
             ClientesSelectList = new SelectList(clientes, nameof(Cliente.IdCliente), nameof(Cliente.Nombre));
 
-            // Carga de Armazones vinculados con su respectivo Producto para obtener nombre y precio
-            var armazones = await _context.Armazones
+            // Carga de Armazones vinculados con su respectivo Producto para obtener nombre y precio real
+            ArmazonesListCustom = await _context.Armazones
                 .Include(a => a.IdProductoNavigation)
-                .Select(a => new {
-                    a.CodigoArmazon,
-                    Descripcion = a.IdProductoNavigation != null 
-                        ? $"{a.IdProductoNavigation.Nombre} - ${a.IdProductoNavigation.Precio}" 
-                        : $"Armazón ID: {a.CodigoArmazon} - ${a.Precio}"
+                .Select(a => new ArmazonViewModel
+                {
+                    CodigoArmazon = a.CodigoArmazon,
+                    Descripcion = a.IdProductoNavigation != null
+                        ? $"{a.IdProductoNavigation.Nombre} - ${a.IdProductoNavigation.Precio}"
+                        : $"Armazón ID: {a.CodigoArmazon} - ${a.Precio ?? 0}",
+                    Precio = a.IdProductoNavigation != null
+                        ? a.IdProductoNavigation.Precio
+                        : (a.Precio ?? 0)
                 })
                 .ToListAsync();
 
-            ArmazonesSelectList = new SelectList(armazones, "CodigoArmazon", "Descripcion");
+            ArmazonesSelectList = new SelectList(ArmazonesListCustom, nameof(ArmazonViewModel.CodigoArmazon), nameof(ArmazonViewModel.Descripcion));
         }
+    }
+
+    public class ArmazonViewModel
+    {
+        public int CodigoArmazon { get; set; }
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
     }
 
     public class CotizacionInputModel
     {
         public int IdCliente { get; set; }
-        public int IdReceta { get; set; }
+        public int? IdReceta { get; set; } 
+        public bool EnviarAExamen { get; set; } 
         public bool ArmazonPropio { get; set; }
         public int? CodigoArmazon { get; set; }
         public string? DescripcionArmazonPropio { get; set; }
