@@ -55,6 +55,7 @@ DROP TABLE IF EXISTS `armazon`;
 CREATE TABLE `armazon` (
   `codigoArmazon` int NOT NULL,
   `idProducto` int NOT NULL,
+  `idPromocion` int DEFAULT NULL,
   `idClasePrecio` int DEFAULT NULL,
   `marca` varchar(20) DEFAULT NULL,
   `modelo` varchar(15) DEFAULT NULL,
@@ -65,8 +66,10 @@ CREATE TABLE `armazon` (
   PRIMARY KEY (`codigoArmazon`),
   KEY `fk_armazon_producto` (`idProducto`),
   KEY `fk_armazon_clase` (`idClasePrecio`),
+  KEY `fk_armazon_promocion` (`idPromocion`),
   CONSTRAINT `fk_armazon_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`),
-  CONSTRAINT `fk_armazon_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
+  CONSTRAINT `fk_armazon_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`),
+  CONSTRAINT `fk_armazon_promocion` FOREIGN KEY (`idPromocion`) REFERENCES `promocion` (`idPromocion`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -76,7 +79,7 @@ CREATE TABLE `armazon` (
 
 LOCK TABLES `armazon` WRITE;
 /*!40000 ALTER TABLE `armazon` DISABLE KEYS */;
-INSERT INTO `armazon` VALUES (0,2,NULL,'123','456','CRY',NULL,NULL,1);
+INSERT INTO `armazon` VALUES (0,2,NULL,NULL,'123','456','CRY',NULL,NULL,1);
 /*!40000 ALTER TABLE `armazon` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -141,7 +144,7 @@ CREATE TABLE `cajaturno` (
 
 LOCK TABLES `cajaturno` WRITE;
 /*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Cerrada','2026-10-26 18:37:02',0.00,0.00,0.00,NULL);
 /*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -525,7 +528,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,NULL,'siiiiiiiiiiiii',5,0,100.00),(2,NULL,'nooooooooo',5,0,100.00),(3,NULL,'NOSE',5,0,100.00);
+INSERT INTO `producto` VALUES (1,NULL,'nooooo',10,0,100.00),(2,NULL,'nooooooooo',5,0,100.00),(3,NULL,'NOSE',5,0,100.00);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -724,6 +727,7 @@ DROP TABLE IF EXISTS `venta`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `venta` (
   `folioVenta` int NOT NULL AUTO_INCREMENT,
+  `idCajaTurno` int DEFAULT NULL,
   `idCliente` int NOT NULL,
   `idEmpleado` int NOT NULL,
   `idProducto` int NOT NULL,
@@ -735,6 +739,8 @@ CREATE TABLE `venta` (
   KEY `fk_venta_cliente` (`idCliente`),
   KEY `fk_venta_empleado` (`idEmpleado`),
   KEY `fk_venta_producto` (`idProducto`),
+  KEY `fk_venta_caja` (`idCajaTurno`),
+  CONSTRAINT `fk_venta_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`),
   CONSTRAINT `fk_venta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_venta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_venta_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
@@ -759,4 +765,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-26 17:43:20
+-- Dump completed on 2026-10-26 18:38:32
