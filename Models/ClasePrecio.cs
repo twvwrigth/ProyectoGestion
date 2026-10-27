@@ -13,7 +13,5 @@ public partial class ClasePrecio
 
     public int? RangoMaximo { get; set; }
 
-    public virtual ICollection<Armazon> Armazones { get; set; } = new List<Armazon>();
-
     public virtual ICollection<Producto> Productos { get; set; } = new List<Producto>();
 }

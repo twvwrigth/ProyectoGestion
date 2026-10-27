@@ -1,15 +1,13 @@
+<!-- MODAL: Editar Producto -->
 <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <!-- Formulario apuntando al manejador OnPostEditarAsync -->
             <form method="post" asp-page-handler="Editar">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title" id="modalEditarLabel">Editar Producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    
-                    <!-- ID oculto necesario para saber qué producto editar -->
                     <input type="hidden" id="editId" name="IdProductoEdit" />
                     
                     <div class="mb-3">
@@ -22,7 +20,6 @@
                             <label class="form-label fw-bold">Precio</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <!-- step="0.01" permite decimales -->
                                 <input type="number" class="form-control" id="editPrecio" name="PrecioEdit" step="0.01" min="0.01" required>
                             </div>
                         </div>
@@ -31,6 +28,8 @@
                             <input type="number" class="form-control" id="editExistencia" name="ExistenciaEdit" min="0" required>
                         </div>
                     </div>
+                    
+                    <!-- Nota: Los detalles técnicos (JSON) no se editan aquí para mantener la simplicidad del modal original -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -41,10 +40,7 @@
     </div>
 </div>
 
-
-
-
-<!-- Modal de Confirmación para Eliminar -->
+<!-- MODAL: Eliminar Producto -->
 <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -54,7 +50,6 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <!-- ID oculto para enviar al backend -->
                     <input type="hidden" id="eliminarId" name="IdProductoEliminar" />
                     
                     <p class="mb-2">¿Estás seguro de que deseas eliminar este producto?</p>
@@ -64,6 +59,41 @@
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-danger">Sí, Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Creador de Categorías (Camino 1) -->
+<div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CrearCategoria" id="formCrearCategoria">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Crear Nueva Categoría</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre de la Categoría</label>
+                        <input type="text" class="form-control" name="NuevaCategoriaNombre" placeholder="Ej. Lentes de Contacto" required>
+                    </div>
+                    
+                    <label class="form-label fw-bold">Atributos solicitados (Opcional)</label>
+                    <p class="small text-muted mb-2">Define qué datos se pedirán al registrar un producto de esta categoría.</p>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" id="inputAtributoNuevo" class="form-control" placeholder="Ej. Material, Color, Curva Base...">
+                        <button class="btn btn-outline-success" type="button" id="btnAgregarAtributo">Añadir</button>
+                    </div>
+
+                    <div id="contenedorAtributos" class="d-flex flex-wrap gap-2 mb-2"></div>
+                    <input type="hidden" name="AtributosJson" id="hiddenAtributosJson" value="[]">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar Categoría</button>
                 </div>
             </form>
         </div>

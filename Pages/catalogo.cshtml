@@ -1,5 +1,5 @@
 @page
-@model Proyecto.Pages.CatalogoModel
+@model Proyecto.Pages.catalogoModel
 @{
     ViewData["Title"] = "Catálogo de Productos";
 }
@@ -8,7 +8,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h2 class="border-bottom pb-2">Catálogo de Productos</h2>
-            <p class="text-muted">Registro y control de armazones, gafas de sol y accesorios.</p>
+            <p class="text-muted">Registro y control de inventario dinámico.</p>
         </div>
     </div>
 
@@ -36,54 +36,45 @@
                     <h5 class="card-title mb-0">Nuevo Producto</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" id="formNuevoProducto">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nombre / Descripción general</label>
-                            <input type="text" class="form-control" asp-for="NombreNuevo"
-                                   placeholder="Ej. Ray-Ban Aviator" maxlength="20" required>
+                            <input type="text" class="form-control" name="NombreNuevo" placeholder="Ej. Ray-Ban Aviator"
+                                   maxlength="20" required>
                         </div>
     
                         <div class="mb-3">
                             <label class="form-label fw-bold">Categoría</label>
-                            <!-- Le agregamos el id "selectCategoria" para usarlo en JavaScript -->
-                            <select class="form-select" asp-for="CategoriaNueva" id="selectCategoria" required>
-                                <option value="" selected disabled>Selecciona una opción...</option>
-                                <option value="armazon">Armazón</option>
-                                <option value="gafas_sol">Gafas de sol</option>
-                                <option value="accesorio">Accesorios</option>
-                            </select>
+                            <div class="input-group">
+                                <select class="form-select" name="CategoriaNueva" id="selectCategoria" required>
+                                    <option value="" selected disabled>Selecciona una opción...</option>
+                                    @if (Model.Categorias != null)
+                                    {
+                                        foreach (var cat in Model.Categorias)
+                                        {
+                                                    < option value = "@cat.IdCategoria" data - atributos = '@cat.CamposRequeridos' >
+                                                @cat.NombreCategoria </ option >
+                                        }
+                                    }
+                                </select>
+                                <!-- Botón que dispara el modal de Nueva Categoría (Camino 1) -->
+                                <button class="btn btn-outline-success" type="button" data-bs-toggle="modal"
+                                        data-bs-target="#modalNuevaCategoria" title="Crear nueva categoría">
+                                    + Nueva
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- SECCIÓN DINÁMICA: Solo visible si se elige Armazón -->
-                        <div id="camposArmazon" style="display: none;" class="p-3 mb-3 bg-light border rounded">
-                            <h6 class="text-primary border-bottom pb-1">Detalles del Armazón</h6>
-                            <div class="mb-2">
-                                <label class="form-label fw-bold small">Código Único (Numérico)</label>
-                                <input type="number" class="form-control form-control-sm armazon-input"
-                                       asp-for="CodigoArmazonNuevo">
+                        <!-- SECCIÓN DINÁMICA: Aquí se dibujarán las cajitas según la categoría elegida -->
+                        <div id="camposDinamicosContenedor" class="p-3 mb-3 bg-light border rounded"
+                             style="display: none;">
+                            <h6 class="text-primary border-bottom pb-1" id="tituloDetallesDinamicos">Detalles Técnicos
+                            </h6>
+                            <div id="inputsDinamicos">
+                                <!-- JavaScript insertará los inputs aquí -->
                             </div>
-                            <div class="row">
-                                <div class="col-6 mb-2">
-                                    <label class="form-label fw-bold small">Marca</label>
-                                    <input type="text" class="form-control form-control-sm armazon-input"
-                                           asp-for="MarcaNueva" maxlength="20">
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <label class="form-label fw-bold small">Modelo</label>
-                                    <input type="text" class="form-control form-control-sm armazon-input"
-                                           asp-for="ModeloNuevo" maxlength="15">
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label fw-bold small">Material</label>
-                                <input type="text" class="form-control form-control-sm armazon-input"
-                                       asp-for="MaterialNuevo" maxlength="100">
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" asp-for="VentaSinGraduacionNueva"
-                                       checked>
-                                <label class="form-check-label small">Permitir venta sin graduar</label>
-                            </div>
+                            <!-- Input oculto donde guardaremos el JSON final antes de enviarlo al servidor -->
+                            <input type="hidden" name="DetallesTecnicosJson" id="hiddenDetallesTecnicos" />
                         </div>
 
                         <div class="row">
@@ -91,14 +82,14 @@
                                 <label class="form-label fw-bold">Precio</label>
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
-                                    <input type="number" class="form-control" asp-for="PrecioNuevo" placeholder="0.00"
+                                    <input type="number" class="form-control" name="PrecioNuevo" placeholder="0.00"
                                            step="0.01" min="0.01" required>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
                                 <label class="form-label fw-bold">Existencia</label>
-                                <input type="number" class="form-control" asp-for="ExistenciaNueva" placeholder="0"
-                                       min="0" required>
+                                <input type="number" class="form-control" name="ExistenciaNueva" placeholder="0" min="0"
+                                       required>
                             </div>
                         </div>
 
@@ -114,18 +105,20 @@
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Inventario Actual</h5>
                     <!-- Contenedor de Búsqueda y Filtro -->
-                    <!-- Contenedor de Búsqueda y Filtro -->
                     <form method="get" class="d-flex gap-2 w-50 m-0">
-                        <select class="form-select form-select-sm" asp-for="FiltroCategoria"
-                                onchange="this.form.submit()">
+                        <select class="form-select form-select-sm" name="FiltroCategoria" onchange="this.form.submit()">
                             <option value="todas">Todas las categorías</option>
-                            <option value="armazon">Armazón</option>
-                            <option value="gafas_sol">Gafas de sol</option>
-                            <option value="accesorio">Accesorios</option>
+                            @if (Model.Categorias != null)
+                            {
+                                foreach (var cat in Model.Categorias)
+                                {
+                                    <option value="@cat.IdCategoria">@cat.NombreCategoria</option>
+                                }
+                            }
                         </select>
     
                         <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" asp-for="Buscar" placeholder="Buscar producto...">
+                            <input type="text" class="form-control" name="Buscar" placeholder="Buscar producto...">
                             <button type="submit" class="btn btn-secondary">Buscar</button>
                         </div>
                     </form>
@@ -135,11 +128,12 @@
                         <table class="table table-hover table-striped mb-0 text-center align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Código</th>
+                                    <th>ID</th>
                                     <th class="text-start">Nombre</th>
                                     <th>Categoría</th>
                                     <th>Precio</th>
                                     <th>Stock</th>
+                                    <th>Detalles Técnicos</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -150,26 +144,14 @@
                                     {
                                         <tr>
                                             <td>PRD-@producto.IdProducto.ToString("D3")</td>
-                                            <td class="text-start">@producto.Nombre</td>
+                                            <td class="text-start fw-bold">@producto.Nombre</td>
                                             
-                                            <!-- Verificación de categoría mediante tablas relacionadas -->
+                                            <!-- Categoría Dinámica -->
                                             <td>
-                                                @if (producto.Armazones != null && producto.Armazones.Any())
-                                                {
-                                                    <span class="badge bg-secondary">Armazón</span>
-                                                }
-                                                else if (producto.GafasSolList != null && producto.GafasSolList.Any())
-                                                {
-                                                    <span class="badge bg-info text-dark">Gafas de sol</span>
-                                                }
-                                                else if (producto.Accesorios != null && producto.Accesorios.Any())
-                                                {
-                                                    <span class="badge bg-warning text-dark">Accesorio</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-light text-dark">General</span>
-                                                }
+                                                <span class="badge bg-primary">
+                                                    @(producto.IdCategoriaNavigation != null ?
+                                            producto.IdCategoriaNavigation.NombreCategoria : "General")
+                                                </span>
                                             </td>
                                             
                                             <td>$@producto.Precio.ToString("0.00")</td>
@@ -182,6 +164,20 @@
                                                 else
                                                 {
                                                     <span class="badge bg-success">@producto.Existencia</span>
+                                                }
+                                            </td>
+
+                                            <!-- JSON mostrado de forma amigable -->
+                                            <td style="max-width: 200px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+                                                title="@producto.DetallesTecnicos">
+                                                @if (!string.IsNullOrEmpty(producto.DetallesTecnicos) &&
+                                        producto.DetallesTecnicos != "{}")
+                                                {
+                                                    <small class="text-muted">@producto.DetallesTecnicos</small>
+                                                }
+                                                else
+                                                {
+                                                    <small class="text-muted fst-italic">Sin detalles</small>
                                                 }
                                             </td>
                                             
@@ -206,7 +202,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">No hay productos registrados en
+                                        <td colspan="7" class="text-center py-4 text-muted">No hay productos registrados en
                                             la base de datos.</td>
                                         </tr>
                                     }
@@ -217,61 +213,149 @@
                 </div>
             </div>
         </div>
+
+        <partial name="~/Pages/Modales/_ModalesCatalogo.cshtml" />
+
+
+            @section Scripts {
+                <script>
+                        // --- LÓGICA DE LOS MODALES DE EDICIÓN Y ELIMINACIÓN (Original) ---
+                        var modalEditar = document.getElementById('modalEditar')
+                        if (modalEditar) {
+                            modalEditar.addEventListener('show.bs.modal', function (event) {
+                                var button = event.relatedTarget;
+                                var id = button.getAttribute('data-id');
+                                var nombre = button.getAttribute('data-nombre');
+                                var precio = button.getAttribute('data-precio');
+                                var existencia = button.getAttribute('data-existencia');
     
-        <!-- Inyectamos tu modal -->
-        <partial name="~/Pages/Modales/ModalEditarCatalogo.cshtml" />
+                                modalEditar.querySelector('#editId').value = id;
+                                modalEditar.querySelector('#editNombre').value = nombre;
+                                modalEditar.querySelector('#editPrecio').value = parseFloat(precio).toFixed(2);
+                                modalEditar.querySelector('#editExistencia').value = existencia;
+                            });
+                        }
+        
+                        var modalEliminar = document.getElementById('modalEliminar');
+                        if (modalEliminar) {
+                            modalEliminar.addEventListener('show.bs.modal', function (event) {
+                                var button = event.relatedTarget;
+                                var id = button.getAttribute('data-id');
+                                var nombre = button.getAttribute('data-nombre');
+    
+                                modalEliminar.querySelector('#eliminarId').value = id;
+                                modalEliminar.querySelector('#nombreProductoEliminar').textContent = nombre;
+                            });
+                        }
 
+                        // --- LÓGICA DEL GESTOR DE CATEGORÍAS (Camino 1) ---
+                        document.addEventListener("DOMContentLoaded", function () {
+                            var btnAgregarAtributo = document.getElementById('btnAgregarAtributo');
+                            var inputAtributoNuevo = document.getElementById('inputAtributoNuevo');
+                            var contenedorAtributos = document.getElementById('contenedorAtributos');
+                            var hiddenAtributosJson = document.getElementById('hiddenAtributosJson');
+            
+                            var listaAtributos = []; // Arreglo en memoria
 
-        @section Scripts {
-            <script>
-                    var modalEditar = document.getElementById('modalEditar')
-                    modalEditar.addEventListener('show.bs.modal', function (event) {
-                        // Botón que activó el modal
-                        var button = event.relatedTarget
-            
-                        // Extraer la información de los atributos data-
-                        var id = button.getAttribute('data-id')
-                        var nombre = button.getAttribute('data-nombre')
-                        var precio = button.getAttribute('data-precio')
-                        var existencia = button.getAttribute('data-existencia')
-            
-                        // Inyectar los datos en los inputs del formulario del modal
-                        modalEditar.querySelector('#editId').value = id;
-                        modalEditar.querySelector('#editNombre').value = nombre;
-                        modalEditar.querySelector('#editPrecio').value = parseFloat(precio).toFixed(2);
-                        modalEditar.querySelector('#editExistencia').value = existencia;
-                    })
+                            btnAgregarAtributo.addEventListener('click', function () {
+                                var valor = inputAtributoNuevo.value.trim();
+                                if (valor !== "" && !listaAtributos.includes(valor)) {
+                                    listaAtributos.push(valor);
+                                    actualizarUIAtributos();
+                                    inputAtributoNuevo.value = ""; // Limpiar input
+                                }
+                            });
+
+                            // Permitir agregar presionando "Enter"
+                            inputAtributoNuevo.addEventListener("keypress", function (event) {
+                                if (event.key === "Enter") {
+                                    event.preventDefault(); // Evita que se envíe el formulario
+                                    btnAgregarAtributo.click();
+                                }
+                            });
+
+                            // Función para redibujar las "etiquetas" visuales y actualizar el JSON
+                            function actualizarUIAtributos() {
+                                contenedorAtributos.innerHTML = ""; // Limpiamos contenedor visual
+                
+                                listaAtributos.forEach(function (atributo, index) {
+                                    var tag = document.createElement('span');
+                                    tag.className = 'badge bg-secondary d-flex align-items-center';
+                                    tag.innerHTML = atributo + ' <i class="ms-2 text-white" style="cursor:pointer;" onclick="eliminarAtributo(' + index + ')">x</i>';
+                                    contenedorAtributos.appendChild(tag);
+                                });
+
+                                // Actualizamos el input oculto para que C# reciba esto como JSON
+                                hiddenAtributosJson.value = JSON.stringify(listaAtributos);
+                            }
+
+                            // Función global para eliminar un atributo si el usuario se equivoca
+                            window.eliminarAtributo = function (index) {
+                                listaAtributos.splice(index, 1);
+                                actualizarUIAtributos();
+                            };
+                        });
+        
+                        // --- LÓGICA DEL FORMULARIO DINÁMICO DE PRODUCTOS (Camino 2) ---
+                        document.addEventListener("DOMContentLoaded", function () {
+                            var selectCategoria = document.getElementById('selectCategoria');
+                            var contenedorDinamico = document.getElementById('camposDinamicosContenedor');
+                            var inputsDinamicos = document.getElementById('inputsDinamicos');
+                            var hiddenDetalles = document.getElementById('hiddenDetallesTecnicos');
+        
+                            if (selectCategoria) {
+                                selectCategoria.addEventListener('change', function () {
+                                    // Obtener la opción seleccionada y extraer el JSON de atributos
+                                    var selectedOption = this.options[this.selectedIndex];
+                                    var atributosRaw = selectedOption.getAttribute('data-atributos');
                     
-                    var modalEliminar = document.getElementById('modalEliminar');
-                    modalEliminar.addEventListener('show.bs.modal', function (event) {
-                        var button = event.relatedTarget;
+                                    // Limpiar la interfaz de campos anteriores
+                                    inputsDinamicos.innerHTML = '';
+                                    hiddenDetalles.value = '{}';
+                    
+                                    if (atributosRaw && atributosRaw !== "[]" && atributosRaw !== "") {
+                                        var atributos = JSON.parse(atributosRaw);
+                                        contenedorDinamico.style.display = 'block';
+                        
+                                        // Dibujar una cajita de texto por cada atributo exigido
+                                        atributos.forEach(function (attr) {
+                                            var div = document.createElement('div');
+                                            div.className = 'mb-2';
+                            
+                                            var label = document.createElement('label');
+                                            label.className = 'form-label fw-bold small text-capitalize';
+                                            label.innerText = attr;
+                            
+                                            var input = document.createElement('input');
+                                            input.type = 'text';
+                                            input.className = 'form-control form-control-sm attr-dinamico';
+                                            input.dataset.key = attr; // Guardamos el nombre real del atributo
+                                            input.required = true;
+                            
+                                            // Cada vez que el usuario escriba, actualizamos el JSON oculto
+                                            input.addEventListener('input', actualizarJsonDetalles);
+                            
+                                            div.appendChild(label);
+                                            div.appendChild(input);
+                                            inputsDinamicos.appendChild(div);
+                                        });
+                                    } else {
+                                        // Si la categoría no tiene atributos especiales, ocultamos la caja
+                                        contenedorDinamico.style.display = 'none';
+                                    }
+                                });
+                            }
         
-                        var id = button.getAttribute('data-id');
-                        var nombre = button.getAttribute('data-nombre');
-        
-                        modalEliminar.querySelector('#eliminarId').value = id;
-                        modalEliminar.querySelector('#nombreProductoEliminar').textContent = nombre;
-                    });
-            </script>
-
-            <script>
-                    document.addEventListener("DOMContentLoaded", function () {
-                        var selectCategoria = document.getElementById('selectCategoria');
-                        var camposArmazon = document.getElementById('camposArmazon');
-                        var inputsArmazon = document.querySelectorAll('.armazon-input');
-
-                        selectCategoria.addEventListener('change', function () {
-                            if (this.value === 'armazon') {
-                                camposArmazon.style.display = 'block';
-                                // Hacer obligatorios los campos del armazón
-                                inputsArmazon.forEach(input => input.setAttribute('required', 'required'));
-                            } else {
-                                camposArmazon.style.display = 'none';
-                                // Quitar la obligatoriedad si es gafa o accesorio
-                                inputsArmazon.forEach(input => input.removeAttribute('required'));
+                            // Función que arma el JSON final leyendo todas las cajitas dinámicas
+                            function actualizarJsonDetalles() {
+                                var obj = {};
+                                var inputs = document.querySelectorAll('.attr-dinamico');
+                                inputs.forEach(function (input) {
+                                    obj[input.dataset.key] = input.value.trim();
+                                });
+                                hiddenDetalles.value = JSON.stringify(obj);
                             }
                         });
-                    });
-            </script>
-        }
-    </div>
+                </script>
+            }
+        </div>
