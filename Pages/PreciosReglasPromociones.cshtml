@@ -6,6 +6,14 @@
 
 <div class="container-fluid py-4">
 
+    <!-- ALERTA DE ÉXITO EN FORMATO BANNER DE BOOTSTRAP -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
     <!-- Encabezado Principal de la Vista -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
@@ -324,7 +332,7 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // 1. Limpieza de capas oscuras o clases huérfanas de Bootstrap
+            // 1. Limpieza de clases o capas residuales en el DOM
             document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
@@ -343,22 +351,7 @@
                 });
             }
 
-            // 3. Mostrar Modal de Éxito de forma segura sin duplicar el fondo gris
-            var mensajeExito = "@Html.Raw(TempData["SuccessMessage"])";
-            if (mensajeExito && mensajeExito.trim() !== "") {
-                var modalExitoEl = document.getElementById('modalExito');
-                if (modalExitoEl) {
-                    var textoEl = document.getElementById('mensajeExitoTexto');
-                    if (textoEl) {
-                        textoEl.innerHTML = mensajeExito;
-                    }
-                    // Usa getOrCreateInstance para evitar duplicar .modal-backdrop
-                    var modalExito = bootstrap.Modal.getOrCreateInstance(modalExitoEl);
-                    modalExito.show();
-                }
-            }
-
-            // 4. Alertas de Error
+            // 3. Alertas de Error (Opcional si usas alert nativo)
             var mensajeError = "@Html.Raw(TempData["ErrorMessage"])";
             if (mensajeError && mensajeError.trim() !== "") {
                 alert(mensajeError);
@@ -418,24 +411,3 @@
     </script>
 }
     
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                document.getElementById('mensajeExitoTexto').innerHTML = "@Html.Raw(TempData["SuccessMessage"])";
-                var modalExitoEl = document.getElementById('modalExito');
-                if (modalExitoEl) {
-                    var modalExito = new bootstrap.Modal(modalExitoEl);
-                    modalExito.show();
-                }
-            });
-        </script>
-    }
-    @if (TempData["ErrorMessage"] != null)
-{
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            alert("@Html.Raw(TempData["ErrorMessage"])");
-        });
-    </script>
-}
