@@ -37,6 +37,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<MovimientoCaja> MovimientoCaja { get; set; }
 
+    public DbSet<Mica> Micas { get; set; }
+
     public virtual DbSet<ParametroNegocio> ParametroNegocios { get; set; }
 
     public virtual DbSet<Pedido> Pedidos { get; set; }
@@ -104,6 +106,12 @@ public partial class MiApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_movimiento_caja");
         });
+
+        modelBuilder.Entity<Mica>(entity =>
+{
+    entity.HasKey(m => m.IdMica);
+    entity.Property(m => m.Precio).HasColumnType("decimal(18,2)");
+});
 
         modelBuilder.Entity<Bitacora>(entity =>
         {
