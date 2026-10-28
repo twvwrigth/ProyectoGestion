@@ -4,87 +4,105 @@
     ViewData["Title"] = "Gestión de Empleados";
 }
 
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="mb-1 fw-bold">Gestión de Empleados</h5>
-            <p class="text-muted small mb-0">HU-01: Control de usuarios, roles y accesos</p>
+<div class="container-fluid py-4">
+    <!-- Alertas de Éxito y Error -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearEmpleado">
-            + Nuevo Empleado
-        </button>
-    </div>
+    }
 
-    <div class="card-body p-0">
-        <div class="table-responsive table-card">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col" class="ps-3">Nombre</th>
-                        <th scope="col">Usuario</th>
-                        <th scope="col">Rol</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col" class="text-end pe-3">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.EmpleadosList != null && Model.EmpleadosList.Any())
-                    {
-                        @foreach (var emp in Model.EmpleadosList)
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1 fw-bold">Gestión de Empleados</h5>
+                <p class="text-muted small mb-0">HU-01: Control de usuarios, roles y accesos</p>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearEmpleado">
+                + Nuevo Empleado
+            </button>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive table-card">
+                <table class="table table-striped table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-3">Nombre</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Rol</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col" class="text-end pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.EmpleadosList != null && Model.EmpleadosList.Any())
                         {
-                            <tr>
-                                <td class="ps-3 fw-medium">@emp.Nombre</td>
-                                <td>@emp.Usuario</td>
-                                <td>
-                                    <!-- Muestra el nombre exacto del rol almacenado en la base de datos -->
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
-                                        @(emp.IdRolNavigation?.NombreRol ?? "Sin Rol")
-                                    </span>
-                                </td>
-                                <td>
-                                    @if (emp.Activo)
-                                    {
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Activo</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Inactivo</span>
-                                    }
-                                </td>
-                                <td class="text-end pe-3">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#modalEditarEmpleado"
-                                            data-id="@emp.IdEmpleado"
-                                            data-nombre="@emp.Nombre"
-                                            data-usuario="@emp.Usuario"
-                                            data-rol="@emp.IdRol">
-                                        Editar
-                                    </button>
-
-                                    <form method="post" asp-page-handler="ToggleEstado" class="d-inline">
-                                        <input type="hidden" name="id" value="@emp.IdEmpleado" />
+                            @foreach (var emp in Model.EmpleadosList)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-medium">@emp.Nombre</td>
+                                    <td>@emp.Usuario</td>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
+                                            @(emp.IdRolNavigation?.NombreRol ?? "Sin Rol")
+                                        </span>
+                                    </td>
+                                    <td>
                                         @if (emp.Activo)
                                         {
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Activo</span>
                                         }
                                         else
                                         {
-                                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Inactivo</span>
                                         }
-                                    </form>
-                                </td>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#modalEditarEmpleado"
+                                                data-id="@emp.IdEmpleado"
+                                                data-nombre="@emp.Nombre"
+                                                data-usuario="@emp.Usuario"
+                                                data-rol="@emp.IdRol">
+                                            Editar
+                                        </button>
+
+                                        <form method="post" asp-page-handler="ToggleEstado" class="d-inline">
+                                            <input type="hidden" name="id" value="@emp.IdEmpleado" />
+                                            @if (emp.Activo)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                                            }
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No hay empleados registrados.</td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">No hay empleados registrados.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -97,16 +115,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
-            // 1. Mostrar mensaje de éxito si existe
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <text>
-                var modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
-                modalExito.show();
-                </text>
-            }
-
-            // 2. Reabrir modal de Crear si hubo error
+            // 1. Reabrir modal de Crear si hubo error
             @if (ViewData["ShowModal"]?.ToString() == "Crear")
             {
                 <text>
@@ -114,7 +123,7 @@
                 modalCrear.show();
                 </text>
             }
-            // 3. Reabrir modal de Editar si hubo error
+            // 2. Reabrir modal de Editar si hubo error
             else if (ViewData["ShowModal"]?.ToString() == "Editar")
             {
                 <text>

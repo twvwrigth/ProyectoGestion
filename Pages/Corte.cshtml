@@ -5,6 +5,23 @@
 }
 
 <div class="container-fluid py-4">
+    <!-- Alertas de Éxito y Error -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="card shadow-sm border-0 mx-auto" style="max-width: 800px;">
         <div class="card-header bg-primary text-white border-0 py-3">
             <h5 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2"></i>Corte de Turno</h5>
