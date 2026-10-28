@@ -1,28 +1,5 @@
 @model Proyecto.Pages.GestionDeEmpleadosModel
 
-<!-- Modal Reutilizable de Éxito -->
-<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-check-circle-fill me-2"></i>Operación Exitosa
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <span class="display-4 text-success">&#10004;</span>
-                </div>
-                <p class="fs-5 mb-0">@TempData["SuccessMessage"]</p>
-            </div>
-            <div class="modal-footer justify-content-center border-0 pt-0">
-                <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">Aceptar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Modal para Crear Empleado -->
 <div class="modal fade" id="modalCrearEmpleado" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -35,27 +12,40 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Nombre Completo</label>
-                        <input type="text" asp-for="Nombre" class="form-control" />
+                        <input type="text" asp-for="Nombre" class="form-control" placeholder="Ej. Juan Pérez" />
                         <span asp-validation-for="Nombre" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Usuario Único</label>
-                        <input type="text" id="usuarioEmpleado" asp-for="Usuario" class="form-control" />
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" id="usuarioEmpleado" asp-for="Usuario" class="form-control" placeholder="ejemplo@correo.com" />
                         <span asp-validation-for="Usuario" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Contraseña Temporal</label>
                         <input type="text" id="contrasenaTemporal" asp-for="ContrasenaTemporal" class="form-control" />
-                        <div class="form-text">Si se deja vacío, se autogenerará.</div>
+                        <div class="form-text">Se genera automáticamente según el correo.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Asignar Rol</label>
                         <select asp-for="Rol" class="form-select">
-                            @if(Model.RolesList != null)
+                            @if (Model.RolesList != null)
                             {
                                 @foreach (var rol in Model.RolesList)
                                 {
                                     <option value="@rol.IdRol">@rol.NombreRol</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Laboratorio Pertenece</label>
+                        <select asp-for="IdLaboratorio" class="form-select">
+                            <option value="0">-- Ninguno / No aplica --</option>
+                            @if (Model.LaboratoriosList != null)
+                            {
+                                @foreach (var lab in Model.LaboratoriosList)
+                                {
+                                    <option value="@lab.IdLaboratorio">@lab.Nombre</option>
                                 }
                             }
                         </select>
@@ -87,18 +77,31 @@
                         <span asp-validation-for="EditNombre" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Usuario Único</label>
-                        <input type="text" id="editUsuario" asp-for="EditUsuario" class="form-control" />
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" id="editUsuario" asp-for="EditUsuario" class="form-control" />
                         <span asp-validation-for="EditUsuario" class="text-danger small mt-1 d-block"></span>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Rol Asignado</label>
                         <select id="editRol" asp-for="EditRol" class="form-select">
-                            @if(Model.RolesList != null)
+                            @if (Model.RolesList != null)
                             {
                                 @foreach (var rol in Model.RolesList)
                                 {
                                     <option value="@rol.IdRol">@rol.NombreRol</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Laboratorio Pertenece</label>
+                        <select id="editLaboratorio" asp-for="EditLaboratorio" class="form-select">
+                            <option value="0">-- Ninguno / No aplica --</option>
+                            @if (Model.LaboratoriosList != null)
+                            {
+                                @foreach (var lab in Model.LaboratoriosList)
+                                {
+                                    <option value="@lab.IdLaboratorio">@lab.Nombre</option>
                                 }
                             }
                         </select>

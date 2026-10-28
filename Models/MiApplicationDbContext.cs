@@ -249,6 +249,7 @@ public partial class MiApplicationDbContext : DbContext
             entity.HasIndex(e => e.Usuario, "usuario").IsUnique();
 
             entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            entity.Property(e => e.BloqueadoHasta).HasColumnType("datetime").HasColumnName("bloqueadoHasta");
             entity.Property(e => e.Activo)
                 .HasDefaultValueSql("'1'")
                 .HasColumnName("activo");
