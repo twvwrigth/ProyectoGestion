@@ -27,7 +27,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Asignar Rol</label>
-                        <select asp-for="Rol" class="form-select">
+                        <select id="rolEmpleado" asp-for="Rol" class="form-select">
+                            <option value="">-- Seleccione un Rol --</option>
                             @if (Model.RolesList != null)
                             {
                                 @foreach (var rol in Model.RolesList)
@@ -37,9 +38,10 @@
                             }
                         </select>
                     </div>
-                    <div class="mb-3">
+                    <!-- CONTENEDOR OCULTO POR DEFECTO -->
+                    <div class="mb-3" id="divLaboratorio" style="display: none;">
                         <label class="form-label">Laboratorio Pertenece</label>
-                        <select asp-for="IdLaboratorio" class="form-select">
+                        <select id="idLaboratorio" asp-for="IdLaboratorio" class="form-select">
                             <option value="0">-- Ninguno / No aplica --</option>
                             @if (Model.LaboratoriosList != null)
                             {
@@ -93,7 +95,8 @@
                             }
                         </select>
                     </div>
-                    <div class="mb-3">
+                    <!-- CONTENEDOR OCULTO POR DEFECTO -->
+                    <div class="mb-3" id="divEditLaboratorio" style="display: none;">
                         <label class="form-label">Laboratorio Pertenece</label>
                         <select id="editLaboratorio" asp-for="EditLaboratorio" class="form-select">
                             <option value="0">-- Ninguno / No aplica --</option>
