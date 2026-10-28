@@ -16,8 +16,7 @@ public class GestionDeEmpleadosModel : PageModel
     }
 
     public List<Empleado> EmpleadosList { get; set; } = new();
-
-    public List<Rol> RolesList { get; set; } = new();
+    public List<Rol> RolesList { get; set; } = new(); // Lista dinámica de roles
 
     // ==========================================
     // PROPIEDADES PARA CREAR EMPLEADO
@@ -58,10 +57,7 @@ public class GestionDeEmpleadosModel : PageModel
     // ==========================================
     public async Task OnGetAsync()
     {
-        EmpleadosList = await _context.Empleados
-            .Include(e => e.IdRolNavigation)
-            .ToListAsync();
-
+        EmpleadosList = await _context.Empleados.Include(e => e.IdRolNavigation).ToListAsync();
         RolesList = await _context.Roles.ToListAsync();
     }
 
@@ -74,7 +70,8 @@ public class GestionDeEmpleadosModel : PageModel
         
         if (!ModelState.IsValid)
         {
-            EmpleadosList = await _context.Empleados.ToListAsync();
+            ViewData["ShowModal"] = "Crear"; // Faltaba esto para reabrir el modal de Crear
+            EmpleadosList = await _context.Empleados.Include(e => e.IdRolNavigation).ToListAsync();
             RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
@@ -82,7 +79,8 @@ public class GestionDeEmpleadosModel : PageModel
         if (await _context.Empleados.AnyAsync(e => e.Usuario.ToLower() == Usuario.ToLower()))
         {
             ModelState.AddModelError("Usuario", "El usuario ya existe.");
-            EmpleadosList = await _context.Empleados.ToListAsync();
+            ViewData["ShowModal"] = "Crear"; // Faltaba esto para reabrir el modal de Crear
+            EmpleadosList = await _context.Empleados.Include(e => e.IdRolNavigation).ToListAsync();
             RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
@@ -117,7 +115,7 @@ public class GestionDeEmpleadosModel : PageModel
         if (!ModelState.IsValid)
         {
             ViewData["ShowModal"] = "Editar";
-            EmpleadosList = await _context.Empleados.ToListAsync();
+            EmpleadosList = await _context.Empleados.Include(e => e.IdRolNavigation).ToListAsync();
             RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
@@ -136,7 +134,7 @@ public class GestionDeEmpleadosModel : PageModel
         {
             ModelState.AddModelError("EditUsuario", "El nombre de usuario ingresado ya está en uso.");
             ViewData["ShowModal"] = "Editar";
-            EmpleadosList = await _context.Empleados.ToListAsync();
+            EmpleadosList = await _context.Empleados.Include(e => e.IdRolNavigation).ToListAsync();
             RolesList = await _context.Roles.ToListAsync();
             return Page();
         }
