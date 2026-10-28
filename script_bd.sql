@@ -94,7 +94,7 @@ CREATE TABLE `categoria` (
   `nombreCategoria` varchar(50) NOT NULL,
   `camposRequeridos` json DEFAULT NULL,
   PRIMARY KEY (`idCategoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,7 +103,7 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]');
+INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]'),(4,'Micas','[\"material\", \"tratamiento\", \"graduación\", \"precio\"]'),(5,'Gafas de sol','[]'),(6,'lentes03','[{\"tipo\": \"number\", \"nombre\": \"tamaño\"}]');
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -313,6 +313,33 @@ LOCK TABLES `lista_espera` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `micas`
+--
+
+DROP TABLE IF EXISTS `micas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `micas` (
+  `IdMica` int NOT NULL AUTO_INCREMENT,
+  `Material` varchar(100) NOT NULL,
+  `Tratamiento` varchar(100) DEFAULT NULL,
+  `RangoGraduacion` varchar(100) DEFAULT NULL,
+  `Precio` decimal(18,2) NOT NULL,
+  PRIMARY KEY (`IdMica`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `micas`
+--
+
+LOCK TABLES `micas` WRITE;
+/*!40000 ALTER TABLE `micas` DISABLE KEYS */;
+INSERT INTO `micas` VALUES (1,'CR-39','Fotocromático','200-100',2500.00);
+/*!40000 ALTER TABLE `micas` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `movimientocaja`
 --
 
@@ -427,7 +454,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -436,7 +463,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL);
+INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL),(4,3,NULL,'Lentes',10,0,120.00,'{\"Color\": \"gris\", \"Material\": \"vidrio\"}');
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -673,4 +700,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-27 17:18:58
+-- Dump completed on 2026-10-27 18:16:20
