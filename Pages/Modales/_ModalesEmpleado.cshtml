@@ -1,0 +1,117 @@
+@model Proyecto.Pages.GestionDeEmpleadosModel
+
+<!-- Modal para Crear Empleado -->
+<div class="modal fade" id="modalCrearEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Crear">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Dar de Alta Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" asp-for="Nombre" class="form-control" placeholder="Ej. Juan Pérez" />
+                        <span asp-validation-for="Nombre" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" id="usuarioEmpleado" asp-for="Usuario" class="form-control" placeholder="ejemplo@correo.com" />
+                        <span asp-validation-for="Usuario" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña Temporal</label>
+                        <input type="text" id="contrasenaTemporal" asp-for="ContrasenaTemporal" class="form-control" />
+                        <div class="form-text">Se genera automáticamente según el correo.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Asignar Rol</label>
+                        <select asp-for="Rol" class="form-select">
+                            @if (Model.RolesList != null)
+                            {
+                                @foreach (var rol in Model.RolesList)
+                                {
+                                    <option value="@rol.IdRol">@rol.NombreRol</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Laboratorio Pertenece</label>
+                        <select asp-for="IdLaboratorio" class="form-select">
+                            <option value="0">-- Ninguno / No aplica --</option>
+                            @if (Model.LaboratoriosList != null)
+                            {
+                                @foreach (var lab in Model.LaboratoriosList)
+                                {
+                                    <option value="@lab.IdLaboratorio">@lab.Nombre</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Empleado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Empleado -->
+<div class="modal fade" id="modalEditarEmpleado" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form method="post" asp-page-handler="Editar">
+                <input type="hidden" id="editId" asp-for="EditId" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Editar Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" id="editNombre" asp-for="EditNombre" class="form-control" />
+                        <span asp-validation-for="EditNombre" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" id="editUsuario" asp-for="EditUsuario" class="form-control" />
+                        <span asp-validation-for="EditUsuario" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol Asignado</label>
+                        <select id="editRol" asp-for="EditRol" class="form-select">
+                            @if (Model.RolesList != null)
+                            {
+                                @foreach (var rol in Model.RolesList)
+                                {
+                                    <option value="@rol.IdRol">@rol.NombreRol</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Laboratorio Pertenece</label>
+                        <select id="editLaboratorio" asp-for="EditLaboratorio" class="form-select">
+                            <option value="0">-- Ninguno / No aplica --</option>
+                            @if (Model.LaboratoriosList != null)
+                            {
+                                @foreach (var lab in Model.LaboratoriosList)
+                                {
+                                    <option value="@lab.IdLaboratorio">@lab.Nombre</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
