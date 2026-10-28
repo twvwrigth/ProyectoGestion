@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -210,6 +210,7 @@ CREATE TABLE `empleado` (
   `contrasena` varchar(40) NOT NULL,
   `activo` tinyint(1) DEFAULT '1',
   `intentosContrasena` int DEFAULT '0',
+  `bloqueadoHasta` datetime DEFAULT NULL,
   PRIMARY KEY (`idEmpleado`),
   UNIQUE KEY `usuario` (`usuario`),
   KEY `fk_empleado_rol` (`idRol`),
@@ -225,7 +226,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,1,'Edgar','edgar','1',1,0),(3,2,1,'dos','dos','2',1,0),(4,3,1,'tres','tres','3',1,0),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0,NULL),(2,1,1,'Edgar','edgar','1',0,0,NULL),(3,2,1,'dos','dos','2',1,0,NULL),(4,3,1,'tres','tres','3',1,0,NULL),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0,NULL);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -700,4 +701,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-27 18:16:20
+-- Dump completed on 2026-10-28 10:54:27
