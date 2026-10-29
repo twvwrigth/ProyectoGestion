@@ -98,261 +98,381 @@
                 </div>
             </div>
 
-            <!-- Panel Derecho: Vista del Inventario Dinámico -->
+            <!-- Panel Derecho: Inventario Unificado (Productos + Micas) -->
             <div class="col-lg-8 col-md-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Inventario Actual</h5>
-                        <!-- Contenedor de Búsqueda y Filtro -->
-                        <form method="get" class="d-flex gap-2 w-50 m-0">
-                            <select class="form-select form-select-sm" name="FiltroCategoria" onchange="this.form.submit()">
-                                <option value="todas">Todas las categorías</option>
-                                @if (Model.Categorias != null)
-                                {
-                                    foreach (var cat in Model.Categorias)
-                                    {
-                                        <option value="@cat.IdCategoria">@cat.NombreCategoria</option>
-                                    }
-                                }
-                            </select>
-    
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="Buscar" placeholder="Buscar producto...">
-                                <button type="submit" class="btn btn-secondary">Buscar</button>
-                            </div>
-                        </form>
+                    <div class="card-header bg-light">
+                        <!-- Pestañas de navegación -->
+                        <ul class="nav nav-tabs card-header-tabs" id="catalogTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-bold" id="productos-tab" data-bs-toggle="tab"
+                                        data-bs-target="#productos-pane" type="button" role="tab">
+                                    Inventario General
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold text-success" id="micas-tab" data-bs-toggle="tab"
+                                        data-bs-target="#micas-pane" type="button" role="tab">
+                                    Matriz de Micas
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped mb-0 text-center align-middle">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th class="text-start">Nombre</th>
-                                        <th>Categoría</th>
-                                        <th>Precio</th>
-                                        <th>Stock</th>
-                                        <th>Detalles Técnicos</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if (Model.Productos != null && Model.Productos.Any())
-                                    {
-                                        @foreach (var producto in Model.Productos)
-                                        {
-                                            <tr>
-                                                <td>PRD-@producto.IdProducto.ToString("D3")</td>
-                                                <td class="text-start fw-bold">@producto.Nombre</td>
-                                            
-                                                <!-- Categoría Dinámica -->
-                                                <td>
-                                                    <span class="badge bg-primary">
-                                                        @(producto.IdCategoriaNavigation != null ?
-                                                producto.IdCategoriaNavigation.NombreCategoria : "General")
-                                                    </span>
-                                                </td>
-                                            
-                                                <td>$@producto.Precio.ToString("0.00")</td>
-                                            
-                                                <td>
-                                                    @if (producto.Existencia < 10)
-                                                    {
-                                                        <span class="badge bg-danger">@producto.Existencia</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success">@producto.Existencia</span>
-                                                    }
-                                                </td>
 
-                                                <!-- JSON mostrado de forma amigable -->
-                                                <td style="max-width: 200px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
-                                                    title="@producto.DetallesTecnicos">
-                                                    @if (!string.IsNullOrEmpty(producto.DetallesTecnicos) &&
-                                            producto.DetallesTecnicos != "{}")
-                                                    {
-                                                        <small class="text-muted">@producto.DetallesTecnicos</small>
-                                                    }
-                                                    else
-                                                    {
-                                                        <small class="text-muted fst-italic">Sin detalles</small>
-                                                    }
-                                                </td>
-                                            
-                                                <td>
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                                data-bs-toggle="modal" data-bs-target="#modalEditar"
-                                                                data-id="@producto.IdProducto" data-nombre="@producto.Nombre"
-                                                                data-precio="@producto.Precio" data-existencia="@producto.Existencia">
-                                                            Editar
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                                                data-bs-toggle="modal" data-bs-target="#modalEliminar"
-                                                                data-id="@producto.IdProducto" data-nombre="@producto.Nombre">
-                                                            Eliminar
-                                                        </button>
-                                                    </div>
-                                                </td>
+                    <div class="card-body p-0">
+                        <div class="tab-content" id="catalogTabsContent">
+                
+                            <!-- PESTAÑA 1: PRODUCTOS GENERALES (Tu tabla actual) -->
+                            <div class="tab-pane fade show active" id="productos-pane" role="tabpanel">
+                                <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 text-secondary fs-6">Productos y Accesorios</h5>
+                                    <form method="get" class="d-flex gap-2 w-50 m-0">
+                                        <select class="form-select form-select-sm" name="FiltroCategoria"
+                                                onchange="this.form.submit()">
+                                            <option value="todas">Todas las categorías</option>
+                                            @if (Model.Categorias != null)
+                                            {
+                                                foreach (var cat in Model.Categorias)
+                                                {
+                                                    <option value="@cat.IdCategoria">@cat.NombreCategoria</option>
+                                                }
+                                            }
+                                        </select>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="Buscar"
+                                                   placeholder="Buscar producto...">
+                                            <button type="submit" class="btn btn-secondary">Buscar</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped mb-0 text-center align-middle">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th class="text-start">Nombre</th>
+                                                <th>Categoría</th>
+                                                <th>Precio</th>
+                                                <th>Stock</th>
+                                                <th>Detalles Técnicos</th>
+                                                <th>Acciones</th>
                                             </tr>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4 text-muted">No hay productos registrados en
-                                                la base de datos.</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.Productos != null && Model.Productos.Any())
+                                            {
+                                                @foreach (var producto in Model.Productos)
+                                                {
+                                                    <tr>
+                                                        <td>PRD-@producto.IdProducto.ToString("D3")</td>
+                                                        <td class="text-start fw-bold">@producto.Nombre</td>
+                                                        <td>
+                                                            <span class="badge bg-primary">
+                                                                @(producto.IdCategoriaNavigation != null ?
+                                                                producto.IdCategoriaNavigation.NombreCategoria : "General")
+                                                            </span>
+                                                        </td>
+                                                        <td>$@producto.Precio.ToString("0.00")</td>
+                                                        <td>
+                                                            @if (producto.Existencia < 10)
+                                                            {
+                                                                <span class="badge bg-danger">@producto.Existencia</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-success">@producto.Existencia</span>
+                                                            }
+                                                        </td>
+                                                        <td style="max-width: 150px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+                                                            title="@producto.DetallesTecnicos">
+                                                            <small class="text-muted">@producto.DetallesTecnicos</small>
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                                        data-bs-toggle="modal" data-bs-target="#modalEditar"
+                                                                        data-id="@producto.IdProducto" data-nombre="@producto.Nombre"
+                                                                        data-precio="@producto.Precio"
+                                                                        data-existencia="@producto.Existencia"
+                                                                        data-detalles='@producto.DetallesTecnicos'
+                                                                        data-campos-requeridos='@(producto.IdCategoriaNavigation != null ? producto.IdCategoriaNavigation.CamposRequeridos : "[]")'>
+                                                                    Editar
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                        data-bs-toggle="modal" data-bs-target="#modalEliminar"
+                                                                        data-id="@producto.IdProducto"
+                                                                        data-nombre="@producto.Nombre">Eliminar</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="7" class="text-center py-4 text-muted">No hay productos
+                                                        registrados.</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- PESTAÑA 2: MATRIZ DE MICAS (Integrada en el catálogo) -->
+                                <div class="tab-pane fade" id="micas-pane" role="tabpanel">
+                                    <div class="p-3 bg-white border-bottom">
+                                        <h5 class="mb-0 text-success fs-6">Matriz de Precios de Micas</h5>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-striped mb-0 text-center align-middle">
+                                            <thead class="table-success text-dark">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th class="text-start">Material</th>
+                                                    <th>Tratamiento</th>
+                                                    <th>Rango de Graduación</th>
+                                                    <th>Precio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.ListaMicas != null && Model.ListaMicas.Any())
+                                                {
+                                                    @foreach (var mica in Model.ListaMicas)
+                                                    {
+                                                        <tr>
+                                                            <td>MICA-@mica.IdMica.ToString("D3")</td>
+                                                            <td class="text-start fw-bold">@mica.Material</td>
+                                                            <td><span class="badge bg-info text-dark">@mica.Tratamiento</span></td>
+                                                            <td><code>@mica.RangoGraduacion</code></td>
+                                                            <td class="fw-bold text-success">$@mica.Precio.ToString("0.00")</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="5" class="text-center py-4 text-muted">No hay micas registradas
+                                                            en la matriz.</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <partial name="~/Pages/Modales/_ModalesCatalogo.cshtml" />
+                    <partial name="~/Pages/Modales/_ModalesCatalogo.cshtml" />
 
 
-            @section Scripts {
-                <script>
-                        // --- LÓGICA DE LOS MODALES DE EDICIÓN Y ELIMINACIÓN ---
-                        var modalEditar = document.getElementById('modalEditar')
-                        if (modalEditar) {
-                            modalEditar.addEventListener('show.bs.modal', function (event) {
-                                var button = event.relatedTarget;
-                                modalEditar.querySelector('#editId').value = button.getAttribute('data-id');
-                                modalEditar.querySelector('#editNombre').value = button.getAttribute('data-nombre');
-                                modalEditar.querySelector('#editPrecio').value = parseFloat(button.getAttribute('data-precio')).toFixed(2);
-                                modalEditar.querySelector('#editExistencia').value = button.getAttribute('data-existencia');
-                            });
-                        }
-        
-                        var modalEliminar = document.getElementById('modalEliminar');
-                        if (modalEliminar) {
-                            modalEliminar.addEventListener('show.bs.modal', function (event) {
-                                var button = event.relatedTarget;
-                                modalEliminar.querySelector('#eliminarId').value = button.getAttribute('data-id');
-                                modalEliminar.querySelector('#nombreProductoEliminar').textContent = button.getAttribute('data-nombre');
-                            });
-                        }
+                    @section Scripts {
+                        <script>
+                                    // --- LÓGICA DE LOS MODALES DE EDICIÓN Y ELIMINACIÓN ---
+                                    var modalEditar = document.getElementById('modalEditar')
+                                    if (modalEditar) {
+                                        modalEditar.addEventListener('show.bs.modal', function (event) {
+                                            var button = event.relatedTarget;
+                                            var id = button.getAttribute('data-id');
+                                            var nombre = button.getAttribute('data-nombre');
+                                            var precio = button.getAttribute('data-precio');
+                                            var existencia = button.getAttribute('data-existencia');
+                                            var detallesRaw = button.getAttribute('data-detalles');
+                                            var camposReqRaw = button.getAttribute('data-campos-requeridos');
 
-                        // --- LÓGICA DEL GESTOR DE CATEGORÍAS (Opción A: Con Tipos de Datos) ---
-                        document.addEventListener("DOMContentLoaded", function () {
-                            var btnAgregarAtributo = document.getElementById('btnAgregarAtributo');
-                            var inputAtributoNombre = document.getElementById('inputAtributoNombre');
-                            var selectAtributoTipo = document.getElementById('selectAtributoTipo');
-                            var contenedorAtributos = document.getElementById('contenedorAtributos');
-                            var hiddenAtributosJson = document.getElementById('hiddenAtributosJson');
-            
-                            var listaAtributos = []; // Almacenará objetos: { nombre: "...", tipo: "..." }
+                                            modalEditar.querySelector('#editId').value = id;
+                                            modalEditar.querySelector('#editNombre').value = nombre;
+                                            modalEditar.querySelector('#editPrecio').value = parseFloat(precio).toFixed(2);
+                                            modalEditar.querySelector('#editExistencia').value = existencia;
 
-                            if (btnAgregarAtributo) {
-                                btnAgregarAtributo.addEventListener('click', function () {
-                                    var nombreAttr = inputAtributoNombre.value.trim();
-                                    var tipoAttr = selectAtributoTipo.value;
+                                            // Elementos dinámicos de edición
+                                            var editContenedor = modalEditar.querySelector('#editCamposDinamicosContenedor');
+                                            var editInputsDinamicos = modalEditar.querySelector('#editInputsDinamicos');
+                                            var editHiddenDetalles = modalEditar.querySelector('#editDetallesTecnicosJson');
 
-                                    if (nombreAttr !== "") {
-                                        // Evitar duplicados por nombre
-                                        var existe = listaAtributos.some(item => item.nombre.toLowerCase() === nombreAttr.toLowerCase());
-                                        if (!existe) {
-                                            listaAtributos.push({ nombre: nombreAttr, tipo: tipoAttr });
-                                            actualizarUIAtributos();
-                                            inputAtributoNombre.value = ""; // Limpiar input
-                                        }
-                                    }
-                                });
+                                            editInputsDinamicos.innerHTML = '';
+                                            editHiddenDetalles.value = detallesRaw || '{}';
 
-                                inputAtributoNombre.addEventListener("keypress", function (event) {
-                                    if (event.key === "Enter") {
-                                        event.preventDefault();
-                                        btnAgregarAtributo.click();
-                                    }
-                                });
-                            }
+                                            if (camposReqRaw && camposReqRaw !== "[]" && camposReqRaw !== "") {
+                                                var camposReq = JSON.parse(camposReqRaw);
+                                                var valoresActuales = {};
+                                                try {
+                                                    if (detallesRaw) valoresActuales = JSON.parse(detallesRaw);
+                                                } catch (e) {
+                                                    valoresActuales = {};
+                                                }
 
-                            function actualizarUIAtributos() {
-                                contenedorAtributos.innerHTML = "";
-                
-                                listaAtributos.forEach(function (attr, index) {
-                                    var tag = document.createElement('span');
-                                    tag.className = 'badge bg-secondary d-flex align-items-center p-2';
-                    
-                                    var tipoTexto = attr.tipo === 'number' ? 'Numérico' : 'Texto';
-                                    tag.innerHTML = `${attr.nombre} <span class="badge bg-dark ms-1">${tipoTexto}</span> <i class="ms-2 text-white" style="cursor:pointer;" onclick="eliminarAtributo(${index})">✕</i>`;
-                    
-                                    contenedorAtributos.appendChild(tag);
-                                });
+                                                editContenedor.style.display = 'block';
 
-                                hiddenAtributosJson.value = JSON.stringify(listaAtributos);
-                            }
+                                                camposReq.forEach(function (attr) {
+                                                    var nombreAttr = (typeof attr === 'object' && attr !== null) ? attr.nombre : attr;
+                                                    var tipoAttr = (typeof attr === 'object' && attr !== null) ? attr.tipo : 'text';
+                                                    var valorPrevio = valoresActuales[nombreAttr] || '';
 
-                            window.eliminarAtributo = function (index) {
-                                listaAtributos.splice(index, 1);
-                                actualizarUIAtributos();
-                            };
-                        });
-        
-                        // --- LÓGICA DEL FORMULARIO DINÁMICO DE PRODUCTOS (Se adapta al tipo de dato) ---
-                        document.addEventListener("DOMContentLoaded", function () {
-                            var selectCategoria = document.getElementById('selectCategoria');
-                            var contenedorDinamico = document.getElementById('camposDinamicosContenedor');
-                            var inputsDinamicos = document.getElementById('inputsDinamicos');
-                            var hiddenDetalles = document.getElementById('hiddenDetallesTecnicos');
-        
-                            if (selectCategoria) {
-                                selectCategoria.addEventListener('change', function () {
-                                    var selectedOption = this.options[this.selectedIndex];
-                                    var atributosRaw = selectedOption.getAttribute('data-atributos');
-                    
-                                    inputsDinamicos.innerHTML = '';
-                                    hiddenDetalles.value = '{}';
-                    
-                                    if (atributosRaw && atributosRaw !== "[]" && atributosRaw !== "") {
-                                        var atributos = JSON.parse(atributosRaw);
-                                        contenedorDinamico.style.display = 'block';
-                        
-                                        atributos.forEach(function (attr) {
-                                            var div = document.createElement('div');
-                                            div.className = 'mb-2';
-                            
-                                            var label = document.createElement('label');
-                                            label.className = 'form-label fw-bold small text-capitalize';
-                                            label.innerText = attr.nombre;
-                            
-                                            var input = document.createElement('input');
-                                            // Asignamos el tipo de input configurado por el dueño (text o number)
-                                            input.type = attr.tipo === 'number' ? 'number' : 'text';
-                                            input.className = 'form-control form-control-sm attr-dinamico';
-                                            input.dataset.key = attr.nombre;
-                                            input.required = true;
-                            
-                                            if (attr.tipo === 'number') {
-                                                input.step = 'any'; // Permite decimales si es numérico
+                                                    var div = document.createElement('div');
+                                                    div.className = 'mb-2';
+
+                                                    var label = document.createElement('label');
+                                                    label.className = 'form-label fw-bold small text-capitalize';
+                                                    label.innerText = nombreAttr;
+
+                                                    var input = document.createElement('input');
+                                                    input.type = tipoAttr === 'number' ? 'number' : 'text';
+                                                    input.className = 'form-control form-control-sm attr-edit-dinamico';
+                                                    input.dataset.key = nombreAttr;
+                                                    input.value = valorPrevio;
+                                                    input.required = true;
+
+                                                    if (tipoAttr === 'number') {
+                                                        input.step = 'any';
+                                                    }
+
+                                                    // Actualizar el JSON oculto conforme el usuario edita
+                                                    input.addEventListener('input', function () {
+                                                        var obj = {};
+                                                        modalEditar.querySelectorAll('.attr-edit-dinamico').forEach(function (inp) {
+                                                            obj[inp.dataset.key] = inp.value.trim();
+                                                        });
+                                                        editHiddenDetalles.value = JSON.stringify(obj);
+                                                    });
+
+                                                    div.appendChild(label);
+                                                    div.appendChild(input);
+                                                    editInputsDinamicos.appendChild(div);
+                                                });
+                                            } else {
+                                                editContenedor.style.display = 'none';
                                             }
-                            
-                                            input.addEventListener('input', actualizarJsonDetalles);
-                            
-                                            div.appendChild(label);
-                                            div.appendChild(input);
-                                            inputsDinamicos.appendChild(div);
                                         });
-                                    } else {
-                                        contenedorDinamico.style.display = 'none';
                                     }
-                                });
-                            }
         
-                            function actualizarJsonDetalles() {
-                                var obj = {};
-                                var inputs = document.querySelectorAll('.attr-dinamico');
-                                inputs.forEach(function (input) {
-                                    obj[input.dataset.key] = input.value.trim();
-                                });
-                                hiddenDetalles.value = JSON.stringify(obj);
-                            }
-                        });
-                </script>
-            }
+                                    var modalEliminar = document.getElementById('modalEliminar');
+                                    if (modalEliminar) {
+                                        modalEliminar.addEventListener('show.bs.modal', function (event) {
+                                            var button = event.relatedTarget;
+                                            modalEliminar.querySelector('#eliminarId').value = button.getAttribute('data-id');
+                                            modalEliminar.querySelector('#nombreProductoEliminar').textContent = button.getAttribute('data-nombre');
+                                        });
+                                    }
+
+                                    // --- LÓGICA DEL GESTOR DE CATEGORÍAS (Opción A: Con Tipos de Datos) ---
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                        var btnAgregarAtributo = document.getElementById('btnAgregarAtributo');
+                                        var inputAtributoNombre = document.getElementById('inputAtributoNombre');
+                                        var selectAtributoTipo = document.getElementById('selectAtributoTipo');
+                                        var contenedorAtributos = document.getElementById('contenedorAtributos');
+                                        var hiddenAtributosJson = document.getElementById('hiddenAtributosJson');
+            
+                                        var listaAtributos = []; // Almacenará objetos: { nombre: "...", tipo: "..." }
+
+                                        if (btnAgregarAtributo) {
+                                            btnAgregarAtributo.addEventListener('click', function () {
+                                                var nombreAttr = inputAtributoNombre.value.trim();
+                                                var tipoAttr = selectAtributoTipo.value;
+
+                                                if (nombreAttr !== "") {
+                                                    // Evitar duplicados por nombre
+                                                    var existe = listaAtributos.some(item => item.nombre.toLowerCase() === nombreAttr.toLowerCase());
+                                                    if (!existe) {
+                                                        listaAtributos.push({ nombre: nombreAttr, tipo: tipoAttr });
+                                                        actualizarUIAtributos();
+                                                        inputAtributoNombre.value = ""; // Limpiar input
+                                                    }
+                                                }
+                                            });
+
+                                            inputAtributoNombre.addEventListener("keypress", function (event) {
+                                                if (event.key === "Enter") {
+                                                    event.preventDefault();
+                                                    btnAgregarAtributo.click();
+                                                }
+                                            });
+                                        }
+
+                                        function actualizarUIAtributos() {
+                                            contenedorAtributos.innerHTML = "";
+                
+                                            listaAtributos.forEach(function (attr, index) {
+                                                var tag = document.createElement('span');
+                                                tag.className = 'badge bg-secondary d-flex align-items-center p-2';
+                    
+                                                var tipoTexto = attr.tipo === 'number' ? 'Numérico' : 'Texto';
+                                                tag.innerHTML = `${attr.nombre} <span class="badge bg-dark ms-1">${tipoTexto}</span> <i class="ms-2 text-white" style="cursor:pointer;" onclick="eliminarAtributo(${index})">✕</i>`;
+                    
+                                                contenedorAtributos.appendChild(tag);
+                                            });
+
+                                            hiddenAtributosJson.value = JSON.stringify(listaAtributos);
+                                        }
+
+                                        window.eliminarAtributo = function (index) {
+                                            listaAtributos.splice(index, 1);
+                                            actualizarUIAtributos();
+                                        };
+                                    });
+        
+                                    // --- LÓGICA DEL FORMULARIO DINÁMICO DE PRODUCTOS (Corregido para leer objetos con nombre y tipo) ---
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                        var selectCategoria = document.getElementById('selectCategoria');
+                                        var contenedorDinamico = document.getElementById('camposDinamicosContenedor');
+                                        var inputsDinamicos = document.getElementById('inputsDinamicos');
+                                        var hiddenDetalles = document.getElementById('hiddenDetallesTecnicos');
+
+                                        if (selectCategoria) {
+                                            selectCategoria.addEventListener('change', function () {
+                                                var selectedOption = this.options[this.selectedIndex];
+                                                var atributosRaw = selectedOption.getAttribute('data-atributos');
+            
+                                                inputsDinamicos.innerHTML = '';
+                                                hiddenDetalles.value = '{}';
+            
+                                                if (atributosRaw && atributosRaw !== "[]" && atributosRaw !== "") {
+                                                    var atributos = JSON.parse(atributosRaw);
+                                                    contenedorDinamico.style.display = 'block';
+                
+                                                    atributos.forEach(function (attr) {
+                                                        var div = document.createElement('div');
+                                                        div.className = 'mb-2';
+                    
+                                                        var label = document.createElement('label');
+                                                        label.className = 'form-label fw-bold small text-capitalize';
+                                                        // AQUÍ ESTABA EL DETALLE: Extraemos la propiedad .nombre del objeto
+                                                        label.innerText = attr.nombre;
+                    
+                                                        var input = document.createElement('input');
+                                                        input.type = attr.tipo === 'number' ? 'number' : 'text';
+                                                        input.className = 'form-control form-control-sm attr-dinamico';
+                                                        input.dataset.key = attr.nombre; // Guardamos el nombre real como clave del JSON
+                                                        input.required = true;
+                    
+                                                        if (attr.tipo === 'number') {
+                                                            input.step = 'any';
+                                                        }
+                    
+                                                        input.addEventListener('input', actualizarJsonDetalles);
+                    
+                                                        div.appendChild(label);
+                                                        div.appendChild(input);
+                                                        inputsDinamicos.appendChild(div);
+                                                    });
+                                                } else {
+                                                    contenedorDinamico.style.display = 'none';
+                                                }
+                                            });
+                                        }
+
+                                        function actualizarJsonDetalles() {
+                                            var obj = {};
+                                            var inputs = document.querySelectorAll('.attr-dinamico');
+                                            inputs.forEach(function (input) {
+                                                obj[input.dataset.key] = input.value.trim();
+                                            });
+                                            hiddenDetalles.value = JSON.stringify(obj);
+                                        }
+                                    });
+                        </script>
+                    }

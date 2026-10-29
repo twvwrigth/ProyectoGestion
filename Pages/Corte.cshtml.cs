@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace Proyecto.Pages
 {
-    [Authorize(Roles = "Encargado,Vendedor")]
+    [Authorize(Roles = "Admin,Encargado,Vendedor,Cajero")]
     public class CorteModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
@@ -21,7 +21,6 @@ namespace Proyecto.Pages
         public decimal TotalEntradas { get; set; }
         public decimal TotalSalidas { get; set; }
         
-        // Desglose de ventas
         public decimal VentasEfectivo { get; set; }
         public decimal VentasTarjeta { get; set; }
         public decimal VentasTransferencia { get; set; }
@@ -37,13 +36,17 @@ namespace Proyecto.Pages
         public async Task<IActionResult> OnGetAsync()
         {
             var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            bool esAdmin = User.IsInRole("Admin") || User.IsInRole("Encargado");
 
+            // Buscar la caja abierta a nivel GLOBAL (sin importar quién la abrió)
             CajaAbierta = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
-                .Include(c => c.Ventas) // Traer las ventas asociadas al turno
-                .FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
+                .Include(c => c.Ventas)
+                .FirstOrDefaultAsync(c => c.Estado == "Abierta");
 
-            if (CajaAbierta == null) return RedirectToPage("/Index");
+            // Si no hay caja, o si hay caja pero el usuario NO ES el dueño y TAMPOCO es admin, se bloquea y redirige
+            if (CajaAbierta == null || (CajaAbierta.IdEmpleado != empleadoId && !esAdmin)) 
+                return RedirectToPage("/Index");
 
             TotalEntradas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
             TotalSalidas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
@@ -52,7 +55,6 @@ namespace Proyecto.Pages
             VentasTarjeta = CajaAbierta.Ventas.Where(v => v.FormaPago == "Tarjeta").Sum(v => v.Total);
             VentasTransferencia = CajaAbierta.Ventas.Where(v => v.FormaPago == "Transferencia").Sum(v => v.Total);
 
-            // El saldo físico esperado suma el fondo, las entradas manuales y ventas en EFECTIVO, menos salidas
             SaldoEsperado = CajaAbierta.FondoInicial + TotalEntradas + VentasEfectivo - TotalSalidas;
 
             return Page();
@@ -61,12 +63,17 @@ namespace Proyecto.Pages
         public async Task<IActionResult> OnPostCerrarTurnoAsync()
         {
             var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            bool esAdmin = User.IsInRole("Admin") || User.IsInRole("Encargado");
+
+            // Buscar la caja abierta global
             var caja = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
                 .Include(c => c.Ventas)
-                .FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
+                .FirstOrDefaultAsync(c => c.Estado == "Abierta");
 
-            if (caja == null) return RedirectToPage("/Index");
+            // Validación de seguridad para el cierre
+            if (caja == null || (caja.IdEmpleado != empleadoId && !esAdmin)) 
+                return RedirectToPage("/Index");
 
             var entradas = caja.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
             var salidas = caja.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
