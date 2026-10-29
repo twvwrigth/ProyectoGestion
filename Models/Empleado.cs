@@ -31,6 +31,8 @@ public partial class Empleado
 
     public virtual Rol IdRolNavigation { get; set; } = null!;
 
+    public DateTime? BloqueadoHasta { get; set; }
+
     public virtual ICollection<CajaTurno> CajaTurnos { get; set; } = new List<CajaTurno>();
 
     public virtual ICollection<Receta> Receta { get; set; } = new List<Receta>();

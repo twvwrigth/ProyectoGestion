@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.43
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -94,7 +94,7 @@ CREATE TABLE `categoria` (
   `nombreCategoria` varchar(50) NOT NULL,
   `camposRequeridos` json DEFAULT NULL,
   PRIMARY KEY (`idCategoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,7 +103,7 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]');
+INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]'),(4,'Micas','[\"material\", \"tratamiento\", \"graduación\", \"precio\"]'),(5,'Gafas de sol','[]'),(6,'lentes03','[{\"tipo\": \"number\", \"nombre\": \"tamaño\"}]');
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -210,6 +210,7 @@ CREATE TABLE `empleado` (
   `contrasena` varchar(40) NOT NULL,
   `activo` tinyint(1) DEFAULT '1',
   `intentosContrasena` int DEFAULT '0',
+  `bloqueadoHasta` datetime DEFAULT NULL,
   PRIMARY KEY (`idEmpleado`),
   UNIQUE KEY `usuario` (`usuario`),
   KEY `fk_empleado_rol` (`idRol`),
@@ -225,7 +226,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0),(2,1,1,'Edgar','edgar','1',1,0),(3,2,1,'dos','dos','2',1,0),(4,3,1,'tres','tres','3',1,0),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0,NULL),(2,1,1,'Edgar','edgar','1',0,0,NULL),(3,2,1,'dos','dos','2',1,0,NULL),(4,3,1,'tres','tres','3',1,0,NULL),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0,NULL);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -310,6 +311,33 @@ CREATE TABLE `lista_espera` (
 LOCK TABLES `lista_espera` WRITE;
 /*!40000 ALTER TABLE `lista_espera` DISABLE KEYS */;
 /*!40000 ALTER TABLE `lista_espera` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `micas`
+--
+
+DROP TABLE IF EXISTS `micas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `micas` (
+  `IdMica` int NOT NULL AUTO_INCREMENT,
+  `Material` varchar(100) NOT NULL,
+  `Tratamiento` varchar(100) DEFAULT NULL,
+  `RangoGraduacion` varchar(100) DEFAULT NULL,
+  `Precio` decimal(18,2) NOT NULL,
+  PRIMARY KEY (`IdMica`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `micas`
+--
+
+LOCK TABLES `micas` WRITE;
+/*!40000 ALTER TABLE `micas` DISABLE KEYS */;
+INSERT INTO `micas` VALUES (1,'CR-39','Fotocromático','200-100',2500.00);
+/*!40000 ALTER TABLE `micas` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -427,7 +455,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -436,7 +464,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL);
+INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL),(4,3,NULL,'Lentes',10,0,120.00,'{\"Color\": \"gris\", \"Material\": \"vidrio\"}');
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -500,6 +528,10 @@ UNLOCK TABLES;
 -- Table structure for table `receta`
 --
 
+--
+-- Table structure for table `receta`
+--
+
 DROP TABLE IF EXISTS `receta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -522,13 +554,17 @@ CREATE TABLE `receta` (
   `adicionOI` varchar(15) DEFAULT NULL,
   `altura` varchar(15) DEFAULT NULL,
   `tipoMica` varchar(50) DEFAULT NULL,
-  `micaMinima` varchar(100) DEFAULT NULL,
-  `micaRecomendada` varchar(100) DEFAULT NULL,
+  `micaMinima` int DEFAULT NULL,
+  `micaRecomendada` int DEFAULT NULL,
   PRIMARY KEY (`idReceta`),
   KEY `fk_receta_cliente` (`idCliente`),
   KEY `fk_receta_empleado` (`idEmpleado`),
+  KEY `fk_receta_mica_minima` (`micaMinima`),
+  KEY `fk_receta_mica_recomendada` (`micaRecomendada`),
   CONSTRAINT `fk_receta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
-  CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
+  CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_receta_mica_minima` FOREIGN KEY (`micaMinima`) REFERENCES `micas` (`IdMica`),
+  CONSTRAINT `fk_receta_mica_recomendada` FOREIGN KEY (`micaRecomendada`) REFERENCES `micas` (`IdMica`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -673,4 +709,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-27 17:18:58
+-- Dump completed on 2026-10-28 10:54:27

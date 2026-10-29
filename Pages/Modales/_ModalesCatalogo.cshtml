@@ -65,7 +65,7 @@
     </div>
 </div>
 
-<!-- MODAL: Creador de Categorías (Camino 1) -->
+<!-- MODAL: Creador de Categorías (Camino 1 - Mejorado con Tipos de Datos) -->
 <div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -80,15 +80,22 @@
                         <input type="text" class="form-control" name="NuevaCategoriaNombre" placeholder="Ej. Lentes de Contacto" required>
                     </div>
                     
-                    <label class="form-label fw-bold">Atributos solicitados (Opcional)</label>
-                    <p class="small text-muted mb-2">Define qué datos se pedirán al registrar un producto de esta categoría.</p>
+                    <label class="form-label fw-bold">Atributos solicitados</label>
+                    <p class="small text-muted mb-2">Define el nombre del campo y su tipo de validación.</p>
                     
-                    <div class="input-group mb-3">
-                        <input type="text" id="inputAtributoNuevo" class="form-control" placeholder="Ej. Material, Color, Curva Base...">
+                    <div class="input-group mb-2">
+                        <input type="text" id="inputAtributoNombre" class="form-control" placeholder="Nombre (Ej. Curva Base)">
+                        <select id="selectAtributoTipo" class="form-select" style="max-width: 130px;">
+                            <option value="text">Texto</option>
+                            <option value="number">Número</option>
+                        </select>
                         <button class="btn btn-outline-success" type="button" id="btnAgregarAtributo">Añadir</button>
                     </div>
 
-                    <div id="contenedorAtributos" class="d-flex flex-wrap gap-2 mb-2"></div>
+                    <!-- Contenedor visual de etiquetas -->
+                    <div id="contenedorAtributos" class="d-flex flex-wrap gap-2 mb-2 mt-3"></div>
+                    
+                    <!-- Input oculto que guardará el JSON estructurado -->
                     <input type="hidden" name="AtributosJson" id="hiddenAtributosJson" value="[]">
                 </div>
                 <div class="modal-footer">

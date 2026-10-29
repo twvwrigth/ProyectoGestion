@@ -37,6 +37,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<MovimientoCaja> MovimientoCaja { get; set; }
 
+    public DbSet<Mica> Micas { get; set; }
+
     public virtual DbSet<ParametroNegocio> ParametroNegocios { get; set; }
 
     public virtual DbSet<Pedido> Pedidos { get; set; }
@@ -103,6 +105,18 @@ public partial class MiApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdCajaTurno)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_movimiento_caja");
+        });
+
+        modelBuilder.Entity<Mica>(entity =>
+        {
+            entity.HasKey(m => m.IdMica).HasName("PRIMARY");
+            entity.ToTable("micas");
+
+            entity.Property(e => e.IdMica).HasColumnName("idMica");
+            entity.Property(e => e.Material).HasMaxLength(50).HasColumnName("material");
+            entity.Property(e => e.Tratamiento).HasMaxLength(50).HasColumnName("tratamiento");
+            entity.Property(e => e.RangoGraduacion).HasMaxLength(50).HasColumnName("rangoGraduacion");
+            entity.Property(e => e.Precio).HasPrecision(10, 2).HasColumnName("precio");
         });
 
         modelBuilder.Entity<Bitacora>(entity =>
@@ -241,6 +255,7 @@ public partial class MiApplicationDbContext : DbContext
             entity.HasIndex(e => e.Usuario, "usuario").IsUnique();
 
             entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            entity.Property(e => e.BloqueadoHasta).HasColumnType("datetime").HasColumnName("bloqueadoHasta");
             entity.Property(e => e.Activo)
                 .HasDefaultValueSql("'1'")
                 .HasColumnName("activo");
@@ -493,64 +508,82 @@ public partial class MiApplicationDbContext : DbContext
         });
 
         modelBuilder.Entity<Receta>(entity =>
-        {
-            entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
+                {
+                    entity.HasKey(e => e.IdReceta).HasName("PRIMARY");
 
-            entity.ToTable("receta");
+                    entity.ToTable("receta");
 
-            entity.HasIndex(e => e.IdCliente, "fk_receta_cliente");
+                    entity.HasIndex(e => e.IdCliente, "fk_receta_cliente");
+                    entity.HasIndex(e => e.IdEmpleado, "fk_receta_empleado");
+                    // Índices recomendados para las nuevas relaciones de micas
+                    entity.HasIndex(e => e.MicaMinima, "fk_receta_mica_minima");
+                    entity.HasIndex(e => e.MicaRecomendada, "fk_receta_mica_recomendada");
 
-            entity.HasIndex(e => e.IdEmpleado, "fk_receta_empleado");
+                    entity.Property(e => e.IdReceta).HasColumnName("idReceta");
 
-            entity.Property(e => e.IdReceta).HasColumnName("idReceta");
+                    // --- CAMPOS: Ojo Derecho (OD) ---
+                    entity.Property(e => e.EsferaOD).HasMaxLength(15).HasColumnName("esferaOD");
+                    entity.Property(e => e.CilindroOD).HasMaxLength(15).HasColumnName("cilindroOD");
+                    entity.Property(e => e.EjeOD).HasMaxLength(15).HasColumnName("ejeOD");
+                    entity.Property(e => e.AdicionOD).HasMaxLength(15).HasColumnName("adicionOD");
 
-            // --- NUEVOS CAMPOS: Ojo Derecho (OD) ---
-            entity.Property(e => e.EsferaOD).HasMaxLength(15).HasColumnName("esferaOD");
-            entity.Property(e => e.CilindroOD).HasMaxLength(15).HasColumnName("cilindroOD");
-            entity.Property(e => e.EjeOD).HasMaxLength(15).HasColumnName("ejeOD");
-            entity.Property(e => e.AdicionOD).HasMaxLength(15).HasColumnName("adicionOD");
+                    // --- CAMPOS: Ojo Izquierdo (OI) ---
+                    entity.Property(e => e.EsferaOI).HasMaxLength(15).HasColumnName("esferaOI");
+                    entity.Property(e => e.CilindroOI).HasMaxLength(15).HasColumnName("cilindroOI");
+                    entity.Property(e => e.EjeOI).HasMaxLength(15).HasColumnName("ejeOI");
+                    entity.Property(e => e.AdicionOI).HasMaxLength(15).HasColumnName("adicionOI");
 
-            // --- NUEVOS CAMPOS: Ojo Izquierdo (OI) ---
-            entity.Property(e => e.EsferaOI).HasMaxLength(15).HasColumnName("esferaOI");
-            entity.Property(e => e.CilindroOI).HasMaxLength(15).HasColumnName("cilindroOI");
-            entity.Property(e => e.EjeOI).HasMaxLength(15).HasColumnName("ejeOI");
-            entity.Property(e => e.AdicionOI).HasMaxLength(15).HasColumnName("adicionOI");
+                    // --- MEDIDAS ADICIONALES Y MICAS (CONFIGURADAS COMO ENTEROS) ---
+                    entity.Property(e => e.Altura).HasMaxLength(15).HasColumnName("altura");
+                    entity.Property(e => e.TipoMica).HasMaxLength(50).HasColumnName("tipoMica");
 
-            // --- NUEVOS CAMPOS: Medidas Adicionales y Micas ---
-            entity.Property(e => e.Altura).HasMaxLength(15).HasColumnName("altura");
-            entity.Property(e => e.TipoMica).HasMaxLength(50).HasColumnName("tipoMica");
-            entity.Property(e => e.MicaMinima).HasMaxLength(100).HasColumnName("micaMinima");
-            entity.Property(e => e.MicaRecomendada).HasMaxLength(100).HasColumnName("micaRecomendada");
+                    // Ya no usan HasMaxLength porque ahora son IDs numéricos (int?)
+                    entity.Property(e => e.MicaMinima).HasColumnName("micaMinima");
+                    entity.Property(e => e.MicaRecomendada).HasColumnName("micaRecomendada");
 
-            // --- CAMPOS QUE SE MANTIENEN ---
-            entity.Property(e => e.DistanciaPupilar)
-                .HasMaxLength(15)
-                .HasColumnName("distanciaPupilar");
+                    // --- CAMPOS QUE SE MANTIENEN ---
+                    entity.Property(e => e.DistanciaPupilar)
+                        .HasMaxLength(15)
+                        .HasColumnName("distanciaPupilar");
 
-            entity.Property(e => e.Emisor)
-                .HasMaxLength(50)
-                .HasColumnName("emisor");
+                    entity.Property(e => e.Emisor)
+                        .HasMaxLength(50)
+                        .HasColumnName("emisor");
 
-            entity.Property(e => e.Fecha).HasColumnName("fecha");
-            entity.Property(e => e.IdCliente).HasColumnName("idCliente");
-            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+                    entity.Property(e => e.Fecha).HasColumnName("fecha");
+                    entity.Property(e => e.IdCliente).HasColumnName("idCliente");
+                    entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
 
-            entity.Property(e => e.RecetaExterna)
-                .HasDefaultValueSql("'0'")
-                .HasColumnName("recetaExterna");
+                    entity.Property(e => e.RecetaExterna)
+                        .HasDefaultValueSql("'0'")
+                        .HasColumnName("recetaExterna");
 
-            entity.Property(e => e.Vigencia).HasColumnName("vigencia");
+                    entity.Property(e => e.Vigencia).HasColumnName("vigencia");
 
-            entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Receta)
-                .HasForeignKey(d => d.IdCliente)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_receta_cliente");
+                    // Relaciones existentes
+                    entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Receta)
+                        .HasForeignKey(d => d.IdCliente)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("fk_receta_cliente");
 
-            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Receta)
-                .HasForeignKey(d => d.IdEmpleado)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_receta_empleado");
-        });
+                    entity.HasOne(d => d.IdEmpleadoNavigation).WithMany(p => p.Receta)
+                        .HasForeignKey(d => d.IdEmpleado)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("fk_receta_empleado");
+
+                    // --- NUEVAS RELACIONES CON LA TABLA MICA ---
+                    entity.HasOne(d => d.MicaMinimaNavigation)
+                        .WithMany()
+                        .HasForeignKey(d => d.MicaMinima)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("fk_receta_mica_minima");
+
+                    entity.HasOne(d => d.MicaRecomendadaNavigation)
+                        .WithMany()
+                        .HasForeignKey(d => d.MicaRecomendada)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("fk_receta_mica_recomendada");
+                });
         modelBuilder.Entity<Reparacion>(entity =>
         {
             entity.HasKey(e => e.FolioReparacion).HasName("PRIMARY");

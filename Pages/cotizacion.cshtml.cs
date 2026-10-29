@@ -17,10 +17,8 @@ namespace Proyecto.Pages
         }
 
         public SelectList ClientesSelectList { get; set; } = default!;
-        public SelectList ArmazonesSelectList { get; set; } = default!;
-
-        // Lista personalizada para manejar el precio real en los atributos data-precio de la vista
-        public List<ArmazonViewModel> ArmazonesListCustom { get; set; } = new();
+        public SelectList CategoriasSelectList { get; set; } = default!;
+        public SelectList MicasSelectList { get; set; } = default!;
 
         [BindProperty]
         public CotizacionInputModel Input { get; set; } = new CotizacionInputModel();
@@ -32,21 +30,48 @@ namespace Proyecto.Pages
 
         public async Task<JsonResult> OnGetRecetasPorClienteAsync(int idCliente)
         {
-            var recetas = await _context.Receta
-                .Where(r => r.IdCliente == idCliente)
-                .OrderByDescending(r => r.Fecha)
-                .Select(r => new
+            var recetas = await (from r in _context.Receta
+                                 where r.IdCliente == idCliente
+                                 orderby r.Fecha descending
+                                 // Hacemos el Join con la tabla Micas usando los IDs enteros de la receta
+                                 join mMin in _context.Micas on r.MicaMinima equals mMin.IdMica into joinMin
+                                 from mMinima in joinMin.DefaultIfEmpty()
+                                 join mRec in _context.Micas on r.MicaRecomendada equals mRec.IdMica into joinRec
+                                 from mRecomendada in joinRec.DefaultIfEmpty()
+                                 select new
+                                 {
+                                     r.IdReceta,
+                                     fechaStr = r.Fecha.ToString("dd/MM/yyyy"),
+                                     vigenciaStr = r.Vigencia.ToString("dd/MM/yyyy"),
+                                     esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now),
+
+                                     // Datos de Mica Mínima obtenidos de la tabla Micas
+                                     minimaNombre = mMinima != null ? $"{mMinima.Material} - {mMinima.Tratamiento}" : "No especificada",
+                                     minimaPrecio = mMinima != null ? mMinima.Precio : 0.00m,
+
+                                     // Datos de Mica Recomendada obtenidos de la tabla Micas
+                                     recomendadaNombre = mRecomendada != null ? $"{mRecomendada.Material} - {mRecomendada.Tratamiento}" : "No especificada",
+                                     recomendadaPrecio = mRecomendada != null ? mRecomendada.Precio : 0.00m
+                                 }).ToListAsync();
+
+            return new JsonResult(recetas);
+        }
+
+        // Handler que filtra los productos según la categoría seleccionada usando la relación IdCategoria
+        public async Task<JsonResult> OnGetProductosPorCategoriaAsync(int idCategoria)
+        {
+            var productos = await _context.Productos
+                .Where(p => p.IdCategoria == idCategoria)
+                .Select(p => new
                 {
-                    r.IdReceta,
-                    fechaStr = r.Fecha.ToString("dd/MM/yyyy"),
-                    vigenciaStr = r.Vigencia.ToString("dd/MM/yyyy"),
-                    esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now),
-                    micaMinima = r.MicaMinima ?? "CR-39 Blanco",
-                    micaRecomendada = r.MicaRecomendada ?? "Policarbonato Antireflejante"
+                    p.IdProducto,
+                    p.Nombre,
+                    p.Precio,
+                    p.Existencia
                 })
                 .ToListAsync();
 
-            return new JsonResult(recetas);
+            return new JsonResult(productos);
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -59,8 +84,7 @@ namespace Proyecto.Pages
                 return Page();
             }
 
-            // Obtenemos dinámicamente el ID del empleado autenticado actualmente
-            int idEmpleadoLogueado = 1; // Valor por defecto de respaldo
+            int idEmpleadoLogueado = 1;
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 var claimId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -73,8 +97,8 @@ namespace Proyecto.Pages
             var cotizacion = new Cotizacion
             {
                 IdCliente = Input.IdCliente,
-                IdEmpleado = idEmpleadoLogueado, // Asignado dinámicamente desde la sesión del usuario
-                IdReceta = Input.IdReceta ?? 0, 
+                IdEmpleado = idEmpleadoLogueado,
+                IdReceta = Input.IdReceta ?? 0,
                 FechaCotizo = DateOnly.FromDateTime(DateTime.Now),
                 FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)), // Vigencia exacta de 15 días[cite: 8]
                 TotalCalculado = Input.TotalCalculado,
@@ -94,37 +118,50 @@ namespace Proyecto.Pages
             var clientes = await _context.Clientes.OrderBy(c => c.Nombre).ToListAsync();
             ClientesSelectList = new SelectList(clientes, nameof(Cliente.IdCliente), nameof(Cliente.Nombre));
 
-            // LINEAS COMENTADAS TEMPORALMENTE PARA EVITAR ERROR CS1061:
-            // var armazones = await _context.Armazones
-            //     .Include(a => a.IdProductoNavigation)
-            //     .Select(a => new {
-            //         a.CodigoArmazon,
-            //         Descripcion = a.IdProductoNavigation != null 
-            //             ? $"{a.IdProductoNavigation.Nombre} - ${a.IdProductoNavigation.Precio}" 
-            //             : $"Armazón ID: {a.CodigoArmazon} - ${a.Precio}"
-            //     })
-            //     .ToListAsync();
+            var categorias = await _context.Categorias.OrderBy(c => c.NombreCategoria).ToListAsync();
+            CategoriasSelectList = new SelectList(categorias, nameof(Categoria.IdCategoria), nameof(Categoria.NombreCategoria));
 
-            // ArmazonesSelectList = new SelectList(armazones, "CodigoArmazon", "Descripcion");
+            // 1. Traemos las micas primero a memoria para evitar errores con valores NULL en la base de datos
+            var micasFromDb = await _context.Micas
+                .OrderBy(m => m.Material)
+                .ToListAsync();
+
+            // 2. Formateamos la descripción de forma segura en C# manejando posibles nulos
+            var micasList = micasFromDb.Select(m => new
+            {
+                m.IdMica,
+                Descripcion = $"{m.Material}" + (!string.IsNullOrEmpty(m.Tratamiento) ? $" - {m.Tratamiento}" : "") + $" ($ {m.Precio:N2})"
+            }).ToList();
+
+            MicasSelectList = new SelectList(micasList, "IdMica", "Descripcion");
         }
-    }
 
-    public class ArmazonViewModel
-    {
-        public int CodigoArmazon { get; set; }
-        public string Descripcion { get; set; } = string.Empty;
-        public decimal Precio { get; set; }
+        // Handler para registrar al cliente en la lista de espera y redirigir
+        public async Task<IActionResult> OnGetAgregarListaEsperaAsync(int idCliente)
+        {
+            if (idCliente <= 0) return RedirectToPage();
+
+            var nuevaEspera = new ListaEspera
+            {
+                IdCliente = idCliente,
+                HoraLlegada = DateTime.Now,
+                ClienteAtendido = false
+            };
+
+            _context.ListaEsperas.Add(nuevaEspera);
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = "El cliente ha sido añadido exitosamente a la lista de espera.";
+
+            // Redirige a la página de lista de espera (ajusta la ruta si tu archivo se llama diferente, ej: "/ListaEspera/Index")
+            return RedirectToPage("/ListaEspera");
+        }
     }
 
     public class CotizacionInputModel
     {
         public int IdCliente { get; set; }
-        public int? IdReceta { get; set; } 
-        public bool EnviarAExamen { get; set; } 
-        public bool ArmazonPropio { get; set; }
-        public int? CodigoArmazon { get; set; }
-        public string? DescripcionArmazonPropio { get; set; }
+        public int? IdReceta { get; set; }
         public decimal TotalCalculado { get; set; }
-        public bool BonificacionExamen { get; set; }
     }
 }
