@@ -7,7 +7,8 @@ using System.Security.Claims;
 
 namespace Proyecto.Pages
 {
-    [Authorize(Roles = "Encargado,Vendedor")]
+    // Aseguramos que Admin y Cajeros tengan acceso a la vista
+    [Authorize(Roles = "Admin,Encargado,Vendedor,Cajero")]
     public class IndexModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
@@ -21,6 +22,10 @@ namespace Proyecto.Pages
         public decimal TotalEntradas { get; set; }
         public decimal TotalSalidas { get; set; }
         public decimal SaldoActual { get; set; }
+        
+        public int CurrentUserId { get; set; }
+        // Propiedad para saber si es administrador y enviarlo a la vista
+        public bool EsAdminOEncargado { get; set; }
 
         [BindProperty] public decimal FondoInicial { get; set; }
         [BindProperty] public string TipoMovimiento { get; set; } = "";
@@ -32,13 +37,16 @@ namespace Proyecto.Pages
             var claimId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(claimId)) return RedirectToPage("/Login");
 
-            var empleadoId = int.Parse(claimId);
+            CurrentUserId = int.Parse(claimId);
+            EsAdminOEncargado = User.IsInRole("Admin") || User.IsInRole("Encargado");
 
             CajaAbierta = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
-                .FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
+                .Include(c => c.IdEmpleadoNavigation) 
+                .FirstOrDefaultAsync(c => c.Estado == "Abierta");
 
-            if (CajaAbierta != null)
+            // Calculamos saldos si es el dueño de la caja O si es Admin/Encargado
+            if (CajaAbierta != null && (CajaAbierta.IdEmpleado == CurrentUserId || EsAdminOEncargado))
             {
                 TotalEntradas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
                 TotalSalidas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
@@ -52,9 +60,14 @@ namespace Proyecto.Pages
         {
             var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            if (await _context.CajaTurno.AnyAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta"))
+            var cajaExistente = await _context.CajaTurno
+                .Include(c => c.IdEmpleadoNavigation)
+                .FirstOrDefaultAsync(c => c.Estado == "Abierta");
+
+            if (cajaExistente != null)
             {
-                TempData["ErrorMessage"] = "Ya tienes una caja abierta.";
+                string responsable = cajaExistente.IdEmpleadoNavigation?.Nombre ?? "otro empleado";
+                TempData["ErrorMessage"] = $"Ya existe una caja abierta en el sistema por {responsable}. Debe realizarse el corte antes de abrir una nueva.";
                 return RedirectToPage();
             }
 
@@ -76,10 +89,19 @@ namespace Proyecto.Pages
         public async Task<IActionResult> OnPostRegistrarMovimientoAsync()
         {
             var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var caja = await _context.CajaTurno.FirstOrDefaultAsync(c => c.IdEmpleado == empleadoId && c.Estado == "Abierta");
+            var caja = await _context.CajaTurno.FirstOrDefaultAsync(c => c.Estado == "Abierta");
 
             if (caja != null)
             {
+                bool esAdmin = User.IsInRole("Admin") || User.IsInRole("Encargado");
+                
+                // Bloqueo solo si NO es el dueño Y TAMPOCO es administrador
+                if (caja.IdEmpleado != empleadoId && !esAdmin)
+                {
+                    TempData["ErrorMessage"] = "No tienes permisos para registrar movimientos en la caja de otro usuario.";
+                    return RedirectToPage();
+                }
+
                 var movimiento = new MovimientoCaja
                 {
                     IdCajaTurno = caja.IdCajaTurno,
@@ -92,6 +114,10 @@ namespace Proyecto.Pages
                 _context.MovimientoCaja.Add(movimiento);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Movimiento registrado correctamente.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "No se pudo registrar. No hay ninguna caja abierta.";
             }
 
             return RedirectToPage();

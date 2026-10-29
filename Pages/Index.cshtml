@@ -23,11 +23,29 @@
     }
 
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h5 class="mb-1 fw-bold">Panel de Control de Caja</h5>
                 <p class="text-muted small mb-0">HU-19: Gestión de turnos y flujos de efectivo</p>
             </div>
+            
+            @if (Model.CajaAbierta != null)
+            {
+                <div class="text-end">
+                    @if (Model.CajaAbierta.IdEmpleado == Model.CurrentUserId)
+                    {
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.95rem;">
+                            <i class="bi bi-person-check-fill me-1"></i> Tu turno está activo
+                        </span>
+                    }
+                    else if (Model.EsAdminOEncargado)
+                    {
+                        <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.95rem;">
+                            <i class="bi bi-shield-lock-fill me-1"></i> Supervisando caja de: <strong>@Model.CajaAbierta.IdEmpleadoNavigation?.Nombre</strong>
+                        </span>
+                    }
+                </div>
+            }
         </div>
     </div>
 
@@ -35,16 +53,31 @@
     {
         <div class="card shadow-sm border-0 text-center py-5">
             <div class="card-body">
-                <h4 class="fw-bold text-dark mb-3">No tienes ninguna caja abierta</h4>
-                <p class="text-muted mb-4">Para comenzar a registrar ventas o movimientos, abre tu turno ingresando un fondo inicial.</p>
+                <h4 class="fw-bold text-dark mb-3">No hay ninguna caja abierta en el sistema</h4>
+                <p class="text-muted mb-4">Para comenzar a registrar ventas o movimientos, abre el turno ingresando un fondo inicial.</p>
                 <button type="button" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAbrirCaja">
                     Abrir Caja
                 </button>
             </div>
         </div>
     }
+    else if (Model.CajaAbierta.IdEmpleado != Model.CurrentUserId && !Model.EsAdminOEncargado)
+    {
+        <!-- ESCENARIO DE BLOQUEO (SOLO PARA CAJEROS QUE NO SEAN DUEÑOS) -->
+        <div class="card shadow-sm border-0 text-center py-5">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="bi bi-lock-fill text-warning" style="font-size: 3.5rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2">Caja en uso</h4>
+                <p class="text-muted mb-0">Actualmente hay un turno abierto por el usuario <strong>@Model.CajaAbierta.IdEmpleadoNavigation?.Nombre</strong>.</p>
+                <p class="text-muted small mt-1">Solo el usuario responsable o un administrador pueden ver los saldos o hacer el corte del turno.</p>
+            </div>
+        </div>
+    }
     else
     {
+        <!-- DASHBOARD (VISIBLE PARA EL DUEÑO DE LA CAJA O EL ADMIN) -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
                 <div class="card border-0 shadow-sm bg-primary text-white h-100">
@@ -81,7 +114,7 @@
         </div>
 
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+            <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h6 class="mb-0 fw-bold">Movimientos Extra del Turno</h6>
                 <div>
                     <button type="button" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#modalMovimiento">
@@ -136,7 +169,7 @@
     }
 </div>
 
-<!-- Llamado al archivo de modales ubicado en la carpeta Modales (Ruta Absoluta Corregida) -->
+<!-- Llamado al archivo de modales ubicado en la carpeta Modales -->
 <partial name="~/Pages/Modales/_ModalesCaja.cshtml" />
 
 @section Scripts {
