@@ -16,6 +16,7 @@ namespace Proyecto.Pages
 
         public IList<Producto> Productos { get; set; } = default!;
         public IList<Categoria> Categorias { get; set; } = default!;
+        public IList<Mica> ListaMicas { get; set; } = default!;
 
         public async Task OnGetAsync(string? filtroCategoria, string? buscar)
         {
@@ -43,6 +44,8 @@ namespace Proyecto.Pages
             }
 
             Productos = await query.ToListAsync();
+
+            ListaMicas = await _context.Micas.ToListAsync();
         }
 
         // --- CREAR CATEGORÍA (Camino 1) ---
@@ -98,7 +101,7 @@ namespace Proyecto.Pages
         }
 
         // --- EDITAR PRODUCTO ---
-        public async Task<IActionResult> OnPostEditarAsync(int IdProductoEdit, string NombreEdit, decimal PrecioEdit, int ExistenciaEdit)
+        public async Task<IActionResult> OnPostEditarAsync(int IdProductoEdit, string NombreEdit, decimal PrecioEdit, int ExistenciaEdit, string DetallesTecnicosEdit)
         {
             var producto = await _context.Productos.FindAsync(IdProductoEdit);
             if (producto != null)
@@ -106,6 +109,7 @@ namespace Proyecto.Pages
                 producto.Nombre = NombreEdit;
                 producto.Precio = PrecioEdit;
                 producto.Existencia = ExistenciaEdit;
+                producto.DetallesTecnicos = string.IsNullOrWhiteSpace(DetallesTecnicosEdit) ? "{}" : DetallesTecnicosEdit;
 
                 _context.Productos.Update(producto);
                 await _context.SaveChangesAsync();

@@ -224,7 +224,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             
-            // Autogenerar contraseña temporal al escribir el Correo en el modal de Crear
+            // 1. Autogenerar contraseña temporal al escribir el Correo
             const inputUsuario = document.getElementById("usuarioEmpleado");
             const inputPass = document.getElementById("contrasenaTemporal");
 
@@ -235,7 +235,37 @@
                 });
             }
 
-            // Reabrir modal de Crear si hubo error
+            // 2. Función para Ocultar/Mostrar el campo Laboratorio según el Rol
+            function configurarToggleLaboratorio(selectRolId, divLabId, selectLabId) {
+                const selectRol = document.getElementById(selectRolId);
+                const divLab = document.getElementById(divLabId);
+                const selectLab = document.getElementById(selectLabId);
+
+                if (selectRol && divLab) {
+                    const verificarRol = () => {
+                        // Obtenemos el texto visible de la opción seleccionada
+                        const textoRol = selectRol.options[selectRol.selectedIndex]?.text.toLowerCase() || "";
+                        
+                        // Si es laboratorista, mostramos el campo
+                        if (textoRol.includes("laboratorista")) {
+                            divLab.style.display = "block";
+                        } else {
+                            // Si no lo es, lo ocultamos y reiniciamos el valor a 0 (Ninguno)
+                            divLab.style.display = "none";
+                            if (selectLab) selectLab.value = "0";
+                        }
+                    };
+
+                    selectRol.addEventListener("change", verificarRol);
+                    verificarRol(); // Ejecutar al cargar para inicializar estado
+                }
+            }
+
+            // Aplicar la regla a ambos modales
+            configurarToggleLaboratorio("rolEmpleado", "divLaboratorio", "idLaboratorio");
+            configurarToggleLaboratorio("editRol", "divEditLaboratorio", "editLaboratorio");
+
+            // 3. Reabrir modal de Crear si hubo error en servidor
             @if (ViewData["ShowModal"]?.ToString() == "Crear")
             {
                 <text>
@@ -243,7 +273,7 @@
                 modalCrear.show();
                 </text>
             }
-            // Reabrir modal de Editar si hubo error
+            // 4. Reabrir modal de Editar si hubo error en servidor
             else if (ViewData["ShowModal"]?.ToString() == "Editar")
             {
                 <text>
@@ -252,7 +282,7 @@
                 </text>
             }
 
-            // Llenar el modal de edición al hacer clic en "Editar"
+            // 5. Llenar el modal de edición al hacer clic en "Editar"
             var modalEditarElement = document.getElementById('modalEditarEmpleado');
             if (modalEditarElement) {
                 modalEditarElement.addEventListener('show.bs.modal', function (event) {
@@ -269,6 +299,9 @@
                         modalEditarElement.querySelector('#editUsuario').value = usuario;
                         modalEditarElement.querySelector('#editRol').value = rol;
                         modalEditarElement.querySelector('#editLaboratorio').value = laboratorio;
+
+                        // Disparar el evento change para que se evalúe si debe mostrar el campo Laboratorio
+                        modalEditarElement.querySelector('#editRol').dispatchEvent(new Event('change'));
                     }
                 });
             }
