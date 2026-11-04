@@ -1,0 +1,42 @@
+@model Proyecto.Pages.TableroPedidosModel
+
+@foreach (var p in Model.PedidosList)
+{
+    <div class="modal fade" id="modalHistorial_@p.FolioPedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Historial del Pedido #@p.FolioPedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @if (p.HistorialPedidos != null && p.HistorialPedidos.Any())
+                        {
+                            @foreach (var h in p.HistorialPedidos.OrderByDescending(x => x.FechaCambio))
+                            {
+                                <li class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between w-100 mb-1">
+                                        <strong class="text-primary">@h.Estado</strong>
+                                        <small class="text-muted">@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    <p class="mb-1 small">Actualizado por: <span class="fw-medium">@h.IdEmpleadoNavigation?.Nombre</span></p>
+                                    @if (!string.IsNullOrEmpty(h.Comentario))
+                                    {
+                                        <div class="alert alert-warning small p-2 mt-2 mb-0">
+                                            <strong>Comentario:</strong> @h.Comentario
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-center text-muted p-4">No hay historial registrado.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
