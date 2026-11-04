@@ -145,7 +145,7 @@ CREATE TABLE `cliente` (
   `telefono` varchar(10) DEFAULT NULL,
   `avisoPrivacidad` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idCliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
-INSERT INTO `cliente` VALUES (1,'tahci',NULL,0);
+INSERT INTO `cliente` VALUES (1,'tahci',NULL,0),(2,'Juan Pérez','2281234567',1),(3,'María García','5512345678',1);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -182,7 +182,7 @@ CREATE TABLE `cotizacion` (
   CONSTRAINT `fk_cotizacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_cotizacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,6 +191,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
+INSERT INTO `cotizacion` VALUES (1,2,2,1,'2026-10-28',2500.00,'2026-11-12',0,1),(2,3,2,2,'2026-10-28',800.00,'2026-11-12',0,1);
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -249,7 +250,7 @@ CREATE TABLE `historial_pedido` (
   KEY `fk_historial_empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_pedido` FOREIGN KEY (`folioPedido`) REFERENCES `pedido` (`folioPedido`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -258,6 +259,7 @@ CREATE TABLE `historial_pedido` (
 
 LOCK TABLES `historial_pedido` WRITE;
 /*!40000 ALTER TABLE `historial_pedido` DISABLE KEYS */;
+INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-10-28 10:00:00','Pedido creado. Anticipo del 50% cobrado.'),(2,2,2,'Registrado','2026-10-28 11:00:00','Pedido creado. Cliente liquidó el 100%.'),(3,2,2,'En proceso','2026-10-28 11:30:00','Armazón del cliente enviado al laboratorio para montaje.');
 /*!40000 ALTER TABLE `historial_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -454,7 +456,7 @@ CREATE TABLE `pedido` (
   CONSTRAINT `fk_cotizacion_pedido` FOREIGN KEY (`idCotizacion`) REFERENCES `cotizacion` (`idCotizacion`),
   CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_pedido_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -463,6 +465,7 @@ CREATE TABLE `pedido` (
 
 LOCK TABLES `pedido` WRITE;
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
+INSERT INTO `pedido` VALUES (1,2,1,1,'2026-10-28','2026-11-10',NULL,1,1250.00,1250.00,'Registrado','2281234567'),(2,3,2,1,'2026-10-28','2026-11-08',NULL,1,800.00,0.00,'En proceso','5512345678');
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -589,7 +592,7 @@ CREATE TABLE `receta` (
   KEY `fk_receta_empleado` (`idEmpleado`),
   CONSTRAINT `fk_receta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -598,6 +601,7 @@ CREATE TABLE `receta` (
 
 LOCK TABLES `receta` WRITE;
 /*!40000 ALTER TABLE `receta` DISABLE KEYS */;
+INSERT INTO `receta` VALUES (1,2,4,'64mm','2026-10-28','2027-10-28',0,NULL,'-1.50',NULL,NULL,NULL,'-1.25',NULL,NULL,NULL,NULL,'Monofocal','CR-39 Blanco','CR-39 con filtro de luz azul'),(2,3,4,'60mm','2026-10-28','2027-10-28',0,NULL,'0.00',NULL,NULL,NULL,'-0.50',NULL,NULL,NULL,NULL,'Monofocal','Policarbonato Blanco','Policarbonato Antirreflejante');
 /*!40000 ALTER TABLE `receta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -617,7 +621,7 @@ CREATE TABLE `reparacion` (
   `descripcion` varchar(50) DEFAULT NULL,
   `estadoFalla` varchar(50) DEFAULT NULL,
   `precioEstimado` decimal(10,2) DEFAULT NULL,
-  `estadoLentes` varchar(20) DEFAULT NULL,
+  `estadoLentes` varchar(100) DEFAULT NULL,
   `reparacionExito` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`folioReparacion`),
   KEY `fk_reparacion_cliente` (`idCliente`),
@@ -733,4 +737,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-04 15:33:06
+-- Dump completed on 2026-11-04 16:08:32
