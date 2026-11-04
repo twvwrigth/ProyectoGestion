@@ -29,6 +29,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Empleado> Empleados { get; set; }
 
+    public virtual DbSet<HistorialPedido> HistorialPedido { get; set; }
+
     public virtual DbSet<Inventario> Inventarios { get; set; }
 
     public virtual DbSet<Laboratorio> Laboratorios { get; set; }
@@ -373,29 +375,35 @@ public partial class MiApplicationDbContext : DbContext
             entity.ToTable("pedido");
 
             entity.HasIndex(e => e.IdCotizacion, "fk_cotizacion_pedido");
-
             entity.HasIndex(e => e.IdCliente, "fk_pedido_cliente");
-
             entity.HasIndex(e => e.IdLaboratorio, "fk_pedido_laboratorio");
 
             entity.Property(e => e.FolioPedido).HasColumnName("folioPedido");
+            
             entity.Property(e => e.Anticipo)
                 .HasDefaultValueSql("'0'")
                 .HasColumnName("anticipo");
+                
             entity.Property(e => e.AnticipoTotal)
                 .HasPrecision(10, 2)
                 .HasColumnName("anticipoTotal");
+                
             entity.Property(e => e.Estado)
                 .HasMaxLength(50)
                 .HasColumnName("estado");
-            entity.Property(e => e.FechaEntrega).HasColumnName("fechaEntrega");
+
+            entity.Property(e => e.FechaPromesa).HasColumnName("fechaPromesa"); // Nome atualizado
+            entity.Property(e => e.FechaEntregaReal).HasColumnType("datetime").HasColumnName("fechaEntregaReal"); // Nova coluna
+
             entity.Property(e => e.FechaRegisEp).HasColumnName("fechaRegisEp");
             entity.Property(e => e.IdCliente).HasColumnName("idCliente");
             entity.Property(e => e.IdCotizacion).HasColumnName("idCotizacion");
             entity.Property(e => e.IdLaboratorio).HasColumnName("idLaboratorio");
+            
             entity.Property(e => e.SaldoPendiente)
                 .HasPrecision(10, 2)
                 .HasColumnName("saldoPendiente");
+                
             entity.Property(e => e.Telefono)
                 .HasMaxLength(10)
                 .HasColumnName("telefono");
@@ -416,47 +424,85 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_pedido_laboratorio");
         });
 
+        modelBuilder.Entity<HistorialPedido>(entity =>
+        {
+            entity.HasKey(e => e.IdHistorial).HasName("PRIMARY");
+
+            entity.ToTable("historial_pedido");
+
+            entity.HasIndex(e => e.FolioPedido, "fk_historial_pedido");
+            entity.HasIndex(e => e.IdEmpleado, "fk_historial_empleado");
+
+            entity.Property(e => e.IdHistorial).HasColumnName("idHistorial");
+            entity.Property(e => e.FolioPedido).HasColumnName("folioPedido");
+            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            
+            entity.Property(e => e.Estado)
+                .HasMaxLength(50)
+                .HasColumnName("estado");
+                
+            entity.Property(e => e.FechaCambio)
+                .HasColumnType("datetime")
+                .HasColumnName("fechaCambio");
+                
+            entity.Property(e => e.Comentario)
+                .HasMaxLength(255)
+                .HasColumnName("comentario");
+
+            entity.HasOne(d => d.FolioPedidoNavigation)
+                .WithMany(p => p.HistorialPedidos)
+                .HasForeignKey(d => d.FolioPedido)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_historial_pedido");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.HistorialPedidos)
+                .HasForeignKey(d => d.IdEmpleado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_historial_empleado");
+        });
+
         modelBuilder.Entity<Producto>(entity =>
- {
-     entity.HasKey(e => e.IdProducto).HasName("PRIMARY");
-     entity.ToTable("producto");
+        {
+            entity.HasKey(e => e.IdProducto).HasName("PRIMARY");
+            entity.ToTable("producto");
 
-     entity.HasIndex(e => e.IdCategoria, "fk_producto_categoria");
-     entity.HasIndex(e => e.IdClasePrecio, "fk_producto_clase");
+            entity.HasIndex(e => e.IdCategoria, "fk_producto_categoria");
+            entity.HasIndex(e => e.IdClasePrecio, "fk_producto_clase");
 
-     entity.Property(e => e.IdProducto).HasColumnName("idProducto");
-     entity.Property(e => e.IdCategoria).HasColumnName("idCategoria");
-     entity.Property(e => e.IdClasePrecio).HasColumnName("idClasePrecio");
+            entity.Property(e => e.IdProducto).HasColumnName("idProducto");
+            entity.Property(e => e.IdCategoria).HasColumnName("idCategoria");
+            entity.Property(e => e.IdClasePrecio).HasColumnName("idClasePrecio");
 
-     entity.Property(e => e.Existencia)
-         .HasDefaultValueSql("'0'")
-         .HasColumnName("existencia");
+            entity.Property(e => e.Existencia)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("existencia");
 
-     entity.Property(e => e.Nombre)
-         .HasMaxLength(20)
-         .HasColumnName("nombre");
+            entity.Property(e => e.Nombre)
+                .HasMaxLength(20)
+                .HasColumnName("nombre");
 
-     entity.Property(e => e.Precio)
-         .HasPrecision(10, 2)
-         .HasColumnName("precio");
+            entity.Property(e => e.Precio)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio");
 
-     entity.Property(e => e.Promocion)
-         .HasDefaultValueSql("'0'")
-         .HasColumnName("promocion");
+            entity.Property(e => e.Promocion)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("promocion");
 
-     entity.Property(e => e.DetallesTecnicos)
-         .HasColumnType("json")
-         .HasColumnName("detallesTecnicos");
+            entity.Property(e => e.DetallesTecnicos)
+                .HasColumnType("json")
+                .HasColumnName("detallesTecnicos");
 
-     entity.HasOne(d => d.IdCategoriaNavigation).WithMany(p => p.Productos)
-         .HasForeignKey(d => d.IdCategoria)
-         .OnDelete(DeleteBehavior.ClientSetNull)
-         .HasConstraintName("fk_producto_categoria");
+            entity.HasOne(d => d.IdCategoriaNavigation).WithMany(p => p.Productos)
+                .HasForeignKey(d => d.IdCategoria)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_producto_categoria");
 
-     entity.HasOne(d => d.IdClasePrecioNavigation).WithMany(p => p.Productos)
-         .HasForeignKey(d => d.IdClasePrecio)
-         .HasConstraintName("fk_producto_clase");
- });
+            entity.HasOne(d => d.IdClasePrecioNavigation).WithMany(p => p.Productos)
+                .HasForeignKey(d => d.IdClasePrecio)
+                .HasConstraintName("fk_producto_clase");
+        });
 
         modelBuilder.Entity<Promocion>(entity =>
         {
