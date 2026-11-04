@@ -161,6 +161,16 @@
                                     </div>
                                 </div>
 
+                                <!-- Mensaje dinámico de bonificación por examen -->
+                                <div id="alertaBonificacion" class="alert py-2 mb-4 d-none" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <span id="textoBonificacion"></span>
+                                </div>
+
+                                <!-- Inputs ocultos para enviar datos al backend de forma segura -->
+                                <input type="hidden" asp-for="Input.BonificacionExamen" id="inputBonificacionExamen" value="false" />
+                                <input type="hidden" asp-for="Input.DetalleCotizacion" id="detalleCotizacionInput" />
+
                                 <!-- Total y Guardado -->
                                 <div class="card bg-light border-primary">
                                     <div class="card-body d-flex justify-content-between align-items-center">
@@ -189,6 +199,9 @@
                             let productosApartado = [];
                             let recetaActualData = null;
 
+                            // Variable global con el precio del examen obtenido de la BD
+                            const descuentoExamenConfigurado = @Model.PrecioExamenConfigurado.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
                             @if (TempData["MensajeExito"] != null)
                                 {
                                     <text>
@@ -198,7 +211,7 @@
                                             icon: 'success',
                                             confirmButtonText: 'Aceptar',
                                             confirmButtonColor: '#0d6efd'
-                                                                                                                                                                                });
+                                                                        });
                                     </text>
                             }
 
@@ -216,6 +229,10 @@
                                         Swal.fire('Atención', 'Debe agregar al menos un producto al apartado antes de guardar.', 'warning');
                                         return;
                                     }
+
+                                    // <-- ESTA LÍNEA ES LA QUE FALTABA O SE OMITIÓ EN EL SCRIPT -->
+                                    const descripcionProductos = productosApartado.map(p => p.nombre).join(' | ');
+                                    document.getElementById('detalleCotizacionInput').value = descripcionProductos;
 
                                     const total = document.getElementById('lblTotal').innerText;
                                     Swal.fire({
@@ -236,13 +253,13 @@
 
                             function cargarRecetasCliente(idCliente) {
                                 if (!idCliente) return;
-            
+
                                 bloquearSeccionProductos();
                                 limpiarTarjetaMicas();
 
                                 const recetaSelect = document.getElementById('recetaSelect');
                                 const alertaReceta = document.getElementById('alertaReceta');
-            
+
                                 recetaSelect.innerHTML = '<option value="" selected disabled>Cargando recetas...</option>';
                                 recetaSelect.disabled = true;
                                 alertaReceta.classList.add('d-none');
@@ -251,20 +268,20 @@
                                     .then(response => response.json())
                                     .then(data => {
                                         recetaSelect.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
-                    
+
                                         if (data.length === 0) {
                                             alertaReceta.classList.remove('d-none');
                                             const mensajeReceta = document.getElementById('mensajeReceta');
                                             mensajeReceta.innerHTML = `
-                                                                                                                                                    <strong>El cliente no cuenta con recetas registradas.</strong> 
-                                                                                                                                                    <div class="mt-2">
-                                                                                                                                                        <a href="/Recetas/Create?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
-                                                                                                                                                            <i class="bi bi-plus-circle"></i> Registrar Receta Externa
-                                                                                                                                                        </a>
-                                                                                                                                                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="enviarAListaEspera(${idCliente})">
-                                                                                                                                                            <i class="bi bi-clock-history"></i> Añadir a Lista de Espera (Examen)
-                                                                                                                                                        </button>
-                                                                                                                                                    </div>`;
+                                                                                                    <strong>El cliente no cuenta con recetas registradas.</strong> 
+                                                                                                    <div class="mt-2">
+                                                                                                        <a href="/Examen?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
+                                                                                                            <i class="bi bi-plus-circle"></i> Registrar Receta Externa
+                                                                                                        </a>
+                                                                                                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="enviarAListaEspera(${idCliente})">
+                                                                                                            <i class="bi bi-clock-history"></i> Añadir a Lista de Espera (Examen)
+                                                                                                        </button>
+                                                                                                    </div>`;
                                             recetaSelect.disabled = true;
                                             return;
                                         }
@@ -272,24 +289,22 @@
                                         alertaReceta.classList.add('d-none');
                                         recetaSelect.disabled = false;
 
-                                        // Guardamos los datos de las recetas en un arreglo en memoria o dataset del option
                                         data.forEach((r, index) => {
                                             let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
                                             if (r.esVencida) texto += " - [VENCIDA]";
-                        
+
                                             const opt = document.createElement('option');
                                             opt.value = r.idReceta;
                                             opt.textContent = texto;
-                        
-                                            // Guardamos la info de micas en atributos del option
+
                                             opt.dataset.minimanombre = r.minimaNombre;
                                             opt.dataset.minimaprecio = r.minimaPrecio;
                                             opt.dataset.recomendadanombre = r.recomendadaNombre;
                                             opt.dataset.recomendadaprecio = r.recomendadaPrecio;
+                                            opt.dataset.recetaexterna = (r.recetaExterna === true || r.recetaExterna === 1 || r.recetaExterna === "1" || r.recetaExterna === "True");
 
                                             recetaSelect.appendChild(opt);
 
-                                            // Si es la primera receta vigente, la seleccionamos por defecto
                                             if (index === 0 && !r.esVencida) {
                                                 recetaSelect.value = r.idReceta;
                                                 recetaSelect.dispatchEvent(new Event('change'));
@@ -298,17 +313,41 @@
                                     });
                             }
 
-                            // Evento cuando cambia la receta seleccionada
                             document.getElementById('recetaSelect').addEventListener('change', function () {
                                 const opt = this.options[this.selectedIndex];
                                 if (opt && opt.dataset.minimanombre) {
+                                    
+                                    const esExterna = opt.dataset.recetaexterna === 'true';
+
                                     recetaActualData = {
                                         minimaNombre: opt.dataset.minimanombre,
                                         minimaPrecio: parseFloat(opt.dataset.minimaprecio) || 0,
                                         recomendadaNombre: opt.dataset.recomendadanombre,
-                                        recomendadaPrecio: parseFloat(opt.dataset.recomendadaprecio) || 0
+                                        recomendadaPrecio: parseFloat(opt.dataset.recomendadaprecio) || 0,
+                                        recetaExterna: esExterna
                                     };
                                     actualizarTarjetaMicas(recetaActualData);
+
+                                    // GESTIÓN AUTOMÁTICA DEL MENSAJE Y DESCUENTO DE EXAMEN
+                                    const alertaBon = document.getElementById('alertaBonificacion');
+                                    const textoBon = document.getElementById('textoBonificacion');
+                                    const inputBon = document.getElementById('inputBonificacionExamen');
+
+                                    alertaBon.classList.remove('d-none');
+
+                                    if (recetaActualData.recetaExterna === false) {
+                                        // Es receta local/interna (0) -> Aplica descuento automáticamente
+                                        alertaBon.className = "alert alert-success py-2 mb-4";
+                                        textoBon.innerHTML = `<strong>Examen local detectado:</strong> Se aplicó automáticamente la bonificación de examen por <strong>$${descuentoExamenConfigurado.toFixed(2)}</strong>.`;
+                                        inputBon.value = "true";
+                                    } else {
+                                        // Es receta externa (1) -> No aplica descuento
+                                        alertaBon.className = "alert alert-secondary py-2 mb-4";
+                                        textoBon.innerHTML = `<strong>Receta externa detectada:</strong> Esta receta no incluye bonificación por examen local.`;
+                                        inputBon.value = "false";
+                                    }
+
+                                    actualizarTablaApartado();
                                 }
                                 validarSeleccionPrevia();
                             });
@@ -316,14 +355,13 @@
                             function actualizarTarjetaMicas(r) {
                                 document.getElementById('lblMicaMinima').innerText = r.minimaNombre;
                                 document.getElementById('precioMinimaText').innerText = `$${r.minimaPrecio.toFixed(2)}`;
-    
+
                                 document.getElementById('lblMicaRecomendada').innerText = r.recomendadaNombre;
                                 document.getElementById('precioRecomendadaText').innerText = `$${r.recomendadaPrecio.toFixed(2)}`;
 
                                 document.getElementById('btnMinima').disabled = false;
                                 document.getElementById('btnRecomendada').disabled = false;
-    
-                                // Habilitar controles manuales
+
                                 document.getElementById('selectMicaManual').disabled = false;
                                 document.getElementById('btnAgregarMicaManual').disabled = false;
                             }
@@ -340,44 +378,8 @@
                                 document.getElementById('selectMicaManual').value = "";
                                 document.getElementById('selectMicaManual').disabled = true;
                                 document.getElementById('btnAgregarMicaManual').disabled = true;
-    
+
                                 recetaActualData = null;
-                            }
-
-                            function agregarMicaManualAlApartado() {
-                                const selectMica = document.getElementById('selectMicaManual');
-                                const selectedOption = selectMica.options[selectMica.selectedIndex];
-
-                                if (!selectMica.value || selectMica.selectedIndex === 0) {
-                                    Swal.fire('Aviso', 'Seleccione una mica válida del catálogo general.', 'warning');
-                                    return;
-                                }
-
-                                const textoCompleto = selectedOption.text;
-                                const partes = textoCompleto.split('($');
-                                const nombreMica = partes[0].trim();
-                                const precioMica = parseFloat(partes[1].replace(')', '').replace(',', '').trim()) || 0;
-
-                                const producto = {
-                                    id: 'mica_manual_' + selectMica.value,
-                                    nombre: `Mica Manual - ${nombreMica}`,
-                                    precio: precioMica
-                                };
-
-                                productosApartado.push(producto);
-                                actualizarTablaApartado();
-
-                                // Reiniciar el selector manual para permitir elegir otra si se requiere
-                                selectMica.value = "";
-
-                                Swal.fire({
-                                    toast: true,
-                                    position: 'top-end',
-                                    icon: 'success',
-                                    title: 'Mica manual añadida al apartado',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                });
                             }
 
                             function seleccionarMicaSugerida(tipo) {
@@ -392,10 +394,7 @@
                                     precio: precio
                                 };
 
-                                // 1. ELIMINAR CUALQUIER MICA ANTERIOR (mínima, recomendada o manual) del apartado
                                 productosApartado = productosApartado.filter(item => !item.id.startsWith('mica_'));
-
-                                // 2. Agregar la nueva mica seleccionada
                                 productosApartado.push(producto);
                                 actualizarTablaApartado();
 
@@ -429,14 +428,10 @@
                                     precio: precioMica
                                 };
 
-                                // 1. ELIMINAR CUALQUIER MICA ANTERIOR (mínima, recomendada o manual) del apartado
                                 productosApartado = productosApartado.filter(item => !item.id.startsWith('mica_'));
-
-                                // 2. Agregar la nueva mica manual
                                 productosApartado.push(producto);
                                 actualizarTablaApartado();
 
-                                // Reiniciar el selector manual
                                 selectMica.value = "";
 
                                 Swal.fire({
@@ -461,7 +456,6 @@
                                     cancelButtonText: 'Cancelar'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        // Redirige al handler del backend para guardar y cambiar de página
                                         window.location.href = `?handler=AgregarListaEspera&idCliente=${idCliente}`;
                                     }
                                 });
@@ -503,7 +497,7 @@
                                         const select = document.getElementById('selectProducto');
                                         select.disabled = false;
                                         select.innerHTML = '<option value="" selected disabled>Seleccione un producto...</option>';
-                    
+
                                         if (data.length === 0) {
                                             select.innerHTML += '<option value="" disabled>-- No hay productos en esta categoría --</option>';
                                             document.getElementById('btnAgregarApartado').disabled = true;
@@ -564,22 +558,31 @@
                                     return;
                                 }
 
-                                let totalGeneral = 0;
+                                let subtotal = 0;
 
                                 productosApartado.forEach((item, index) => {
-                                    totalGeneral += item.precio;
+                                    subtotal += item.precio;
                                     const tr = document.createElement('tr');
                                     tr.innerHTML = `
-                                                                                                                                            <td>${item.nombre}</td>
-                                                                                                                                            <td>$${item.precio.toFixed(2)}</td>
-                                                                                                                                            <td class="text-center">
-                                                                                                                                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartado(${index})">
-                                                                                                                                                    <i class="bi bi-trash"></i> Quitar
-                                                                                                                                                </button>
-                                                                                                                                            </td>
-                                                                                                                                        `;
+                                                                <td>${item.nombre}</td>
+                                                                <td>$${item.precio.toFixed(2)}</td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartado(${index})">
+                                                                        <i class="bi bi-trash"></i> Quitar
+                                                                    </button>
+                                                                </td>
+                                                            `;
                                     tbody.appendChild(tr);
                                 });
+
+                                // Aplicar descuento usando el input oculto de bonificación automática
+                                let totalGeneral = subtotal;
+                                const inputBon = document.getElementById('inputBonificacionExamen');
+
+                                if (inputBon && inputBon.value === "true") {
+                                    totalGeneral -= descuentoExamenConfigurado;
+                                    if (totalGeneral < 0) totalGeneral = 0; // Evitar totales negativos
+                                }
 
                                 document.getElementById('lblTotal').innerText = `$${totalGeneral.toFixed(2)} MXN`;
                                 document.getElementById('totalCalculadoInput').value = totalGeneral;

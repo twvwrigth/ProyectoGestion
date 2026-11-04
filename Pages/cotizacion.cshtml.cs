@@ -19,6 +19,7 @@ namespace Proyecto.Pages
         public SelectList ClientesSelectList { get; set; } = default!;
         public SelectList CategoriasSelectList { get; set; } = default!;
         public SelectList MicasSelectList { get; set; } = default!;
+        public decimal PrecioExamenConfigurado { get; set; } = 250.00m;
 
         [BindProperty]
         public CotizacionInputModel Input { get; set; } = new CotizacionInputModel();
@@ -30,33 +31,30 @@ namespace Proyecto.Pages
 
         public async Task<JsonResult> OnGetRecetasPorClienteAsync(int idCliente)
         {
-            var recetas = await (from r in _context.Receta
-                                 where r.IdCliente == idCliente
-                                 orderby r.Fecha descending
-                                 // Hacemos el Join con la tabla Micas usando los IDs enteros de la receta
-                                 join mMin in _context.Micas on r.MicaMinima equals mMin.IdMica into joinMin
-                                 from mMinima in joinMin.DefaultIfEmpty()
-                                 join mRec in _context.Micas on r.MicaRecomendada equals mRec.IdMica into joinRec
-                                 from mRecomendada in joinRec.DefaultIfEmpty()
-                                 select new
-                                 {
-                                     r.IdReceta,
-                                     fechaStr = r.Fecha.ToString("dd/MM/yyyy"),
-                                     vigenciaStr = r.Vigencia.ToString("dd/MM/yyyy"),
-                                     esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now),
+            var recetas = await(from r in _context.Receta
+                                where r.IdCliente == idCliente
+                                orderby r.Fecha descending
+                                join mMin in _context.Micas on r.MicaMinima equals mMin.IdMica into joinMin
+                                from mMinima in joinMin.DefaultIfEmpty()
+                                join mRec in _context.Micas on r.MicaRecomendada equals mRec.IdMica into joinRec
+                                from mRecomendada in joinRec.DefaultIfEmpty()
+                                select new
+                                {
+                                    r.IdReceta,
+                                    fechaStr = r.Fecha.ToString("dd/MM/yyyy"),
+                                    vigenciaStr = r.Vigencia.ToString("dd/MM/yyyy"),
+                                    esVencida = r.Vigencia < DateOnly.FromDateTime(DateTime.Now),
+                                    recetaExterna = r.RecetaExterna, // <-- Mapeo explícito en minúscula
 
-                                     // Datos de Mica Mínima obtenidos de la tabla Micas
-                                     minimaNombre = mMinima != null ? $"{mMinima.Material} - {mMinima.Tratamiento}" : "No especificada",
-                                     minimaPrecio = mMinima != null ? mMinima.Precio : 0.00m,
+                                    minimaNombre = mMinima != null ? $"{mMinima.Material} - {mMinima.Tratamiento}" : "No especificada",
+                                    minimaPrecio = mMinima != null ? mMinima.Precio : 0.00m,
 
-                                     // Datos de Mica Recomendada obtenidos de la tabla Micas
-                                     recomendadaNombre = mRecomendada != null ? $"{mRecomendada.Material} - {mRecomendada.Tratamiento}" : "No especificada",
-                                     recomendadaPrecio = mRecomendada != null ? mRecomendada.Precio : 0.00m
-                                 }).ToListAsync();
+                                    recomendadaNombre = mRecomendada != null ? $"{mRecomendada.Material} - {mRecomendada.Tratamiento}" : "No especificada",
+                                    recomendadaPrecio = mRecomendada != null ? mRecomendada.Precio : 0.00m
+                                }).ToListAsync();
 
             return new JsonResult(recetas);
         }
-
         // Handler que filtra los productos según la categoría seleccionada usando la relación IdCategoria
         public async Task<JsonResult> OnGetProductosPorCategoriaAsync(int idCategoria)
         {
@@ -94,16 +92,29 @@ namespace Proyecto.Pages
                 }
             }
 
+            // VERIFICACIÓN AUTOMÁTICA EN BASE DE DATOS
+            bool aplicaBonificacionReal = false;
+            if (Input.IdReceta.HasValue && Input.IdReceta.Value > 0)
+            {
+                var recetaDb = await _context.Receta.FindAsync(Input.IdReceta.Value);
+                // Si la receta existe y NO es externa (es decir, recetaExterna == 0 / false), se otorga la bonificación
+                if (recetaDb != null && !recetaDb.RecetaExterna)
+                {
+                    aplicaBonificacionReal = true;
+                }
+            }
+
             var cotizacion = new Cotizacion
             {
                 IdCliente = Input.IdCliente,
                 IdEmpleado = idEmpleadoLogueado,
                 IdReceta = Input.IdReceta ?? 0,
                 FechaCotizo = DateOnly.FromDateTime(DateTime.Now),
-                FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)), // Vigencia exacta de 15 días[cite: 8]
+                FechaExpiracion = DateOnly.FromDateTime(DateTime.Now.AddDays(15)),
                 TotalCalculado = Input.TotalCalculado,
-                BonificacionExamen = false,
-                Receta = Input.IdReceta.HasValue && Input.IdReceta.Value > 0
+                BonificacionExamen = aplicaBonificacionReal, // Asignado de forma totalmente automática y segura
+                Receta = Input.IdReceta.HasValue && Input.IdReceta.Value > 0,
+                DetalleCotizacion = Input.DetalleCotizacion
             };
 
             _context.Cotizaciones.Add(cotizacion);
@@ -121,12 +132,15 @@ namespace Proyecto.Pages
             var categorias = await _context.Categorias.OrderBy(c => c.NombreCategoria).ToListAsync();
             CategoriasSelectList = new SelectList(categorias, nameof(Categoria.IdCategoria), nameof(Categoria.NombreCategoria));
 
-            // 1. Traemos las micas primero a memoria para evitar errores con valores NULL en la base de datos
-            var micasFromDb = await _context.Micas
-                .OrderBy(m => m.Material)
-                .ToListAsync();
+            // Obtener el precio del examen configurado en Parámetros del Negocio
+            var param = await _context.ParametroNegocios.FirstOrDefaultAsync();
+            if (param != null)
+            {
+                PrecioExamenConfigurado = param.PrecioExamen;
+            }
 
-            // 2. Formateamos la descripción de forma segura en C# manejando posibles nulos
+            // Carga segura del catálogo de micas...
+            var micasFromDb = await _context.Micas.OrderBy(m => m.Material).ToListAsync();
             var micasList = micasFromDb.Select(m => new
             {
                 m.IdMica,
@@ -163,5 +177,7 @@ namespace Proyecto.Pages
         public int IdCliente { get; set; }
         public int? IdReceta { get; set; }
         public decimal TotalCalculado { get; set; }
+        public bool BonificacionExamen { get; set; }
+        public string? DetalleCotizacion { get; set; }
     }
 }
