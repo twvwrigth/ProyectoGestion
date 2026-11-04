@@ -75,7 +75,7 @@
                             <tr>
                                 <td class="fw-bold">#@ped.FolioPedido</td>
                                 <td>@(ped.IdLaboratorioNavigation?.Nombre ?? "N/A")</td>
-                                <td>@(ped.FechaEntrega?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                                <td>@(ped.FechaPromesa?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
                                 <td class="text-danger fw-bold">$@ped.SaldoPendiente</td>
                                 <td><span class="badge bg-primary">@ped.Estado</span></td>
                             </tr>
