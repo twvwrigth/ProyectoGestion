@@ -24,6 +24,9 @@ namespace Proyecto.Pages
         // Historial de recetas anteriores del cliente
         public List<Receta> RecetasAnteriores { get; set; } = new List<Receta>();
 
+        // NUEVO: Lista para llenar el menú desplegable de "Tipo de Mica"
+        public IList<Mica> ListaMicas { get; set; } = default!;
+
         // Variables ligadas al formulario HTML
         [BindProperty]
         public Receta NuevaReceta { get; set; }
@@ -51,6 +54,9 @@ namespace Proyecto.Pages
                 .OrderByDescending(r => r.Fecha)
                 .ToListAsync();
 
+            // 3. NUEVO: Cargamos las micas para el panel de Opciones de Ventas
+            ListaMicas = await _context.Micas.ToListAsync();
+
             return Page();
         }
 
@@ -75,7 +81,6 @@ namespace Proyecto.Pages
             NuevaReceta.IdEmpleado = 1;
 
             // Si NO es receta externa, la fecha de emisión es hoy y el emisor somos nosotros
-            // Si NO es receta externa (es falsa o nula), la fecha de emisión es hoy y el emisor somos nosotros
             if (NuevaReceta.RecetaExterna != true)
             {
                 // Convertimos el DateTime actual a DateOnly
@@ -90,7 +95,6 @@ namespace Proyecto.Pages
             _context.Receta.Add(NuevaReceta);
 
             // 4. Conexión a BD: Actualizar la Lista de Espera
-            // Buscamos el turno activo de este cliente
             var turnoPendiente = await _context.ListaEsperas
                 .Where(l => l.IdCliente == idCliente && l.ClienteAtendido == false)
                 .FirstOrDefaultAsync();
