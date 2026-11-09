@@ -163,7 +163,7 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `cotizacion`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET @saved_cs_client      = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cotizacion` (
   `idCotizacion` int NOT NULL AUTO_INCREMENT,
@@ -175,6 +175,7 @@ CREATE TABLE `cotizacion` (
   `fechaExpiracion` date NOT NULL,
   `bonificacionExamen` tinyint(1) DEFAULT '0',
   `receta` tinyint(1) DEFAULT '1',
+  `detalleCotizacion` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`idCotizacion`),
   KEY `fk_cotizacion_cliente` (`idCliente`),
   KEY `fk_cotizacion_empleado` (`idEmpleado`),
@@ -191,7 +192,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
-INSERT INTO `cotizacion` VALUES (1,2,2,1,'2026-10-28',2500.00,'2026-11-12',0,1),(2,3,2,2,'2026-10-28',800.00,'2026-11-12',0,1);
+INSERT INTO `cotizacion` VALUES (1,2,2,1,'2026-10-28',2500.00,'2026-11-12',0,1, NULL),(2,3,2,2,'2026-10-28',800.00,'2026-11-12',0,1, NULL);
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -597,15 +598,10 @@ CREATE TABLE `receta` (
   KEY `fk_receta_mica_minima` (`micaMinima`),
   KEY `fk_receta_mica_recomendada` (`micaRecomendada`),
   CONSTRAINT `fk_receta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
-<<<<<<< HEAD
   CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_receta_mica_minima` FOREIGN KEY (`micaMinima`) REFERENCES `micas` (`IdMica`),
   CONSTRAINT `fk_receta_mica_recomendada` FOREIGN KEY (`micaRecomendada`) REFERENCES `micas` (`IdMica`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-=======
-  CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
->>>>>>> 28826622756692f4a78db42e4f2c0a17833f21e4
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
