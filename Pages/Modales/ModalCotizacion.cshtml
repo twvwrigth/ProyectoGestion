@@ -1,12 +1,12 @@
 @model Proyecto.Pages.CotizacionModel
 
-<!-- Modal HU-10: Cotización de lente graduado -->
+<!-- Modal HU-10: Cotización de Lente Graduado y Productos -->
 <div class="modal fade" id="modalCotizacion" tabindex="-1" aria-labelledby="modalCotizacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalCotizacionLabel">
-                    <i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado (HU-10)
+                    <i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado y Productos (HU-10)
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -32,79 +32,69 @@
 
                         <div class="col-md-6">
                             <label asp-for="Input.IdReceta" class="form-label fw-bold">Receta del Optometrista <span class="text-danger">*</span></label>
-                            <select asp-for="Input.IdReceta" class="form-select" id="recetaSelectModal" required>
+                            <!-- Agregado disabled por defecto -->
+                            <select asp-for="Input.IdReceta" class="form-select" id="recetaSelectModal" onchange="validarSeleccionPrevia()" disabled required>
                                 <option value="" selected disabled>Primero seleccione un cliente...</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Sección 2: Opciones Sugeridas (Modo Lectura) -->
-                    <div class="card mb-4 border-info">
-                        <div class="card-header bg-info text-dark fw-bold">
-                            Opciones del Optometrista (Modo Lectura)
+                    <!-- Sección 2: Selección por Categorías y Productos (Bloqueados por defecto) -->
+                    <div class="card mb-4 border-secondary" id="seccionProductosCard">
+                        <div class="card-header bg-secondary text-white fw-bold">
+                            Selección de Productos por Categoría <span id="avisoBloqueo" class="text-warning small ms-2">(Seleccione cliente y receta para desbloquear)</span>
                         </div>
                         <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-md-6 border-end">
-                                    <h6 class="text-secondary fw-bold">Opción Mínima</h6>
-                                    <p class="mb-1">CR-39 Monofocal / Antirreflejante Básico</p>
-                                    <h5 class="text-primary fw-bold">$850.00</h5>
-                                    <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="seleccionarOpcionModal(400, 200)">Seleccionar Mínima</button>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">1. Seleccionar Categoría</label>
+                                    <!-- Agregado disabled por defecto -->
+                                    <select id="selectCategoriaModal" class="form-select" onchange="cargarProductosPorCategoriaModal(this.value)" disabled>
+                                        <option value="" selected disabled>Seleccione una categoría...</option>
+                                        @foreach (var cat in Model.CategoriasSelectList)
+                                        {
+                                            <option value="@cat.Value">@cat.Text</option>
+                                        }
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <h6 class="text-success fw-bold">Opción Recomendada</h6>
-                                    <p class="mb-1">Policarbonato / Filtro Luz Azul + Antirreflejante</p>
-                                    <h5 class="text-success fw-bold">$1,450.00</h5>
-                                    <button type="button" class="btn btn-sm btn-success mt-1" onclick="seleccionarOpcionModal(750, 500)">Seleccionar Recomendada</button>
+                                    <label class="form-label fw-bold">2. Seleccionar Producto</label>
+                                    <!-- Agregado disabled por defecto -->
+                                    <select id="selectProductoModal" class="form-select" disabled>
+                                        <option value="" selected disabled>Primero seleccione una categoría...</option>
+                                    </select>
                                 </div>
+                            </div>
+                            <div class="text-end">
+                                <!-- Agregado disabled por defecto -->
+                                <button type="button" class="btn btn-success btn-sm" id="btnAgregarApartado" onclick="agregarAlApartadoModal()" disabled>
+                                    <i class="bi bi-plus-circle me-1"></i> Añadir al Apartado
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Sección 3: Configuración del Producto y Materiales -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light fw-bold">Configuración de Armazón y Micas</div>
+                    <!-- Sección 3: Apartado de Productos Seleccionados -->
+                    <div class="card mb-4 border-dark">
+                        <div class="card-header bg-dark text-white fw-bold">
+                            Apartado / Productos a Cobrar
+                        </div>
                         <div class="card-body">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
-                                    <div class="form-check form-switch mt-4">
-                                        <input class="form-check-input" type="checkbox" asp-for="Input.ArmazonPropio" id="checkArmazonPropioModal" onchange="toggleArmazonModal()">
-                                        <label class="form-check-label fw-bold" asp-for="Input.ArmazonPropio">Cliente trae su armazón</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-8" id="divInventarioModal">
-                                    <label class="form-label fw-bold">Armazón de Inventario</label>
-                                    <select asp-for="Input.CodigoArmazon" asp-items="Model.ArmazonesSelectList" class="form-select" id="selectArmazonModal" onchange="recalcularTotalModal()">
-                                        <option value="">Seleccione armazón...</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-8 d-none" id="divPropioModal">
-                                    <label class="form-label fw-bold">Descripción de Armazón Propio</label>
-                                    <input type="text" asp-for="Input.DescripcionArmazonPropio" class="form-control" placeholder="Ej. Armazón metálico usado en buen estado">
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Material de Mica</label>
-                                    <select class="form-select" id="selectMaterialModal" onchange="recalcularTotalModal()">
-                                        <option value="400">CR-39 ($400)</option>
-                                        <option value="750">Policarbonato ($750)</option>
-                                        <option value="1200">Hi-Index ($1,200)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Tratamiento</label>
-                                    <select class="form-select" id="selectTratamientoModal" onchange="recalcularTotalModal()">
-                                        <option value="200">Antirreflejante ($200)</option>
-                                        <option value="500">Filtro Luz Azul ($500)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Examen Visual</label>
-                                    <input type="text" class="form-control" id="costoExamenModal" value="$250.00" readonly />
-                                    <input type="hidden" asp-for="Input.BonificacionExamen" id="bonificacionHiddenModal" value="false" />
-                                </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped align-middle" id="tablaApartadoModal">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Precio Unitario</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr id="filaVaciaModal">
+                                            <td colspan="3" class="text-center text-muted">No hay productos agregados en el apartado.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -112,9 +102,9 @@
                     <!-- Total -->
                     <div class="card bg-light border-primary">
                         <div class="card-body d-flex justify-content-between align-items-center">
-                            <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15 días</strong>.</small>
+                            <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15 días</strong>[cite: 8].</small>
                             <div class="text-end">
-                                <span class="text-uppercase fw-bold text-secondary">Total Calculado:</span>
+                                <span class="text-uppercase fw-bold text-secondary">Total a Cobrar:</span>
                                 <h3 class="text-primary fw-bold mb-0" id="lblTotalModal">$0.00</h3>
                                 <input type="hidden" asp-for="Input.TotalCalculado" id="totalCalculadoInputModal" />
                             </div>
@@ -125,8 +115,8 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('formCotizacionModal').submit();">
-                    <i class="bi bi-save me-1"></i> Guardar Cotización
+                <button type="button" class="btn btn-primary" onclick="validarYEnviarModal()">
+                    <i class="bi bi-save me-1"></i> Guardar y Cobrar Cotización
                 </button>
             </div>
         </div>
@@ -134,20 +124,31 @@
 </div>
 
 <script>
-    function toggleArmazonModal() {
-        const propio = document.getElementById('checkArmazonPropioModal').checked;
-        document.getElementById('divInventarioModal').classList.toggle('d-none', propio);
-        document.getElementById('divPropioModal').classList.toggle('d-none', !propio);
-        recalcularTotalModal();
-    }
+    let productosApartadoModal = [];
 
     function cargarRecetasClienteModal(idCliente) {
         if (!idCliente) return;
+        
+        // Bloquear y limpiar al cambiar de cliente
+        bloquearSeccionProductos();
+        document.getElementById('recetaSelectModal').innerHTML = '<option value="" selected disabled>Cargando recetas...</option>';
+        document.getElementById('recetaSelectModal').disabled = true;
+
         fetch(`/cotizacion?handler=RecetasPorCliente&idCliente=${idCliente}`)
             .then(response => response.json())
             .then(data => {
                 const select = document.getElementById('recetaSelectModal');
+                const alerta = document.getElementById('alertaRecetaModal');
                 select.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
+                
+                if (data.length === 0) {
+                    alerta.classList.remove('d-none');
+                    select.disabled = true;
+                    return;
+                }
+                alerta.classList.add('d-none');
+                select.disabled = false; // Habilitar select de receta solo si hay datos
+
                 data.forEach(r => {
                     let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
                     if (r.esVencida) texto += " - [VENCIDA]";
@@ -159,25 +160,135 @@
             });
     }
 
-    function seleccionarOpcionModal(mat, trat) {
-        document.getElementById('selectMaterialModal').value = mat;
-        document.getElementById('selectTratamientoModal').value = trat;
-        recalcularTotalModal();
+    function validarSeleccionPrevia() {
+        const cliente = document.getElementById('clienteSelectModal').value;
+        const receta = document.getElementById('recetaSelectModal').value;
+
+        if (cliente && receta) {
+            // Desbloquear sección de productos
+            document.getElementById('selectCategoriaModal').disabled = false;
+            document.getElementById('avisoBloqueo').classList.add('d-none');
+        } else {
+            bloquearSeccionProductos();
+        }
     }
 
-    function recalcularTotalModal() {
-        const material = parseFloat(document.getElementById('selectMaterialModal').value) || 0;
-        const tratamiento = parseFloat(document.getElementById('selectTratamientoModal').value) || 0;
-        const propio = document.getElementById('checkArmazonPropioModal').checked;
-        let armazon = propio ? 0 : 300; 
-        const examen = 250;
-
-        const total = material + tratamiento + armazon + examen;
-        document.getElementById('lblTotalModal').innerText = `$${total.toFixed(2)} MXN`;
-        document.getElementById('totalCalculadoInputModal').value = total;
+    function bloquearSeccionProductos() {
+        const catSelect = document.getElementById('selectCategoriaModal');
+        const prodSelect = document.getElementById('selectProductoModal');
+        const btnAgregar = document.getElementById('btnAgregarApartado');
+        
+        catSelect.disabled = true;
+        catSelect.value = "";
+        
+        prodSelect.disabled = true;
+        prodSelect.innerHTML = '<option value="" selected disabled>Primero seleccione una categoría...</option>';
+        
+        btnAgregar.disabled = true;
+        document.getElementById('avisoBloqueo').classList.remove('d-none');
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        recalcularTotalModal();
-    });
+    function cargarProductosPorCategoriaModal(idCategoria) {
+        if (!idCategoria) return;
+
+        fetch(`/cotizacion?handler=ProductosPorCategoria&idCategoria=${idCategoria}`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('selectProductoModal');
+                select.disabled = false;
+                select.innerHTML = '<option value="" selected disabled>Seleccione un producto...</option>';
+                
+                if (data.length === 0) {
+                    select.innerHTML += '<option value="" disabled>-- No hay productos en esta categoría --</option>';
+                    return;
+                }
+
+                data.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.idProducto;
+                    opt.textContent = `${p.nombre} - $${p.precio.toFixed(2)} (Existencia: ${p.existencia})`;
+                    opt.dataset.nombre = p.nombre;
+                    opt.dataset.precio = p.precio;
+                    select.appendChild(opt);
+                });
+            });
+    }
+
+    function agregarAlApartadoModal() {
+        const selectProd = document.getElementById('selectProductoModal');
+        const selectedOption = selectProd.options[selectProd.selectedIndex];
+
+        if (!selectProd.value || selectProd.selectedIndex === 0) {
+            Swal.fire('Aviso', 'Seleccione un producto válido.', 'warning');
+            return;
+        }
+
+        const producto = {
+            id: selectProd.value,
+            nombre: selectedOption.dataset.nombre,
+            precio: parseFloat(selectedOption.dataset.precio)
+        };
+
+        productosApartadoModal.push(producto);
+        actualizarTablaApartadoModal();
+
+        // Reiniciar la lista de categorías y productos tras añadir, pero manteniendo el cliente y receta seleccionados
+        document.getElementById('selectCategoriaModal').value = "";
+        const prodSelect = document.getElementById('selectProductoModal');
+        prodSelect.innerHTML = '<option value="" selected disabled>Primero seleccione una categoría...</option>';
+        prodSelect.disabled = true;
+    }
+
+    function eliminarDelApartadoModal(index) {
+        productosApartadoModal.splice(index, 1);
+        actualizarTablaApartadoModal();
+    }
+
+    function actualizarTablaApartadoModal() {
+        const tbody = document.querySelector('#tablaApartadoModal tbody');
+        tbody.innerHTML = '';
+
+        if (productosApartadoModal.length === 0) {
+            tbody.innerHTML = `<tr id="filaVaciaModal"><td colspan="3" class="text-center text-muted">No hay productos agregados en el apartado.</td></tr>`;
+            document.getElementById('lblTotalModal').innerText = '$0.00';
+            document.getElementById('totalCalculadoInputModal').value = 0;
+            return;
+        }
+
+        let totalGeneral = 0;
+
+        productosApartadoModal.forEach((item, index) => {
+            totalGeneral += item.precio;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.nombre}</td>
+                <td>$${item.precio.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartadoModal(${index})">
+                        <i class="bi bi-trash"></i> Quitar
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('lblTotalModal').innerText = `$${totalGeneral.toFixed(2)} MXN`;
+        document.getElementById('totalCalculadoInputModal').value = totalGeneral;
+    }
+
+    function validarYEnviarModal() {
+        const cliente = document.getElementById('clienteSelectModal').value;
+        const receta = document.getElementById('recetaSelectModal').value;
+
+        if (!cliente || !receta) {
+            Swal.fire('Atención', 'Debe seleccionar obligatoriamente un cliente y su receta médica antes de guardar.', 'warning');
+            return;
+        }
+
+        if (productosApartadoModal.length === 0) {
+            Swal.fire('Atención', 'Debe agregar al menos un producto al apartado antes de guardar.', 'warning');
+            return;
+        }
+        document.getElementById('formCotizacionModal').submit();
+    }
 </script>

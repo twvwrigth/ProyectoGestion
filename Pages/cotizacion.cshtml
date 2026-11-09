@@ -4,29 +4,26 @@
     ViewData["Title"] = "Cotización de Lente Graduado";
 }
 
+<!-- SweetAlert2 y Estilos -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Cotización de Lente Graduado (HU-10)</h4>
+            <h4 class="mb-0"><i class="bi bi-file-earmark-medical me-2"></i> Cotización y Selección de Productos (HU-10)
+            </h4>
             <a asp-page="/Index" class="btn btn-light btn-sm">Regresar</a>
         </div>
         
         <div class="card-body">
-            @if (TempData["MensajeExito"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["MensajeExito"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
-            <!-- Alerta de Receta -->
+            <!-- Alerta dinámica si no hay recetas -->
             <div id="alertaReceta" class="alert alert-warning d-none" role="alert">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <span id="mensajeReceta">La receta seleccionada presenta observaciones.</span>
+                <span id="mensajeReceta">El cliente no cuenta con recetas registradas.</span>
             </div>
 
-            <form method="post">
+            <form method="post" id="formCotizacion">
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <!-- Sección 1: Cliente y Receta -->
@@ -43,167 +40,552 @@
                         <div class="col-md-6">
                             <label asp-for="Input.IdReceta" class="form-label fw-bold">Receta del Optometrista <span
                                 class="text-danger">*</span></label>
-                                <select asp-for="Input.IdReceta" class="form-select" id="recetaSelect" required>
+                                <select asp-for="Input.IdReceta" class="form-select" id="recetaSelect"
+                                        onchange="validarSeleccionPrevia()" disabled required>
                                     <option value="" selected disabled>Primero seleccione un cliente...</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Sección 2: Opciones Sugeridas (Modo Lectura)[cite: 6] -->
+                        <!-- Sección 2: Micas Sugeridas y Selección Manual Alternativa -->
                         <div class="card mb-4 border-info">
                             <div class="card-header bg-info text-dark fw-bold">
-                                Opciones del Optometrista (Modo Lectura)
+                                Opciones de Micas (Sugeridas por Receta o Selección Manual)
                             </div>
                             <div class="card-body">
-                                <div class="row text-center">
+                                <div class="row text-center mb-3">
                                     <div class="col-md-6 border-end">
                                         <h6 class="text-secondary fw-bold">Opción Mínima</h6>
-                                        <p class="mb-1">CR-39 Monofocal / Antirreflejante Básico</p>
-                                        <h5 class="text-primary fw-bold">$850.00</h5>
-                                        <!-- Pasa 400 (CR-39) y 200 (Antirreflejante) -->
-                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1"
-                                                onclick="seleccionarOpcion(400, 200)">
+                                        <p class="mb-1" id="lblMicaMinima">Seleccione una receta...</p>
+                                        <h5 class="text-primary fw-bold" id="precioMinimaText">$0.00</h5>
+                                        <button type="button" class="btn btn-sm btn-outline-primary mt-1" id="btnMinima"
+                                                onclick="seleccionarMicaSugerida('minima')" disabled>
                                             Seleccionar Mínima
                                         </button>
                                     </div>
                                     <div class="col-md-6">
                                         <h6 class="text-success fw-bold">Opción Recomendada</h6>
-                                        <p class="mb-1">Policarbonato / Filtro Luz Azul + Antirreflejante</p>
-                                        <h5 class="text-success fw-bold">$1,450.00</h5>
-                                        <!-- Pasa 750 (Policarbonato) y 500 (Filtro Luz Azul) -->
-                                        <button type="button" class="btn btn-sm btn-success mt-1"
-                                                onclick="seleccionarOpcion(750, 500)">
+                                        <p class="mb-1" id="lblMicaRecomendada">Seleccione una receta...</p>
+                                        <h5 class="text-success fw-bold" id="precioRecomendadaText">$0.00</h5>
+                                        <button type="button" class="btn btn-sm btn-success mt-1" id="btnRecomendada"
+                                                onclick="seleccionarMicaSugerida('recomendada')" disabled>
                                             Seleccionar Recomendada
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Sección 3: Configuración del Producto y Materiales -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light fw-bold">Configuración de Armazón y Micas</div>
-                            <div class="card-body">
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <div class="form-check form-switch mt-4">
-                                            <input class="form-check-input" type="checkbox" asp-for="Input.ArmazonPropio"
-                                                   id="checkArmazonPropio" onchange="toggleArmazon()">
-                                            <label class="form-check-label fw-bold" asp-for="Input.ArmazonPropio">Cliente trae
-                                                su armazón</label>
+                                <hr class="text-muted">
+
+                                <!-- Menú desplegable para selección manual si no quiere las sugerencias -->
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold text-dark">¿El cliente prefiere otra mica diferente?
+                                            (Selección Manual)</label>
+                                            <select id="selectMicaManual" class="form-select" disabled>
+                                                <option value="" selected disabled>Seleccione una mica del catálogo general...
+                                                </option>
+                                                @foreach (var m in Model.MicasSelectList)
+                                                {
+                                                    <option value="@m.Value">@m.Text</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button type="button" class="btn btn-dark btn-sm w-100" id="btnAgregarMicaManual"
+                                                    onclick="agregarMicaManualAlApartado()" disabled>
+                                                <i class="bi bi-plus-circle me-1"></i> Añadir Mica Manual al Apartado
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección 3: Selección por Categorías y Productos (Bloqueados por defecto) -->
+                            <div class="card mb-4 border-secondary">
+                                <div class="card-header bg-secondary text-white fw-bold">
+                                    Selección de Productos por Categoría <span id="avisoBloqueo"
+                                                                               class="text-warning small ms-2">(Seleccione cliente y receta para desbloquear)</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">1. Seleccionar Categoría</label>
+                                            <select id="selectCategoria" class="form-select"
+                                                    onchange="cargarProductosPorCategoria(this.value)" disabled>
+                                                <option value="" selected disabled>Seleccione una categoría...</option>
+                                                @foreach (var cat in Model.CategoriasSelectList)
+                                                {
+                                                    <option value="@cat.Value">@cat.Text</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold">2. Seleccionar Producto</label>
+                                            <select id="selectProducto" class="form-select" disabled>
+                                                <option value="" selected disabled>Primero seleccione una categoría...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-success btn-sm" id="btnAgregarApartado"
+                                                onclick="agregarAlApartado()" disabled>
+                                            <i class="bi bi-plus-circle me-1"></i> Añadir al Apartado
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección 4: Apartado de Productos Seleccionados -->
+                            <div class="card mb-4 border-dark">
+                                <div class="card-header bg-dark text-white fw-bold">
+                                    Apartado / Productos a Cobrar
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped align-middle" id="tablaApartado">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Producto / Mica</th>
+                                                    <th>Precio Unitario</th>
+                                                    <th class="text-center">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr id="filaVacia">
+                                                    <td colspan="3" class="text-center text-muted">No hay productos agregados en el
+                                                        apartado.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mensaje dinámico de bonificación por examen -->
+                                <div id="alertaBonificacion" class="alert py-2 mb-4 d-none" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <span id="textoBonificacion"></span>
+                                </div>
+
+                                <!-- Inputs ocultos para enviar datos al backend de forma segura -->
+                                <input type="hidden" asp-for="Input.BonificacionExamen" id="inputBonificacionExamen" value="false" />
+                                <input type="hidden" asp-for="Input.DetalleCotizacion" id="detalleCotizacionInput" />
+
+                                <!-- Total y Guardado -->
+                                <div class="card bg-light border-primary">
+                                    <div class="card-body d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15
+                                            días</strong>[cite: 8].</small>
+                                            <div class="text-end">
+                                                <span class="text-uppercase fw-bold text-secondary">Total a Cobrar:</span>
+                                                <h3 class="text-primary fw-bold mb-0" id="lblTotal">$0.00</h3>
+                                                <input type="hidden" asp-for="Input.TotalCalculado" id="totalCalculadoInput" />
                                             </div>
                                         </div>
-                                        <div class="col-md-8" id="divInventario">
-                                            <label class="form-label fw-bold">Armazón de Inventario</label>
-                                            <select asp-for="Input.CodigoArmazon" asp-items="Model.ArmazonesSelectList"
-                                                    class="form-select" id="selectArmazon" onchange="recalcularTotal()">
-                                                <option value="">Seleccione armazón...</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-8 d-none" id="divPropio">
-                                            <label class="form-label fw-bold">Descripción de Armazón Propio</label>
-                                            <input type="text" asp-for="Input.DescripcionArmazonPropio" class="form-control"
-                                                   placeholder="Ej. Armazón metálico usado en buen estado">
-                                        </div>
                                     </div>
 
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold">Material de Mica</label>
-                                            <select class="form-select" id="selectMaterial" onchange="recalcularTotal()">
-                                                <option value="400">CR-39 ($400)</option>
-                                                <option value="750">Policarbonato ($750)</option>
-                                                <option value="1200">Hi-Index ($1,200)</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold">Tratamiento</label>
-                                            <select class="form-select" id="selectTratamiento" onchange="recalcularTotal()">
-                                                <option value="200">Antirreflejante ($200)</option>
-                                                <option value="500">Filtro Luz Azul ($500)</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-bold">Examen Visual</label>
-                                            <input type="text" class="form-control" id="costoExamen" value="$250.00" readonly />
-                                            <input type="hidden" asp-for="Input.BonificacionExamen" id="bonificacionHidden"
-                                                   value="false" />
-                                        </div>
+                                    <div class="mt-4 text-end">
+                                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
+                                            <i class="bi bi-save me-1"></i> Guardar y Cobrar Cotización
+                                        </button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
-
-                            <!-- Total y Guardado -->
-                            <div class="card bg-light border-primary">
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">* Una cotización guardada tiene una vigencia exacta de <strong>15
-                                        días</strong>[cite: 6].</small>
-                                        <div class="text-end">
-                                            <span class="text-uppercase fw-bold text-secondary">Total Calculado:</span>
-                                            <h3 class="text-primary fw-bold mb-0" id="lblTotal">$0.00</h3>
-                                            <input type="hidden" asp-for="Input.TotalCalculado" id="totalCalculadoInput" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 text-end">
-                                    <button type="submit" class="btn btn-primary px-5 py-2 fw-bold">
-                                        <i class="bi bi-save me-1"></i> Guardar Cotización
-                                    </button>
-                                </div>
-                            </form>
                         </div>
                     </div>
-                </div>
 
-                @section Scripts {
-                    <script>
-                        function toggleArmazon() {
-                            const propio = document.getElementById('checkArmazonPropio').checked;
-                            document.getElementById('divInventario').classList.toggle('d-none', propio);
-                            document.getElementById('divPropio').classList.toggle('d-none', !propio);
-                            recalcularTotal();
-                        }
+                    @section Scripts {
+                        <script>
+                            let productosApartado = [];
+                            let recetaActualData = null;
 
-                        function cargarRecetasCliente(idCliente) {
-                            if (!idCliente) return;
-                            fetch(`?handler=RecetasPorCliente&idCliente=${idCliente}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    const select = document.getElementById('recetaSelect');
-                                    select.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
-                                    data.forEach(r => {
-                                        let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
-                                        if (r.esVencida) texto += " - [VENCIDA]";
-                                        const opt = document.createElement('option');
-                                        opt.value = r.idReceta;
-                                        opt.textContent = texto;
-                                        select.appendChild(opt);
+                            // Variable global con el precio del examen obtenido de la BD
+                            const descuentoExamenConfigurado = @Model.PrecioExamenConfigurado.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                            @if (TempData["MensajeExito"] != null)
+                                {
+                                    <text>
+                                            Swal.fire({
+                                                title: '¡Cotización Guardada!',
+                                            text: '@Html.Raw(TempData["MensajeExito"])',
+                                            icon: 'success',
+                                            confirmButtonText: 'Aceptar',
+                                            confirmButtonColor: '#0d6efd'
+                                                                        });
+                                    </text>
+                            }
+
+                                document.getElementById('formCotizacion').addEventListener('submit', function (e) {
+                                    e.preventDefault();
+                                    const cliente = document.getElementById('clienteSelect').value;
+                                    const receta = document.getElementById('recetaSelect').value;
+
+                                    if (!cliente || !receta) {
+                                        Swal.fire('Atención', 'Debe seleccionar obligatoriamente un cliente y su receta médica.', 'warning');
+                                        return;
+                                    }
+
+                                    if (productosApartado.length === 0) {
+                                        Swal.fire('Atención', 'Debe agregar al menos un producto al apartado antes de guardar.', 'warning');
+                                        return;
+                                    }
+
+                                    // <-- ESTA LÍNEA ES LA QUE FALTABA O SE OMITIÓ EN EL SCRIPT -->
+                                    const descripcionProductos = productosApartado.map(p => p.nombre).join(' | ');
+                                    document.getElementById('detalleCotizacionInput').value = descripcionProductos;
+
+                                    const total = document.getElementById('lblTotal').innerText;
+                                    Swal.fire({
+                                        title: '¿Confirmar cobro y cotización?',
+                                        text: `El monto total del apartado es de ${total}. ¿Desea registrar esta cotización?`,
+                                        icon: 'question',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#0d6efd',
+                                        cancelButtonColor: '#6c757d',
+                                        confirmButtonText: 'Sí, cobrar y guardar',
+                                        cancelButtonText: 'Cancelar'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            this.submit();
+                                        }
                                     });
                                 });
-                        }
 
-                        function recalcularTotal() {
-                            const material = parseFloat(document.getElementById('selectMaterial').value) || 0;
-                            const tratamiento = parseFloat(document.getElementById('selectTratamiento').value) || 0;
-                            const propio = document.getElementById('checkArmazonPropio').checked;
-                            let armazon = 0;
-                            if (!propio) {
-                                // Aquí puedes sumar el precio del armazón seleccionado si usas un select estructurado con precios
-                                armazon = 300; // Valor base ilustrativo
+                            function cargarRecetasCliente(idCliente) {
+                                if (!idCliente) return;
+
+                                bloquearSeccionProductos();
+                                limpiarTarjetaMicas();
+
+                                const recetaSelect = document.getElementById('recetaSelect');
+                                const alertaReceta = document.getElementById('alertaReceta');
+
+                                recetaSelect.innerHTML = '<option value="" selected disabled>Cargando recetas...</option>';
+                                recetaSelect.disabled = true;
+                                alertaReceta.classList.add('d-none');
+
+                                fetch(`?handler=RecetasPorCliente&idCliente=${idCliente}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        recetaSelect.innerHTML = '<option value="" selected disabled>Seleccione una receta...</option>';
+
+                                        if (data.length === 0) {
+                                            alertaReceta.classList.remove('d-none');
+                                            const mensajeReceta = document.getElementById('mensajeReceta');
+                                            mensajeReceta.innerHTML = `
+                                                                                                    <strong>El cliente no cuenta con recetas registradas.</strong> 
+                                                                                                    <div class="mt-2">
+                                                                                                        <a href="/Examen?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
+                                                                                                            <i class="bi bi-plus-circle"></i> Registrar Receta Externa
+                                                                                                        </a>
+                                                                                                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="enviarAListaEspera(${idCliente})">
+                                                                                                            <i class="bi bi-clock-history"></i> Añadir a Lista de Espera (Examen)
+                                                                                                        </button>
+                                                                                                    </div>`;
+                                            recetaSelect.disabled = true;
+                                            return;
+                                        }
+
+                                        alertaReceta.classList.add('d-none');
+                                        recetaSelect.disabled = false;
+
+                                        data.forEach((r, index) => {
+                                            let texto = `Receta del ${r.fechaStr} (Vigencia: ${r.vigenciaStr})`;
+                                            if (r.esVencida) texto += " - [VENCIDA]";
+
+                                            const opt = document.createElement('option');
+                                            opt.value = r.idReceta;
+                                            opt.textContent = texto;
+
+                                            opt.dataset.minimanombre = r.minimaNombre;
+                                            opt.dataset.minimaprecio = r.minimaPrecio;
+                                            opt.dataset.recomendadanombre = r.recomendadaNombre;
+                                            opt.dataset.recomendadaprecio = r.recomendadaPrecio;
+                                            opt.dataset.recetaexterna = (r.recetaExterna === true || r.recetaExterna === 1 || r.recetaExterna === "1" || r.recetaExterna === "True");
+
+                                            recetaSelect.appendChild(opt);
+
+                                            if (index === 0 && !r.esVencida) {
+                                                recetaSelect.value = r.idReceta;
+                                                recetaSelect.dispatchEvent(new Event('change'));
+                                            }
+                                        });
+                                    });
                             }
-                            const examen = 250; // O 0 si está bonificado
 
-                            const total = material + tratamiento + armazon + examen;
-                            document.getElementById('lblTotal').innerText = `$${total.toFixed(2)} MXN`;
-                            document.getElementById('totalCalculadoInput').value = total;
-                        }
-                        function seleccionarOpcion(mat, trat) {
-                            document.getElementById('selectMaterial').value = mat;
-                            document.getElementById('selectTratamiento').value = trat;
-                            recalcularTotal(); // Actualiza el total de inmediato en la pantalla
-                        }
-                        recalcularTotal();
-        
-                    </script>
-                }
+                            document.getElementById('recetaSelect').addEventListener('change', function () {
+                                const opt = this.options[this.selectedIndex];
+                                if (opt && opt.dataset.minimanombre) {
+                                    
+                                    const esExterna = opt.dataset.recetaexterna === 'true';
+
+                                    recetaActualData = {
+                                        minimaNombre: opt.dataset.minimanombre,
+                                        minimaPrecio: parseFloat(opt.dataset.minimaprecio) || 0,
+                                        recomendadaNombre: opt.dataset.recomendadanombre,
+                                        recomendadaPrecio: parseFloat(opt.dataset.recomendadaprecio) || 0,
+                                        recetaExterna: esExterna
+                                    };
+                                    actualizarTarjetaMicas(recetaActualData);
+
+                                    // GESTIÓN AUTOMÁTICA DEL MENSAJE Y DESCUENTO DE EXAMEN
+                                    const alertaBon = document.getElementById('alertaBonificacion');
+                                    const textoBon = document.getElementById('textoBonificacion');
+                                    const inputBon = document.getElementById('inputBonificacionExamen');
+
+                                    alertaBon.classList.remove('d-none');
+
+                                    if (recetaActualData.recetaExterna === false) {
+                                        // Es receta local/interna (0) -> Aplica descuento automáticamente
+                                        alertaBon.className = "alert alert-success py-2 mb-4";
+                                        textoBon.innerHTML = `<strong>Examen local detectado:</strong> Se aplicó automáticamente la bonificación de examen por <strong>$${descuentoExamenConfigurado.toFixed(2)}</strong>.`;
+                                        inputBon.value = "true";
+                                    } else {
+                                        // Es receta externa (1) -> No aplica descuento
+                                        alertaBon.className = "alert alert-secondary py-2 mb-4";
+                                        textoBon.innerHTML = `<strong>Receta externa detectada:</strong> Esta receta no incluye bonificación por examen local.`;
+                                        inputBon.value = "false";
+                                    }
+
+                                    actualizarTablaApartado();
+                                }
+                                validarSeleccionPrevia();
+                            });
+
+                            function actualizarTarjetaMicas(r) {
+                                document.getElementById('lblMicaMinima').innerText = r.minimaNombre;
+                                document.getElementById('precioMinimaText').innerText = `$${r.minimaPrecio.toFixed(2)}`;
+
+                                document.getElementById('lblMicaRecomendada').innerText = r.recomendadaNombre;
+                                document.getElementById('precioRecomendadaText').innerText = `$${r.recomendadaPrecio.toFixed(2)}`;
+
+                                document.getElementById('btnMinima').disabled = false;
+                                document.getElementById('btnRecomendada').disabled = false;
+
+                                document.getElementById('selectMicaManual').disabled = false;
+                                document.getElementById('btnAgregarMicaManual').disabled = false;
+                            }
+
+                            function limpiarTarjetaMicas() {
+                                document.getElementById('lblMicaMinima').innerText = 'Seleccione una receta...';
+                                document.getElementById('precioMinimaText').innerText = '$0.00';
+                                document.getElementById('btnMinima').disabled = true;
+
+                                document.getElementById('lblMicaRecomendada').innerText = 'Seleccione una receta...';
+                                document.getElementById('precioRecomendadaText').innerText = '$0.00';
+                                document.getElementById('btnRecomendada').disabled = true;
+
+                                document.getElementById('selectMicaManual').value = "";
+                                document.getElementById('selectMicaManual').disabled = true;
+                                document.getElementById('btnAgregarMicaManual').disabled = true;
+
+                                recetaActualData = null;
+                            }
+
+                            function seleccionarMicaSugerida(tipo) {
+                                if (!recetaActualData) return;
+
+                                const nombre = tipo === 'recomendada' ? recetaActualData.recomendadaNombre : recetaActualData.minimaNombre;
+                                const precio = tipo === 'recomendada' ? recetaActualData.recomendadaPrecio : recetaActualData.minimaPrecio;
+
+                                const producto = {
+                                    id: 'mica_' + tipo,
+                                    nombre: `Mica (${tipo.toUpperCase()}) - ${nombre}`,
+                                    precio: precio
+                                };
+
+                                productosApartado = productosApartado.filter(item => !item.id.startsWith('mica_'));
+                                productosApartado.push(producto);
+                                actualizarTablaApartado();
+
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: `Mica ${tipo} seleccionada (reemplazó la anterior)`,
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                            }
+
+                            function agregarMicaManualAlApartado() {
+                                const selectMica = document.getElementById('selectMicaManual');
+                                const selectedOption = selectMica.options[selectMica.selectedIndex];
+
+                                if (!selectMica.value || selectMica.selectedIndex === 0) {
+                                    Swal.fire('Aviso', 'Seleccione una mica válida del catálogo general.', 'warning');
+                                    return;
+                                }
+
+                                const textoCompleto = selectedOption.text;
+                                const partes = textoCompleto.split('($');
+                                const nombreMica = partes[0].trim();
+                                const precioMica = parseFloat(partes[1].replace(')', '').replace(',', '').trim()) || 0;
+
+                                const producto = {
+                                    id: 'mica_manual_' + selectMica.value,
+                                    nombre: `Mica Manual - ${nombreMica}`,
+                                    precio: precioMica
+                                };
+
+                                productosApartado = productosApartado.filter(item => !item.id.startsWith('mica_'));
+                                productosApartado.push(producto);
+                                actualizarTablaApartado();
+
+                                selectMica.value = "";
+
+                                Swal.fire({
+                                    toast: true,
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Mica manual seleccionada (reemplazó la anterior)',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                            }
+
+                            function enviarAListaEspera(idCliente) {
+                                Swal.fire({
+                                    title: '¿Añadir a la Lista de Espera?',
+                                    text: 'El cliente será registrado en la lista de espera para su examen visual.',
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#0d6efd',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: 'Sí, añadir y continuar',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = `?handler=AgregarListaEspera&idCliente=${idCliente}`;
+                                    }
+                                });
+                            }
+
+                            function validarSeleccionPrevia() {
+                                const cliente = document.getElementById('clienteSelect').value;
+                                const receta = document.getElementById('recetaSelect').value;
+
+                                if (cliente && receta) {
+                                    document.getElementById('selectCategoria').disabled = false;
+                                    document.getElementById('avisoBloqueo').classList.add('d-none');
+                                } else {
+                                    bloquearSeccionProductos();
+                                }
+                            }
+
+                            function bloquearSeccionProductos() {
+                                const catSelect = document.getElementById('selectCategoria');
+                                const prodSelect = document.getElementById('selectProducto');
+                                const btnAgregar = document.getElementById('btnAgregarApartado');
+
+                                catSelect.disabled = true;
+                                catSelect.value = "";
+
+                                prodSelect.disabled = true;
+                                prodSelect.innerHTML = '<option value="" selected disabled>Primero seleccione una categoría...</option>';
+
+                                btnAgregar.disabled = true;
+                                document.getElementById('avisoBloqueo').classList.remove('d-none');
+                            }
+
+                            function cargarProductosPorCategoria(idCategoria) {
+                                if (!idCategoria) return;
+
+                                fetch(`?handler=ProductosPorCategoria&idCategoria=${idCategoria}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        const select = document.getElementById('selectProducto');
+                                        select.disabled = false;
+                                        select.innerHTML = '<option value="" selected disabled>Seleccione un producto...</option>';
+
+                                        if (data.length === 0) {
+                                            select.innerHTML += '<option value="" disabled>-- No hay productos en esta categoría --</option>';
+                                            document.getElementById('btnAgregarApartado').disabled = true;
+                                            return;
+                                        }
+
+                                        data.forEach(p => {
+                                            const opt = document.createElement('option');
+                                            opt.value = p.idProducto;
+                                            opt.textContent = `${p.nombre} - $${p.precio.toFixed(2)} (Existencia: ${p.existencia})`;
+                                            opt.dataset.nombre = p.nombre;
+                                            opt.dataset.precio = p.precio;
+                                            select.appendChild(opt);
+                                        });
+
+                                        document.getElementById('btnAgregarApartado').disabled = false;
+                                    });
+                            }
+
+                            function agregarAlApartado() {
+                                const selectProd = document.getElementById('selectProducto');
+                                const selectedOption = selectProd.options[selectProd.selectedIndex];
+
+                                if (!selectProd.value || selectProd.selectedIndex === 0) {
+                                    Swal.fire('Aviso', 'Seleccione un producto válido.', 'warning');
+                                    return;
+                                }
+
+                                const producto = {
+                                    id: selectProd.value,
+                                    nombre: selectedOption.dataset.nombre,
+                                    precio: parseFloat(selectedOption.dataset.precio)
+                                };
+
+                                productosApartado.push(producto);
+                                actualizarTablaApartado();
+
+                                document.getElementById('selectCategoria').value = "";
+                                const prodSelect = document.getElementById('selectProducto');
+                                prodSelect.innerHTML = '<option value="" selected disabled>Primero seleccione una categoría...</option>';
+                                prodSelect.disabled = true;
+                                document.getElementById('btnAgregarApartado').disabled = true;
+                            }
+
+                            function eliminarDelApartado(index) {
+                                productosApartado.splice(index, 1);
+                                actualizarTablaApartado();
+                            }
+
+                            function actualizarTablaApartado() {
+                                const tbody = document.querySelector('#tablaApartado tbody');
+                                tbody.innerHTML = '';
+
+                                if (productosApartado.length === 0) {
+                                    tbody.innerHTML = `<tr id="filaVacia"><td colspan="3" class="text-center text-muted">No hay productos agregados en el apartado.</td></tr>`;
+                                    document.getElementById('lblTotal').innerText = '$0.00';
+                                    document.getElementById('totalCalculadoInput').value = 0;
+                                    return;
+                                }
+
+                                let subtotal = 0;
+
+                                productosApartado.forEach((item, index) => {
+                                    subtotal += item.precio;
+                                    const tr = document.createElement('tr');
+                                    tr.innerHTML = `
+                                                                <td>${item.nombre}</td>
+                                                                <td>$${item.precio.toFixed(2)}</td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartado(${index})">
+                                                                        <i class="bi bi-trash"></i> Quitar
+                                                                    </button>
+                                                                </td>
+                                                            `;
+                                    tbody.appendChild(tr);
+                                });
+
+                                // Aplicar descuento usando el input oculto de bonificación automática
+                                let totalGeneral = subtotal;
+                                const inputBon = document.getElementById('inputBonificacionExamen');
+
+                                if (inputBon && inputBon.value === "true") {
+                                    totalGeneral -= descuentoExamenConfigurado;
+                                    if (totalGeneral < 0) totalGeneral = 0; // Evitar totales negativos
+                                }
+
+                                document.getElementById('lblTotal').innerText = `$${totalGeneral.toFixed(2)} MXN`;
+                                document.getElementById('totalCalculadoInput').value = totalGeneral;
+                            }
+                        </script>
+                    }

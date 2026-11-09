@@ -14,7 +14,7 @@ namespace Proyecto.Models
         public string Material { get; set; } = "";
 
         [MaxLength(100)]
-        public string Tratamiento { get; set; } = "";
+        public string? Tratamiento { get; set; } = "";
 
         [MaxLength(100)]
         public string RangoGraduacion { get; set; } = "";
