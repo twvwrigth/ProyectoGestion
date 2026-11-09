@@ -84,3 +84,9 @@ button.accept-policy {
 .contenido {
   background-color: #0077cc;
 }
+
+/* Efecto hover elegante para el menú lateral */
+.offcanvas-body .nav-link:hover {
+  background-color: #f8f9fa;
+  color: #0077cc !important;
+}

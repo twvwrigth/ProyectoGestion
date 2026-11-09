@@ -12,11 +12,14 @@
 </head>
 <body>
     <header>
-        <!-- Se retiró mb-3 del nav para evitar scroll innecesario -->
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
-            <div class="container">
-                <!-- El logo ahora redirige al panel principal activo en lugar del Index eliminado -->
-                <a class="navbar-brand d-flex align-items-center fw-bold text-primary" asp-area="" asp-page="/Index">
+        <nav class="navbar navbar-light bg-white border-bottom box-shadow">
+            <div class="container-fluid px-3">
+                <!-- Botón Toggler para abrir el menú lateral -->
+                <button class="navbar-toggler border-0 shadow-none px-1 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <a class="navbar-brand d-flex align-items-center fw-bold text-primary me-auto" asp-area="" asp-page="/Index">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
                         <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
                     </svg>
@@ -101,6 +104,81 @@
             </div>
         </nav>
     </header>
+
+    <!-- Estructura del Menú Lateral Plegable (Offcanvas) -->
+    <div class="offcanvas offcanvas-start shadow" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title d-flex align-items-center fw-bold text-primary" id="menuLateralLabel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
+                    <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
+                </svg>
+                Óptica
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="navbar-nav flex-grow-1 p-3">
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    @if (User.IsInRole("Encargado"))
+                    {
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeEmpleados">Gestión de empleados</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/PreciosReglasPromociones">Precios y promociones</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeLaboratorios">Gestión de laboratorios</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/cotizacion">Cotización</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Historial">Historial de Cortes</a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
+                    {
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/catalogo">Catálogo</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeClientes">Clientes</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/listaEspera">Lista de espera</a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Index">Caja</a>
+                        </li>
+                    }
+                }
+            </ul>
+            
+            <!-- Zona inferior del menú (Perfil y Logout) -->
+            <div class="mt-auto p-3 border-top bg-light">
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="text-secondary text-truncate">
+                            <i class="bi bi-person-circle me-2 fs-5"></i>
+                            Hola, <strong>@User.Identity.Name</strong>
+                        </span>
+                    </div>
+                    <form method="post" asp-page="/logout">
+                        <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">Cerrar Sesión</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="btn btn-primary w-100 rounded-pill" asp-area="" asp-page="/login">Iniciar Sesión</a>
+                }
+            </div>
+        </div>
+    </div>
 
     <div class="main-wrapper container-fluid px-0">
         <main role="main" class="cuerpo">
