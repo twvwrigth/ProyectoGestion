@@ -16,7 +16,7 @@ public class PreciosReglasPromocionesModel : PageModel
     }
 
     // LÍNEA COMENTADA: El modelo Mica ya no existe
-    // public List<Mica> ListaMicas { get; set; } = new();
+    public List<Mica> ListaMicas { get; set; } = new();
     
     public ParametroNegocio Parametros { get; set; } = new();
     public List<Promocion> ListaPromociones { get; set; } = new();
@@ -55,8 +55,7 @@ public class PreciosReglasPromocionesModel : PageModel
         ActiveTab = "micas";
         ModelState.Clear();
 
-        // LÍNEAS COMENTADAS: La tabla Micas fue eliminada de la base de datos y del DbContext
-        /*
+
         if (string.IsNullOrWhiteSpace(Material) || Precio <= 0)
         {
             TempData["ErrorMessage"] = "Los datos ingresados no son válidos.";
@@ -86,7 +85,6 @@ public class PreciosReglasPromocionesModel : PageModel
         await _context.SaveChangesAsync();
         
         TempData["SuccessMessage"] = "Mica registrada exitosamente.";
-        */
         return RedirectToPage();
     }
 
@@ -175,8 +173,6 @@ public class PreciosReglasPromocionesModel : PageModel
     public async Task<IActionResult> OnPostEliminarMicaAsync(int id)
     {
         ActiveTab = "micas";
-        // LÍNEAS COMENTADAS: La tabla Micas fue eliminada
-        /*
         var mica = await _context.Micas.FindAsync(id);
         if (mica != null)
         {
@@ -184,7 +180,6 @@ public class PreciosReglasPromocionesModel : PageModel
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Mica eliminada de la base de datos.";
         }
-        */
         return RedirectToPage();
     }
 
@@ -204,8 +199,7 @@ public class PreciosReglasPromocionesModel : PageModel
 
     private async Task CargarDatosBasicosAsync()
     {
-        // LÍNEA COMENTADA: La tabla Micas fue eliminada
-        // ListaMicas = await _context.Micas.ToListAsync();
+        ListaMicas = await _context.Micas.ToListAsync();
         
         var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
         if (param != null)

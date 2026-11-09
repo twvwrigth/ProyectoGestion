@@ -5,6 +5,23 @@
 }
 
 <div class="container-fluid py-4">
+    <!-- Alertas de Éxito y Error -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-transparent border-0 py-3 d-flex justify-content-between align-items-center">
             <div>
@@ -119,21 +136,9 @@
     }
 </div>
 
-<!-- Llamado al archivo de modales ubicado en la carpeta Modales -->
-<partial name="Modales/_ModalesCaja" />
+<!-- Llamado al archivo de modales ubicado en la carpeta Modales (Ruta Absoluta Corregida) -->
+<partial name="~/Pages/Modales/_ModalesCaja.cshtml" />
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modalExitoEl = document.getElementById('modalExito');
-                if (modalExitoEl) {
-                    var modalExito = new bootstrap.Modal(modalExitoEl);
-                    modalExito.show();
-                }
-            });
-        </script>
-    }
 }
