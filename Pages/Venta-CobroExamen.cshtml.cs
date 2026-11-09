@@ -105,31 +105,38 @@ namespace Proyecto.Pages
             if (producto == null || producto.Existencia <= 0)
                 return BadRequest("El producto seleccionado no cuenta con existencia disponible.");
 
-            // 4. Parámetros de negocio para bonificación
-            var parametros = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
-            int diasVigencia = parametros?.VigenciaBonificacion ?? 30;
-            decimal precioExamen = parametros?.PrecioExamen ?? 250.00m;
+// 4. Parámetros de negocio para bonificación
+var parametros = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
+int diasVigencia = parametros?.VigenciaBonificacion ?? 30;
+decimal precioExamen = parametros?.PrecioExamen ?? 250.00m;
 
-            // 5. Verificar bonificación por receta/examen previo
-            var ultimaReceta = await _context.Receta
-                .Where(r => r.IdCliente == ClienteId)
-                .OrderByDescending(r => r.Fecha)
-                .FirstOrDefaultAsync();
+// 5. Verificar bonificación por receta/examen previo
+var ultimaReceta = await _context.Receta
+    .Where(r => r.IdCliente == ClienteId)
+    .OrderByDescending(r => r.Fecha)
+    .FirstOrDefaultAsync();
 
-            decimal descuentoBonificacion = 0;
-            bool aplicaBonificacion = false;
+decimal subtotalExamen = IncluyeExamen ? precioExamen : 0.00m;
+decimal descuentoBonificacion = 0.00m;
+bool aplicaBonificacion = false;
 
-            if (ultimaReceta != null)
-            {
-                DateTime fechaReceta = ultimaReceta.Fecha.ToDateTime(TimeOnly.MinValue);
-                if ((DateTime.Today - fechaReceta).TotalDays <= diasVigencia)
-                {
-                    aplicaBonificacion = true;
-                    descuentoBonificacion = precioExamen;
-                }
-            }
+// La bonificación SOLO aplica si el examen forma parte de la transacción (IncluyeExamen = true)
+if (IncluyeExamen && (ultimaReceta != null || ProductoId > 0))
+{
+    DateTime fechaReceta = ultimaReceta != null 
+        ? ultimaReceta.Fecha.ToDateTime(TimeOnly.MinValue) 
+        : DateTime.Today;
 
-            decimal montoFinal = Math.Max(0, TotalVenta - descuentoBonificacion);
+    if ((DateTime.Today - fechaReceta).TotalDays <= diasVigencia)
+    {
+        aplicaBonificacion = true;
+        descuentoBonificacion = precioExamen; // Cancela el costo del examen de $250.00
+    }
+}
+
+// Total Neto = Subtotal Producto + Subtotal Examen - Bonificación
+decimal totalBruto = producto.Precio + subtotalExamen;
+decimal montoFinal = Math.Max(0, totalBruto - descuentoBonificacion);
 
             // 6. Transacción atómica en MySQL
             using var transaction = await _context.Database.BeginTransactionAsync();
