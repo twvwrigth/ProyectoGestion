@@ -69,7 +69,7 @@ CREATE TABLE `cajaturno` (
   PRIMARY KEY (`idCajaTurno`),
   KEY `fk_caja_empleado` (`idEmpleado`),
   CONSTRAINT `fk_caja_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,7 +78,7 @@ CREATE TABLE `cajaturno` (
 
 LOCK TABLES `cajaturno` WRITE;
 /*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Cerrada','2026-10-26 18:37:02',0.00,0.00,0.00,NULL);
+INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Cerrada','2026-10-26 18:37:02',0.00,0.00,0.00,NULL),(5,2,'2026-10-28 10:56:22',0.00,'Cerrada','2026-10-28 16:11:19',-100.00,0.00,100.00,'s'),(6,6,'2026-10-28 10:57:43',0.00,'Cerrada','2026-10-28 16:11:04',0.00,0.00,0.00,NULL),(7,6,'2026-10-28 16:11:07',0.00,'Cerrada','2026-10-28 16:11:11',0.00,0.00,0.00,NULL),(8,6,'2026-10-28 16:14:51',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -145,7 +145,7 @@ CREATE TABLE `cliente` (
   `telefono` varchar(10) DEFAULT NULL,
   `avisoPrivacidad` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idCliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
-INSERT INTO `cliente` VALUES (1,'tahci',NULL,0);
+INSERT INTO `cliente` VALUES (1,'tahci',NULL,0),(2,'Juan Pérez','2281234567',1),(3,'María García','5512345678',1);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -163,7 +163,7 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `cotizacion`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET @saved_cs_client      = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cotizacion` (
   `idCotizacion` int NOT NULL AUTO_INCREMENT,
@@ -175,6 +175,7 @@ CREATE TABLE `cotizacion` (
   `fechaExpiracion` date NOT NULL,
   `bonificacionExamen` tinyint(1) DEFAULT '0',
   `receta` tinyint(1) DEFAULT '1',
+  `detalleCotizacion` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`idCotizacion`),
   KEY `fk_cotizacion_cliente` (`idCliente`),
   KEY `fk_cotizacion_empleado` (`idEmpleado`),
@@ -182,7 +183,7 @@ CREATE TABLE `cotizacion` (
   CONSTRAINT `fk_cotizacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_cotizacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -191,6 +192,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
+INSERT INTO `cotizacion` VALUES (1,2,2,1,'2026-10-28',2500.00,'2026-11-12',0,1, NULL),(2,3,2,2,'2026-10-28',800.00,'2026-11-12',0,1, NULL);
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -217,7 +219,7 @@ CREATE TABLE `empleado` (
   KEY `fk_empleado_laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -226,8 +228,40 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0,NULL),(2,1,1,'Edgar','edgar','1',0,0,NULL),(3,2,1,'dos','dos','2',1,0,NULL),(4,3,1,'tres','tres','3',1,0,NULL),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0,NULL);
+INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0,NULL),(2,1,1,'Edgar','edgar','1',1,0,NULL),(3,2,1,'dos','dos','2',1,0,NULL),(4,3,1,'tres','tres','3',1,0,NULL),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0,NULL),(6,1,1,'1','1','1',1,0,NULL),(7,3,NULL,'juan','contrasenasdsdsd@sosa','contrasena',1,0,NULL);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `historial_pedido`
+--
+
+DROP TABLE IF EXISTS `historial_pedido`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `historial_pedido` (
+  `idHistorial` int NOT NULL AUTO_INCREMENT,
+  `folioPedido` int NOT NULL,
+  `idEmpleado` int NOT NULL,
+  `estado` varchar(50) NOT NULL,
+  `fechaCambio` datetime NOT NULL,
+  `comentario` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`idHistorial`),
+  KEY `fk_historial_pedido` (`folioPedido`),
+  KEY `fk_historial_empleado` (`idEmpleado`),
+  CONSTRAINT `fk_historial_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_historial_pedido` FOREIGN KEY (`folioPedido`) REFERENCES `pedido` (`folioPedido`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `historial_pedido`
+--
+
+LOCK TABLES `historial_pedido` WRITE;
+/*!40000 ALTER TABLE `historial_pedido` DISABLE KEYS */;
+INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-10-28 10:00:00','Pedido creado. Anticipo del 50% cobrado.'),(2,2,2,'Registrado','2026-10-28 11:00:00','Pedido creado. Cliente liquidó el 100%.'),(3,2,2,'En proceso','2026-10-28 11:30:00','Armazón del cliente enviado al laboratorio para montaje.');
+/*!40000 ALTER TABLE `historial_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -357,7 +391,7 @@ CREATE TABLE `movimientocaja` (
   PRIMARY KEY (`idMovimiento`),
   KEY `fk_movimiento_caja` (`idCajaTurno`),
   CONSTRAINT `fk_movimiento_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -366,7 +400,7 @@ CREATE TABLE `movimientocaja` (
 
 LOCK TABLES `movimientocaja` WRITE;
 /*!40000 ALTER TABLE `movimientocaja` DISABLE KEYS */;
-INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19'),(2,3,'Entrada',1.00,'1','2026-10-24 11:21:55'),(3,3,'Entrada',1.00,'1','2026-10-24 11:22:23'),(4,3,'Entrada',1.00,'1','2026-10-24 12:09:03');
+INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19'),(2,3,'Entrada',1.00,'1','2026-10-24 11:21:55'),(3,3,'Entrada',1.00,'1','2026-10-24 11:22:23'),(4,3,'Entrada',1.00,'1','2026-10-24 12:09:03'),(5,5,'Salida',100.00,'Tortillas','2026-10-28 15:45:29');
 /*!40000 ALTER TABLE `movimientocaja` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -409,7 +443,8 @@ CREATE TABLE `pedido` (
   `idCotizacion` int NOT NULL,
   `idLaboratorio` int NOT NULL,
   `fechaRegisEp` date NOT NULL,
-  `fechaEntrega` date DEFAULT NULL,
+  `fechaPromesa` date DEFAULT NULL,
+  `fechaEntregaReal` datetime DEFAULT NULL,
   `anticipo` tinyint(1) DEFAULT '0',
   `anticipoTotal` decimal(10,2) DEFAULT NULL,
   `saldoPendiente` decimal(10,2) NOT NULL,
@@ -422,7 +457,7 @@ CREATE TABLE `pedido` (
   CONSTRAINT `fk_cotizacion_pedido` FOREIGN KEY (`idCotizacion`) REFERENCES `cotizacion` (`idCotizacion`),
   CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_pedido_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -431,6 +466,7 @@ CREATE TABLE `pedido` (
 
 LOCK TABLES `pedido` WRITE;
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
+INSERT INTO `pedido` VALUES (1,2,1,1,'2026-10-28','2026-11-10',NULL,1,1250.00,1250.00,'Registrado','2281234567'),(2,3,2,1,'2026-10-28','2026-11-08',NULL,1,800.00,0.00,'En proceso','5512345678');
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -528,6 +564,10 @@ UNLOCK TABLES;
 -- Table structure for table `receta`
 --
 
+--
+-- Table structure for table `receta`
+--
+
 DROP TABLE IF EXISTS `receta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -550,13 +590,17 @@ CREATE TABLE `receta` (
   `adicionOI` varchar(15) DEFAULT NULL,
   `altura` varchar(15) DEFAULT NULL,
   `tipoMica` varchar(50) DEFAULT NULL,
-  `micaMinima` varchar(100) DEFAULT NULL,
-  `micaRecomendada` varchar(100) DEFAULT NULL,
+  `micaMinima` int DEFAULT NULL,
+  `micaRecomendada` int DEFAULT NULL,
   PRIMARY KEY (`idReceta`),
   KEY `fk_receta_cliente` (`idCliente`),
   KEY `fk_receta_empleado` (`idEmpleado`),
+  KEY `fk_receta_mica_minima` (`micaMinima`),
+  KEY `fk_receta_mica_recomendada` (`micaRecomendada`),
   CONSTRAINT `fk_receta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
-  CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
+  CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_receta_mica_minima` FOREIGN KEY (`micaMinima`) REFERENCES `micas` (`IdMica`),
+  CONSTRAINT `fk_receta_mica_recomendada` FOREIGN KEY (`micaRecomendada`) REFERENCES `micas` (`IdMica`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -566,6 +610,7 @@ CREATE TABLE `receta` (
 
 LOCK TABLES `receta` WRITE;
 /*!40000 ALTER TABLE `receta` DISABLE KEYS */;
+INSERT INTO `receta` VALUES (1,2,4,'64mm','2026-10-28','2027-10-28',0,NULL,'-1.50',NULL,NULL,NULL,'-1.25',NULL,NULL,NULL,NULL,'Monofocal','CR-39 Blanco','CR-39 con filtro de luz azul'),(2,3,4,'60mm','2026-10-28','2027-10-28',0,NULL,'0.00',NULL,NULL,NULL,'-0.50',NULL,NULL,NULL,NULL,'Monofocal','Policarbonato Blanco','Policarbonato Antirreflejante');
 /*!40000 ALTER TABLE `receta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -585,7 +630,7 @@ CREATE TABLE `reparacion` (
   `descripcion` varchar(50) DEFAULT NULL,
   `estadoFalla` varchar(50) DEFAULT NULL,
   `precioEstimado` decimal(10,2) DEFAULT NULL,
-  `estadoLentes` varchar(20) DEFAULT NULL,
+  `estadoLentes` varchar(100) DEFAULT NULL,
   `reparacionExito` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`folioReparacion`),
   KEY `fk_reparacion_cliente` (`idCliente`),
@@ -701,4 +746,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-28 10:54:27
+-- Dump completed on 2026-11-04 16:08:32

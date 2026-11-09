@@ -1,0 +1,105 @@
+@model Proyecto.Pages.TableroPedidosModel
+
+@foreach (var p in Model.PedidosList)
+{
+    <div class="modal fade" id="modalHistorial_@p.FolioPedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold">Gestión y Seguimiento del Pedido #@p.FolioPedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    
+                    <!-- SECCIÓN DE ACCIONES HU-16 (Recepción, Aviso y Entrega) -->
+                    <div class="card bg-light border-0 p-3 mb-4">
+                        <h6 class="fw-bold text-secondary mb-3">Acciones de la Orden</h6>
+                        <div class="d-flex flex-wrap gap-2">
+
+                            <!-- Criterio 1: Control de Calidad -->
+                            @if (p.Estado == "Enviado a laboratorio" || p.Estado == "En proceso" || p.Estado == "Registrado")
+                            {
+                                <form method="post" asp-page-handler="RecibirOk" asp-route-id="@p.FolioPedido">
+                                    <button type="submit" class="btn btn-success btn-sm">✅ Recibir (Calidad OK)</button>
+                                </form>
+
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse" data-bs-target="#formIncidencia_@p.FolioPedido">
+                                    ⚠️ Registrar Incidencia
+                                </button>
+                            }
+
+                            <!-- Criterio 2: Enlace de WhatsApp -->
+                            @{
+                                string linkWa = Model.GenerarEnlaceWhatsApp(p.Telefono ?? p.IdClienteNavigation?.Telefono, p.IdClienteNavigation?.Nombre ?? "Cliente", p.FolioPedido, p.SaldoPendiente);
+                            }
+                            <a href="@linkWa" target="_blank" class="btn btn-outline-success btn-sm">
+                                💬 Enviar Aviso WhatsApp
+                            </a>
+
+                            <!-- Criterio 3: Botón de Entrega (Bloqueado si hay saldo pendiente) -->
+                            <form method="post" asp-page-handler="Entregar" asp-route-id="@p.FolioPedido">
+                                @if (p.SaldoPendiente > 0)
+                                {
+                                    <button type="submit" class="btn btn-secondary btn-sm" disabled title="Tiene saldo pendiente, no se puede entregar">
+                                        📦 Marcar como Entregado ($ > 0)
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        📦 Marcar como Entregado
+                                    </button>
+                                }
+                            </form>
+                        </div>
+
+                        <!-- Formulario oculto para registrar incidencia con motivo -->
+                        <div class="collapse mt-3" id="formIncidencia_@p.FolioPedido">
+                            <form method="post" asp-page-handler="RegistrarIncidencia" asp-route-id="@p.FolioPedido" class="p-3 bg-white rounded border">
+                                <label class="form-label small fw-bold text-danger">Motivo del defecto / incidencia:</label>
+                                <textarea name="motivoIncidencia" class="form-control form-control-sm mb-2" rows="2" placeholder="Describa el defecto de fábrica..." required></textarea>
+                                <button type="submit" class="btn btn-danger btn-sm">Confirmar Devolución a Laboratorio</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Alertas visuales dentro del modal si hay errores o avisos -->
+                    @if (TempData["ErrorEntrega"] != null)
+                    {
+                        <div class="alert alert-danger small py-2">@TempData["ErrorEntrega"]</div>
+                    }
+
+                    <!-- HISTORIAL DE CAMBIOS (Lo que ya tenía Iker) -->
+                    <h6 class="fw-bold text-secondary mb-2">Historial de Estados</h6>
+                    <ul class="list-group list-group-flush border rounded">
+                        @if (p.HistorialPedidos != null && p.HistorialPedidos.Any())
+                        {
+                            @foreach (var h in p.HistorialPedidos.OrderByDescending(x => x.FechaCambio))
+                            {
+                                <li class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between w-100 mb-1">
+                                        <strong class="text-primary">@h.Estado</strong>
+                                        <small class="text-muted">@h.FechaCambio.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </div>
+                                    <p class="mb-1 small">Actualizado por: <span class="fw-medium">@h.IdEmpleadoNavigation?.Nombre</span></p>
+                                    @if (!string.IsNullOrEmpty(h.Comentario))
+                                    {
+                                        <div class="alert alert-warning small p-2 mt-2 mb-0">
+                                            <strong>Comentario:</strong> @h.Comentario
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-center text-muted p-4">No hay historial registrado.</li>
+                        }
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

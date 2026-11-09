@@ -33,12 +33,15 @@ public partial class Receta
     public bool RecetaExterna { get; set; }
     public string? Emisor { get; set; }
 
-    // --- Opciones de Mica ---
+    // --- Opciones de Mica (Tipadas como int?) ---
     public string? TipoMica { get; set; }
-    public string? MicaMinima { get; set; }
-    public string? MicaRecomendada { get; set; }
+    public int? MicaMinima { get; set; }
+    public int? MicaRecomendada { get; set; }
 
-    // --- Navegación de Entity Framework ---
+    // --- Propiedades de Navegación de Entity Framework ---
+    public virtual Mica? MicaMinimaNavigation { get; set; }
+    public virtual Mica? MicaRecomendadaNavigation { get; set; }
+
     public virtual ICollection<Cotizacion> Cotizaciones { get; set; } = new List<Cotizacion>();
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;

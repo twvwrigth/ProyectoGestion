@@ -38,5 +38,37 @@ namespace Proyecto.Pages.Clientes
             Cliente = clienteConsultado;
             return Page();
         }
+        public async Task<IActionResult> OnPostActualizarRecetaAsync(int idCliente, Receta recetaModificada)
+{
+    if (recetaModificada != null && idCliente > 0)
+    {
+        // Creamos la nueva versión de la receta mapeando los atributos de la nueva BD desglosada
+        var nuevaReceta = new Receta
+        {
+            IdCliente = idCliente,
+            IdEmpleado= 1,
+            EsferaOD = recetaModificada.EsferaOD,
+            CilindroOD = recetaModificada.CilindroOD,
+            EjeOD = recetaModificada.EjeOD,
+            EsferaOI = recetaModificada.EsferaOI,
+            CilindroOI = recetaModificada.CilindroOI,
+            EjeOI = recetaModificada.EjeOI,
+            DistanciaPupilar = recetaModificada.DistanciaPupilar,
+            TipoMica = recetaModificada.TipoMica,
+            Emisor = recetaModificada.Emisor,
+            Fecha = DateOnly.FromDateTime(DateTime.Now), // Fecha de hoy
+            Vigencia = DateOnly.FromDateTime(DateTime.Now.AddYears(1)) // Vigencia de 1 año por defecto
+        };
+
+        _context.Receta.Add(nuevaReceta);
+        await _context.SaveChangesAsync();
+
+        TempData["MensajeRecetaCreada"] = "Se guardó la nueva versión de la receta manteniendo el registro anterior en el historial.";
     }
+
+    return RedirectToPage(new { id = idCliente });
+}
+    }
+
+
 }

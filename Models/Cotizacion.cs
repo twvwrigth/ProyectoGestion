@@ -22,6 +22,7 @@ public partial class Cotizacion
     public bool? BonificacionExamen { get; set; }
 
     public bool? Receta { get; set; }
+    public string? DetalleCotizacion { get; set; }
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 

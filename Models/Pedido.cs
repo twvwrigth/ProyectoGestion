@@ -15,7 +15,9 @@ public partial class Pedido
 
     public DateOnly FechaRegisEp { get; set; }
 
-    public DateOnly? FechaEntrega { get; set; }
+    public DateOnly? FechaPromesa { get; set; }
+
+    public DateTime? FechaEntregaReal { get; set; }
 
     public bool? Anticipo { get; set; }
 
@@ -32,4 +34,6 @@ public partial class Pedido
     public virtual Cotizacion IdCotizacionNavigation { get; set; } = null!;
 
     public virtual Laboratorio IdLaboratorioNavigation { get; set; } = null!;
+
+    public virtual ICollection<HistorialPedido> HistorialPedidos { get; set; } = new List<HistorialPedido>();
 }
