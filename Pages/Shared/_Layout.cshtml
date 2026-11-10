@@ -12,106 +12,34 @@
 </head>
 <body>
     <header>
+        <!-- Cabecera de la aplicación -->
         <nav class="navbar navbar-light bg-white border-bottom box-shadow">
-            <div class="container-fluid px-3">
-                <!-- Botón Toggler para abrir el menú lateral -->
-                <button class="navbar-toggler border-0 shadow-none px-1 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+            <div class="container-fluid px-3 d-flex align-items-center">
                 
-                <a class="navbar-brand d-flex align-items-center fw-bold text-primary me-auto" asp-area="" asp-page="/Index">
+                <!-- EL BOTÓN HAMBURGUESA SOLO APARECE SI EL USUARIO YA INICIÓ SESIÓN -->
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <button class="navbar-toggler border-0 shadow-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                }
+
+                <!-- Logotipo principal de la Óptica (Se mantiene visible en el Login) -->
+                <a class="navbar-brand d-flex align-items-center fw-bold text-primary mb-0" asp-area="" asp-page="/Index">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
-                        <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
+                        <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
                     </svg>
                     Óptica
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        @if (User.Identity!.IsAuthenticated)
-                        {
-                            @if (User.IsInRole("Encargado"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeEmpleados">Gestión de empleados</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/PreciosReglasPromociones">Precios y promociones</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeLaboratorios">Gestión de laboratorios</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/cotizacion">Cotización</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/Historial">Historial de Cortes</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/Venta-CobroExamen">Venta de Mostrador y Cobro de Examen</a>
-                                </li>
-                            }
 
-                            @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/catalogo">Catálogo</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/GestionDeClientes">Clientes</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/listaEspera">Lista de espera</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/Index">Caja</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/TableroPedidos">Tablero de Pedidos</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark fw-medium" asp-area="" asp-page="/TrabajoLaboratorista">Trabajo Laboratorista</a>
-                                </li>
-                            }
-                        }
-                    </ul>
-                    
-                    <ul class="navbar-nav">
-                        @if (User.Identity!.IsAuthenticated)
-                        {
-                            <li class="nav-item d-flex align-items-center">
-                                <span class="navbar-text me-3 text-secondary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle me-1 mb-1" viewBox="0 0 16 16">
-                                      <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                      <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                                    </svg>
-                                    Hola, <strong>@User.Identity.Name</strong>
-                                </span>
-                                <form method="post" asp-page="/logout" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Cerrar Sesión</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm rounded-pill px-4 mt-1" asp-area="" asp-page="/login">Iniciar Sesión</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
             </div>
         </nav>
     </header>
 
-    <!-- Estructura del Menú Lateral Plegable (Offcanvas) -->
+    <!-- Estructura del Menú Lateral Plegable -->
     <div class="offcanvas offcanvas-start shadow" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
         <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title d-flex align-items-center fw-bold text-primary" id="menuLateralLabel">
+            <h5 class="offcanvas-title d-flex align-items-center fw-bold text-primary mb-0" id="menuLateralLabel">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
                     <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
                 </svg>
@@ -120,69 +48,111 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         
-        <div class="offcanvas-body d-flex flex-column p-0">
+        <div class="offcanvas-body d-flex flex-column justify-content-between p-0">
             <ul class="navbar-nav flex-grow-1 p-3">
                 @if (User.Identity!.IsAuthenticated)
                 {
                     @if (User.IsInRole("Encargado"))
                     {
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeEmpleados">Gestión de empleados</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeEmpleados">
+                                <i class="bi bi-people me-2 text-secondary"></i> Gestión de empleados
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/PreciosReglasPromociones">Precios y promociones</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/PreciosReglasPromociones">
+                                <i class="bi bi-tags me-2 text-secondary"></i> Precios y promociones
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeLaboratorios">Gestión de laboratorios</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeLaboratorios">
+                                <i class="bi bi-building me-2 text-secondary"></i> Gestión de laboratorios
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/cotizacion">Cotización</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/cotizacion">
+                                <i class="bi bi-file-earmark-text me-2 text-secondary"></i> Cotización
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Historial">Historial de Cortes</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Historial">
+                                <i class="bi bi-clock-history me-2 text-secondary"></i> Historial de Cortes
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Venta-CobroExamen">
+                                <i class="bi bi-receipt me-2 text-secondary"></i> Venta de Mostrador y Cobro de Examen
+                            </a>
                         </li>
                     }
 
                     @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                     {
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li><hr class="dropdown-divider my-2"></li>
+                        }
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/catalogo">Catálogo</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/catalogo">
+                                <i class="bi bi-grid me-2 text-secondary"></i> Catálogo
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeClientes">Clientes</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeClientes">
+                                <i class="bi bi-person-lines-fill me-2 text-secondary"></i> Clientes
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/listaEspera">Lista de espera</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/listaEspera">
+                                <i class="bi bi-list-ol me-2 text-secondary"></i> Lista de espera
+                            </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Index">Caja</a>
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Index">
+                                <i class="bi bi-cash-coin me-2 text-secondary"></i> Caja
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/TableroPedidos">
+                                <i class="bi bi-kanban me-2 text-secondary"></i> Tablero de Pedidos
+                            </a>
+                        </li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/TrabajoLaboratorista">
+                                <i class="bi bi-eyeglasses me-2 text-secondary"></i> Trabajo Laboratorista
+                            </a>
                         </li>
                     }
                 }
             </ul>
             
-            <!-- Zona inferior del menú (Perfil y Logout) -->
+            <!-- Pie de página del menú -->
             <div class="mt-auto p-3 border-top bg-light">
                 @if (User.Identity!.IsAuthenticated)
                 {
                     <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-person-circle fs-5 me-2 text-secondary"></i>
                         <span class="text-secondary text-truncate">
-                            <i class="bi bi-person-circle me-2 fs-5"></i>
                             Hola, <strong>@User.Identity.Name</strong>
                         </span>
                     </div>
-                    <form method="post" asp-page="/logout">
-                        <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">Cerrar Sesión</button>
+                    <form method="post" asp-page="/logout" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
+                            <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                        </button>
                     </form>
                 }
                 else
                 {
-                    <a class="btn btn-primary w-100 rounded-pill" asp-area="" asp-page="/login">Iniciar Sesión</a>
+                    <a class="btn btn-primary w-100 rounded-pill" asp-area="" asp-page="/login">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                    </a>
                 }
             </div>
         </div>
     </div>
 
+    <!-- Contenedor Principal de la vista -->
     <div class="main-wrapper container-fluid px-0">
         <main role="main" class="cuerpo">
             @RenderBody()
