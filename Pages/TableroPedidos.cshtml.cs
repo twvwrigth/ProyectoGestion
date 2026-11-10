@@ -62,6 +62,8 @@ namespace Proyecto.Pages
         }
 
         // 1. RECIBIR PEDIDO (CALIDAD OK)
+        // 1. RECIBIR PEDIDO (CALIDAD OK) -> Pasa a "Listo para entrega"
+        // 1. RECIBIR PEDIDO (CALIDAD OK) -> Pasa a "Recibido en óptica"
         public async Task<IActionResult> OnPostRecibirOkAsync(int id)
         {
             var pedido = await _context.Pedidos.FindAsync(id);
@@ -70,8 +72,32 @@ namespace Proyecto.Pages
             pedido.Estado = "Recibido en óptica";
             await _context.SaveChangesAsync();
 
-            TempData["MensajePedido"] = $"Pedido #{pedido.FolioPedido} recibido y verificado con éxito.";
+            TempData["MensajePedido"] = $"Pedido #{pedido.FolioPedido} recibido físicamente en la óptica.";
             return RedirectToPage();
+        }
+
+        // 2. ENVIAR AVISO WHATSAPP -> Pasa a "Listo para entrega"
+        public async Task<IActionResult> OnPostAvisarClienteAsync(int id)
+        {
+            var pedido = await _context.Pedidos.Include(p => p.IdClienteNavigation).FirstOrDefaultAsync(p => p.FolioPedido == id);
+            if (pedido == null) return NotFound();
+
+            // Actualizamos el estado a "Listo para entrega" al notificar
+            pedido.Estado = "Listo para entrega";
+            await _context.SaveChangesAsync();
+
+            // Generar enlace de WhatsApp
+            string nombre = pedido.IdClienteNavigation?.Nombre ?? "Cliente";
+            string tel = pedido.Telefono ?? pedido.IdClienteNavigation?.Telefono ?? "";
+            string mensaje = $"Hola {nombre}, te saludamos de la óptica. Tu pedido #{pedido.FolioPedido} ya está listo para recoger. " +
+                             (pedido.SaldoPendiente > 0 ? $"Tu saldo pendiente es de ${pedido.SaldoPendiente:0.00}. ¡Te esperamos!" : "Tu pedido está totalmente pagado. ¡Te esperamos!");
+
+            string telLimpio = new string(tel.Where(char.IsDigit).ToArray());
+            if (!telLimpio.StartsWith("52") && telLimpio.Length == 10) telLimpio = "52" + telLimpio;
+
+            string urlWa = $"https://wa.me/{telLimpio}?text={Uri.EscapeDataString(mensaje)}";
+
+            return Redirect(urlWa);
         }
 
         // 1.1 REGISTRAR INCIDENCIA (DEFECTO DE FÁBRICA)
