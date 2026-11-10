@@ -8,6 +8,24 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- ========================================== -->
+<!-- MENÚ DE NAVEGACIÓN DEL MÓDULO COTIZACIONES -->
+<!-- ========================================== -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <!-- Pestaña Activa: Realizar cotizaciones -->
+        <a class="nav-link active fw-bold" href="#">
+            <i class="bi bi-plus-circle me-1"></i> Realizar Cotización
+        </a>
+    </li>
+    <li class="nav-item">
+        <!-- Pestaña Inactiva: Lista de cotizaciones (Ajusta el 'asp-page' al nombre real de tu vista) -->
+        <a class="nav-link text-secondary hover-primary" asp-page="/ListaCotizaciones">
+            <i class="bi bi-list-ul me-1"></i> Lista de Cotizaciones
+        </a>
+    </li>
+</ul>
+<!-- ========================================== -->
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -211,7 +229,7 @@
                                             icon: 'success',
                                             confirmButtonText: 'Aceptar',
                                             confirmButtonColor: '#0d6efd'
-                                                                        });
+                                                                                                        });
                                     </text>
                             }
 
@@ -273,15 +291,15 @@
                                             alertaReceta.classList.remove('d-none');
                                             const mensajeReceta = document.getElementById('mensajeReceta');
                                             mensajeReceta.innerHTML = `
-                                                                                                    <strong>El cliente no cuenta con recetas registradas.</strong> 
-                                                                                                    <div class="mt-2">
-                                                                                                        <a href="/Examen?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
-                                                                                                            <i class="bi bi-plus-circle"></i> Registrar Receta Externa
-                                                                                                        </a>
-                                                                                                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="enviarAListaEspera(${idCliente})">
-                                                                                                            <i class="bi bi-clock-history"></i> Añadir a Lista de Espera (Examen)
-                                                                                                        </button>
-                                                                                                    </div>`;
+                                                                                                                            <strong>El cliente no cuenta con recetas registradas.</strong> 
+                                                                                                                            <div class="mt-2">
+                                                                                                                                <a href="/Examen?idCliente=${idCliente}" class="btn btn-sm btn-dark me-2">
+                                                                                                                                    <i class="bi bi-plus-circle"></i> Registrar Receta Externa
+                                                                                                                                </a>
+                                                                                                                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="enviarAListaEspera(${idCliente})">
+                                                                                                                                    <i class="bi bi-clock-history"></i> Añadir a Lista de Espera (Examen)
+                                                                                                                                </button>
+                                                                                                                            </div>`;
                                             recetaSelect.disabled = true;
                                             return;
                                         }
@@ -564,14 +582,14 @@
                                     subtotal += item.precio;
                                     const tr = document.createElement('tr');
                                     tr.innerHTML = `
-                                                                <td>${item.nombre}</td>
-                                                                <td>$${item.precio.toFixed(2)}</td>
-                                                                <td class="text-center">
-                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartado(${index})">
-                                                                        <i class="bi bi-trash"></i> Quitar
-                                                                    </button>
-                                                                </td>
-                                                            `;
+                                                                                        <td>${item.nombre}</td>
+                                                                                        <td>$${item.precio.toFixed(2)}</td>
+                                                                                        <td class="text-center">
+                                                                                            <button type="button" class="btn btn-danger btn-sm" onclick="eliminarDelApartado(${index})">
+                                                                                                <i class="bi bi-trash"></i> Quitar
+                                                                                            </button>
+                                                                                        </td>
+                                                                                    `;
                                     tbody.appendChild(tr);
                                 });
 
