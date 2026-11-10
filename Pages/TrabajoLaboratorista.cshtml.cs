@@ -36,12 +36,13 @@ namespace Proyecto.Pages
             // REGLA 1: Solo pedidos de este laboratorio, ordenados por fecha promesa.
             // Excluimos explícitamente los datos financieros para no mandarlos a la vista.
             PedidosLaboratorio = await _context.Pedidos
-                .Include(p => p.IdCotizacionNavigation)
-                    .ThenInclude(c => c.IdRecetaNavigation)
-                .Where(p => p.IdLaboratorio == empleado.IdLaboratorio && 
-                           (p.Estado == "Enviado a laboratorio" || p.Estado == "En proceso" || p.Estado == "Con incidencia"))
-                .OrderBy(p => p.FechaPromesa)
-                .ToListAsync();
+    .Include(p => p.IdCotizacionNavigation)
+        .ThenInclude(c => c.IdRecetaNavigation)
+    // Agregamos "Registrado" a la lista de estados permitidos
+    .Where(p => p.IdLaboratorio == empleado.IdLaboratorio &&
+               (p.Estado == "Registrado" || p.Estado == "Enviado a laboratorio" || p.Estado == "En proceso" || p.Estado == "Con incidencia"))
+    .OrderBy(p => p.FechaPromesa)
+    .ToListAsync();
 
             return Page();
         }
@@ -55,10 +56,12 @@ namespace Proyecto.Pages
             if (pedido == null) return RedirectToPage();
 
             // REGLA 2: No se pueden saltar estados. Validamos la transición.
+            // REGLA 2: No se pueden saltar estados. Validamos la transición.
             bool transicionValida = false;
-            if ((pedido.Estado == "Enviado a laboratorio" || pedido.Estado == "Con incidencia") && nuevoEstado == "En proceso") transicionValida = true;
+            // Agregamos "Registrado" como un estado inicial válido
+            if ((pedido.Estado == "Registrado" || pedido.Estado == "Enviado a laboratorio" || pedido.Estado == "Con incidencia") && nuevoEstado == "En proceso") transicionValida = true;
             if (pedido.Estado == "En proceso" && nuevoEstado == "Terminado") transicionValida = true;
-            if (nuevoEstado == "Con incidencia") transicionValida = true; 
+            if (nuevoEstado == "Con incidencia") transicionValida = true;
 
             if (!transicionValida)
             {
@@ -77,14 +80,14 @@ namespace Proyecto.Pages
                 IdEmpleado = idEmpleado,
                 Estado = nuevoEstado,
                 FechaCambio = DateTime.Now,
-                Comentario = nuevoEstado == "Con incidencia" 
-                             ? $"Incidencia reportada por laboratorio: {motivoIncidencia}" 
+                Comentario = nuevoEstado == "Con incidencia"
+                             ? $"Incidencia reportada por laboratorio: {motivoIncidencia}"
                              : $"Producción actualizada a: {nuevoEstado}"
             };
-            
+
             _context.HistorialPedido.Add(historial);
             await _context.SaveChangesAsync();
-    
+
             TempData["MensajeExito"] = $"El pedido #{folioPedido} avanzó a '{nuevoEstado}'.";
             return RedirectToPage();
         }
