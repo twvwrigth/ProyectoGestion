@@ -1,0 +1,149 @@
+@page
+@model Proyecto.Pages.ListaCotizacionesModel
+@{
+    ViewData["Title"] = "Lista de Cotizaciones";
+}
+
+<div class="container mt-4">
+
+    <!-- ========================================== -->
+    <!-- MENÚ DE NAVEGACIÓN DEL MÓDULO COTIZACIONES -->
+    <!-- ========================================== -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <!-- Enlace para regresar a realizar una nueva cotización -->
+            <a class="nav-link text-secondary hover-primary" asp-page="/Cotizacion">
+                <i class="bi bi-plus-circle me-1"></i> Realizar Cotización
+            </a>
+        </li>
+        <li class="nav-item">
+            <!-- Pestaña Activa: Lista de cotizaciones -->
+            <a class="nav-link active fw-bold" href="ListaCotizaciones">
+                <i class="bi bi-list-ul me-1"></i> Lista de Cotizaciones
+            </a>
+        </li>
+    </ul>
+    <!-- ========================================== -->
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+            <h4 class="mb-0"><i class="bi bi-journal-text me-2"></i> Historial de Cotizaciones</h4>
+        </div>
+        
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle text-center">
+                    <thead class="table-light text-dark">
+                        <tr>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.FolioSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Folio <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.FechaSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Fecha <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.ClienteSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center gap-1">
+                                    Cliente <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.TotalSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Total Calculado <i class="bi bi-arrow-down-up text-muted"
+                                                       style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.VencimientoSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Vencimiento <i class="bi bi-arrow-down-up text-muted"
+                                                   style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>Atendió</th>
+                            <th>Detalle de Productos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.CotizacionesLista != null && Model.CotizacionesLista.Any())
+                        {
+                            @foreach (var cotizacion in Model.CotizacionesLista)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@cotizacion.IdCotizacion</td>
+                                    <td>@cotizacion.FechaCotizo.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-start">@cotizacion.IdClienteNavigation?.Nombre</td>
+                                    <td class="text-success fw-bold">$@cotizacion.TotalCalculado.ToString("0.00")</td>
+                                    <td>
+                                        @{
+                                            var estaVencida = cotizacion.FechaExpiracion < DateOnly.FromDateTime(DateTime.Now);
+                                            var badgeClass = estaVencida ? "bg-danger" : "bg-success";
+                                            var badgeText = estaVencida ? "Vencida" : "Vigente";
+                                        }
+                                        @cotizacion.FechaExpiracion.ToString("dd/MM/yyyy") <br>
+                                        <span class="badge @badgeClass">@badgeText</span>
+                                    </td>
+                                    <td>@cotizacion.IdEmpleadoNavigation?.Nombre</td>
+                                    <td class="text-start text-muted small">
+                                        @if (!string.IsNullOrEmpty(cotizacion.DetalleCotizacion))
+                                        {
+                                            @cotizacion.DetalleCotizacion
+                                        }
+                                        else
+                                        {
+                                            <span class="fst-italic">Sin detalle registrado</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            // Verificamos si ya existe al menos un pedido asociado a esta cotización
+                                            var yaEsPedido = cotizacion.Pedidos != null && cotizacion.Pedidos.Any();
+                                        }
+
+                                        @if (yaEsPedido)
+                                        {
+                                            <!-- Botón deshabilitado indicando que ya está en el tablero -->
+                                            <button type="button" class="btn btn-sm btn-secondary" disabled
+                                                    title="Esta cotización ya fue convertida a pedido">
+                                                <i class="bi bi-check-circle"></i> En Pedidos
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <!-- Botón original para convertir a pedido -->
+                                            <form method="post" asp-page-handler="ConvertirPedido" class="m-0">
+                                                <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
+                                                <button type="submit" class="btn btn-sm btn-primary" @(estaVencida ? "disabled" :
+                                                        "") title="Enviar a Pedidos">
+                                                    <i class="bi bi-cart-plus"></i> Crear Pedido
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <!-- Se actualizó el colspan a 8 -->
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                    No hay cotizaciones registradas en el sistema.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
