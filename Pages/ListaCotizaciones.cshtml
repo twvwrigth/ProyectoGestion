@@ -35,20 +35,47 @@
                 <table class="table table-hover table-bordered align-middle text-center">
                     <thead class="table-light text-dark">
                         <tr>
-                            <th>Folio</th>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Total Calculado</th>
-                            <th>Vencimiento</th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.FolioSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Folio <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.FechaSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Fecha <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.ClienteSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center gap-1">
+                                    Cliente <i class="bi bi-arrow-down-up text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.TotalSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Total Calculado <i class="bi bi-arrow-down-up text-muted"
+                                                       style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="./ListaCotizaciones" asp-route-sortOrder="@Model.VencimientoSort"
+                                   class="text-decoration-none text-dark d-flex align-items-center justify-content-center gap-1">
+                                    Vencimiento <i class="bi bi-arrow-down-up text-muted"
+                                                   style="font-size: 0.75rem;"></i>
+                                </a>
+                            </th>
                             <th>Atendió</th>
                             <th>Detalle de Productos</th>
-                            <th>Acciones</th> <!-- Nueva columna añadida -->
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model.CotizacionesLista != null && Model.CotizacionesLista.Any())
                         {
-                            foreach (var cotizacion in Model.CotizacionesLista)
+                            @foreach (var cotizacion in Model.CotizacionesLista)
                             {
                                 <tr>
                                     <td class="fw-bold">@cotizacion.IdCotizacion</td>
@@ -76,13 +103,30 @@
                                         }
                                     </td>
                                     <td>
-                                        <!-- Botón Formulario para convertir a pedido -->
-                                        <form method="post" asp-page-handler="ConvertirPedido">
-                                            <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
-                                            <button type="submit" class="btn btn-sm btn-primary" @(estaVencida ? "disabled" : "") title="Enviar a Pedidos">
-                                                <i class="bi bi-cart-plus"></i> Crear Pedido
+                                        @{
+                                            // Verificamos si ya existe al menos un pedido asociado a esta cotización
+                                            var yaEsPedido = cotizacion.Pedidos != null && cotizacion.Pedidos.Any();
+                                        }
+
+                                        @if (yaEsPedido)
+                                        {
+                                            <!-- Botón deshabilitado indicando que ya está en el tablero -->
+                                            <button type="button" class="btn btn-sm btn-secondary" disabled
+                                                    title="Esta cotización ya fue convertida a pedido">
+                                                <i class="bi bi-check-circle"></i> En Pedidos
                                             </button>
-                                        </form>
+                                        }
+                                        else
+                                        {
+                                            <!-- Botón original para convertir a pedido -->
+                                            <form method="post" asp-page-handler="ConvertirPedido" class="m-0">
+                                                <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
+                                                <button type="submit" class="btn btn-sm btn-primary" @(estaVencida ? "disabled" :
+                                                        "") title="Enviar a Pedidos">
+                                                    <i class="bi bi-cart-plus"></i> Crear Pedido
+                                                </button>
+                                            </form>
+                                        }
                                     </td>
                                 </tr>
                             }

@@ -16,19 +16,72 @@ namespace Proyecto.Pages
 
         public IList<Cotizacion> CotizacionesLista { get; set; } = default!;
 
-        public async Task OnGetAsync()
+        // Propiedades para almacenar el estado actual del ordenamiento
+        public string FolioSort { get; set; }
+        public string ClienteSort { get; set; }
+        public string TotalSort { get; set; }
+        public string FechaSort { get; set; }
+        public string VencimientoSort { get; set; }
+
+        public async Task OnGetAsync(string sortOrder)
         {
-            CotizacionesLista = await _context.Cotizaciones
+            // Lógica de alternancia: invierte el orden si se hace clic repetidamente
+            FolioSort = sortOrder == "folio_asc" ? "folio_desc" : "folio_asc";
+            ClienteSort = sortOrder == "cliente_asc" ? "cliente_desc" : "cliente_asc";
+            TotalSort = sortOrder == "total_asc" ? "total_desc" : "total_asc";
+            FechaSort = sortOrder == "fecha_asc" ? "fecha_desc" : "fecha_asc";
+            VencimientoSort = sortOrder == "vencimiento_asc" ? "vencimiento_desc" : "vencimiento_asc";
+
+            // Consulta base
+            IQueryable<Cotizacion> query = _context.Cotizaciones
                 .Include(c => c.IdClienteNavigation)
                 .Include(c => c.IdEmpleadoNavigation)
-                .OrderByDescending(c => c.IdCotizacion)
-                .ToListAsync();
+                .Include(c => c.Pedidos);
+
+            // Aplicar el ordenamiento según el parámetro recibido
+            switch (sortOrder)
+            {
+                case "folio_asc":
+                    query = query.OrderBy(c => c.IdCotizacion);
+                    break;
+                case "folio_desc":
+                    query = query.OrderByDescending(c => c.IdCotizacion);
+                    break;
+                case "cliente_asc":
+                    query = query.OrderBy(c => c.IdClienteNavigation.Nombre);
+                    break;
+                case "cliente_desc":
+                    query = query.OrderByDescending(c => c.IdClienteNavigation.Nombre);
+                    break;
+                case "total_asc":
+                    query = query.OrderBy(c => c.TotalCalculado);
+                    break;
+                case "total_desc":
+                    query = query.OrderByDescending(c => c.TotalCalculado);
+                    break;
+                case "fecha_asc":
+                    query = query.OrderBy(c => c.FechaCotizo);
+                    break;
+                case "fecha_desc":
+                    query = query.OrderByDescending(c => c.FechaCotizo);
+                    break;
+                case "vencimiento_asc":
+                    query = query.OrderBy(c => c.FechaExpiracion);
+                    break;
+                case "vencimiento_desc":
+                    query = query.OrderByDescending(c => c.FechaExpiracion);
+                    break;
+                default:
+                    // Orden por defecto: las más recientes primero
+                    query = query.OrderByDescending(c => c.FechaCotizo);
+                    break;
+            }
+
+            CotizacionesLista = await query.ToListAsync();
         }
 
-        // NUEVO MÉTODO PARA CREAR EL PEDIDO
         public async Task<IActionResult> OnPostConvertirPedidoAsync(int idCotizacion)
         {
-            // 1. Buscar la cotización con la información del cliente
             var cotizacion = await _context.Cotizaciones
                 .Include(c => c.IdClienteNavigation)
                 .FirstOrDefaultAsync(c => c.IdCotizacion == idCotizacion);
@@ -38,41 +91,35 @@ namespace Proyecto.Pages
                 return NotFound();
             }
 
-            // Validar que no esté vencida
             if (cotizacion.FechaExpiracion < DateOnly.FromDateTime(DateTime.Now))
             {
-                 // Podrías manejar un TempData de error aquí si lo deseas
-                 return RedirectToPage();
+                return RedirectToPage();
             }
 
-            // 2. Buscar un laboratorio por defecto (requerido por tu base de datos)
             var laboratorioActivo = await _context.Laboratorios.FirstOrDefaultAsync(l => l.Activo == true);
             if (laboratorioActivo == null)
             {
-                // Si no hay laboratorios, no podemos crear el pedido según tu esquema
-                 return RedirectToPage(); 
+                return RedirectToPage();
             }
 
-            // 3. Crear el nuevo Pedido
             var nuevoPedido = new Pedido
             {
                 IdCliente = cotizacion.IdCliente,
                 IdCotizacion = cotizacion.IdCotizacion,
-                IdLaboratorio = laboratorioActivo.IdLaboratorio, 
+                IdLaboratorio = laboratorioActivo.IdLaboratorio,
                 FechaRegisEp = DateOnly.FromDateTime(DateTime.Now),
-                FechaPromesa = DateOnly.FromDateTime(DateTime.Now.AddDays(7)), // Promesa por defecto de 7 días
-                Estado = "Registrado", // Estado inicial en tu Tablero
-                Anticipo = false, // Valores por defecto
-                SaldoPendiente = cotizacion.TotalCalculado, // El saldo inicial es el total de la cotización
-                Telefono = cotizacion.IdClienteNavigation?.Telefono ?? "0000000000" // Tu BD requiere teléfono no nulo
+                FechaPromesa = DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
+                Estado = "Registrado",
+                Anticipo = false,
+                SaldoPendiente = cotizacion.TotalCalculado,
+                Telefono = cotizacion.IdClienteNavigation?.Telefono ?? "0000000000"
             };
 
             _context.Pedidos.Add(nuevoPedido);
             await _context.SaveChangesAsync();
 
-            // 4. Redirigir al Tablero de Pedidos mostrando un mensaje de éxito
             TempData["MensajePedido"] = $"El pedido #{nuevoPedido.FolioPedido} ha sido creado a partir de la cotización #{cotizacion.IdCotizacion}.";
-            return RedirectToPage("/TableroPedidos"); 
+            return RedirectToPage("/TableroPedidos");
         }
     }
 }
