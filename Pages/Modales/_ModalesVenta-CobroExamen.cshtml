@@ -1,0 +1,66 @@
+<!-- MODAL DE CONFIRMACIÓN DE COBRO EN CAJA -->
+<div class="modal fade" id="modalConfirmarVenta" tabindex="-1" aria-labelledby="modalConfirmarVentaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold" id="modalConfirmarVentaLabel">
+                    <i class="bi bi-cash-register me-2"></i> Confirmar Cobro en Caja
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-question-circle text-primary display-4"></i>
+                </div>
+                <h6 class="fw-bold mb-2">¿Desea procesar la venta y registrar el ingreso?</h6>
+                <p class="text-muted small mb-0">
+                    Se descontará la existencia del inventario de forma inmediata y se asociará la transacción a la caja actualmente abierta.
+                </p>
+            </div>
+            <div class="modal-footer bg-light border-0 justify-content-center py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-semibold" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-success px-4 fw-bold" onclick="ejecutarCobroAsincrono()">
+                    <i class="bi bi-check-circle me-1"></i> Sí, Cobrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function ejecutarCobroAsincrono() {
+        var modalEl = document.getElementById('modalConfirmarVenta');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        var form = document.getElementById('formVenta');
+        var formData = new FormData(form);
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                mostrarAlerta(data.mensaje + " Total cobrado: $" + data.montoCobrado.toFixed(2) + " MXN", "success");
+                form.reset();
+            } else {
+                mostrarAlerta("No se pudo procesar la venta.", "warning");
+            }
+        })
+        .catch(error => {
+            mostrarAlerta(error.message || "Error al conectar con el servidor.", "danger");
+        });
+    }
+</script>
