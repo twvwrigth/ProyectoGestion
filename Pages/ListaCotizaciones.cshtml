@@ -18,7 +18,7 @@
         </li>
         <li class="nav-item">
             <!-- Pestaña Activa: Lista de cotizaciones -->
-            <a class="nav-link active fw-bold" href="#">
+            <a class="nav-link active fw-bold" href="ListaCotizaciones">
                 <i class="bi bi-list-ul me-1"></i> Lista de Cotizaciones
             </a>
         </li>
@@ -42,6 +42,7 @@
                             <th>Vencimiento</th>
                             <th>Atendió</th>
                             <th>Detalle de Productos</th>
+                            <th>Acciones</th> <!-- Nueva columna añadida -->
                         </tr>
                     </thead>
                     <tbody>
@@ -74,13 +75,23 @@
                                             <span class="fst-italic">Sin detalle registrado</span>
                                         }
                                     </td>
+                                    <td>
+                                        <!-- Botón Formulario para convertir a pedido -->
+                                        <form method="post" asp-page-handler="ConvertirPedido">
+                                            <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
+                                            <button type="submit" class="btn btn-sm btn-primary" @(estaVencida ? "disabled" : "") title="Enviar a Pedidos">
+                                                <i class="bi bi-cart-plus"></i> Crear Pedido
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
+                                <!-- Se actualizó el colspan a 8 -->
+                                <td colspan="8" class="text-center py-4 text-muted">
                                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                     No hay cotizaciones registradas en el sistema.
                                 </td>
