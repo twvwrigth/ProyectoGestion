@@ -129,15 +129,36 @@
                                                                 }
                                                             </select>
                                                         </div>
+                                                        <!-- Opción Mínima (Obligatorio) -->
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold small">Opción Mínima (Obligatorio)</label>
-                                                            <input type="text" class="form-control" asp-for="NuevaReceta.MicaMinima"
-                                                                   placeholder="Ej. CR-39 Blanco" required>
+                                                            <select class="form-select form-select-sm" asp-for="NuevaReceta.MicaMinima" required>
+                                                                <option value="" selected disabled>Seleccione la mica mínima...</option>
+                                                                @if (Model.ListaMicas != null)
+                                                                {
+                                                                    foreach (var mica in Model.ListaMicas)
+                                                                    {
+                                                                        <option value="@mica.IdMica">@mica.Material - @mica.Tratamiento (@mica.RangoGraduacion)
+                                                                        </option>
+                                                                    }
+                                                                }
+                                                            </select>
                                                         </div>
+
+                                                        <!-- Opción Recomendada (Obligatorio) -->
                                                         <div class="mb-3">
                                                             <label class="form-label fw-bold small">Opción Recomendada (Obligatorio)</label>
-                                                            <input type="text" class="form-control" asp-for="NuevaReceta.MicaRecomendada"
-                                                                   placeholder="Ej. Policarbonato Antirreflejante" required>
+                                                            <select class="form-select form-select-sm" asp-for="NuevaReceta.MicaRecomendada" required>
+                                                                <option value="" selected disabled>Seleccione la mica recomendada...</option>
+                                                                @if (Model.ListaMicas != null)
+                                                                {
+                                                                    foreach (var mica in Model.ListaMicas)
+                                                                    {
+                                                                        <option value="@mica.IdMica">@mica.Material - @mica.Tratamiento (@mica.RangoGraduacion)
+                                                                        </option>
+                                                                    }
+                                                                }
+                                                            </select>
                                                         </div>
                                                     </div>
                                                 </div>
