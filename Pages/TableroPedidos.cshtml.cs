@@ -22,7 +22,7 @@ namespace Proyecto.Pages
         public List<Pedido> PedidosList { get; set; } = new List<Pedido>();
         public List<string> EstadosDefinidos { get; set; } = new List<string>
         {
-            "Registrado", "Enviado a laboratorio", "En proceso",
+            "Registrado", "En proceso",
             "Con incidencia", "Terminado", "Recibido en óptica", "Listo para entrega"
         };
 

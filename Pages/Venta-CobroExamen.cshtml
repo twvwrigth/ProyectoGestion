@@ -6,58 +6,87 @@
 
 <div class="container-fluid py-4">
 
-    <!-- Encabezado Principal de la Vista -->
+    <!-- Encabezado Principal -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="h5 mb-1 fw-bold">Venta de Mostrador y Cobro de Examen</h2>
-                <p class="text-muted small mb-0">HU-09: Cobro directo de productos de stock, accesorios y examen de la vista</p>
+                <p class="text-muted small mb-0">HU-09: Cobro directo de productos, accesorios y examen de la vista</p>
             </div>
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Rol: Vendedor</span>
         </div>
     </div>
 
-    <!-- Alerta de Respuesta (Éxito o Error) -->
+    <!-- Alerta de Respuesta -->
     <div id="alertaResultado" class="alert alert-dismissible fade show d-none shadow-sm mb-4" role="alert">
         <span id="alertaMensaje"></span>
         <button type="button" class="btn-close" onclick="cerrarAlerta()"></button>
     </div>
 
-    <div class="row g-4">
-        <!-- Columna Izquierda: Formulario de Selección -->
-        <div class="col-lg-7">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
-                    <h5 class="fw-bold mb-0">1. Datos del Cliente y Selección</h5>
-                </div>
-                <div class="card-body p-4">
-                    <form id="formVenta" method="post" asp-page-handler="ProcesarVenta">
-                        
-                        <!-- Selección de Cliente -->
-                        <div class="mb-4">
-                            <label for="clienteId" class="form-label fw-semibold">Nombre del Cliente <span class="text-danger">*</span></label>
+    <form id="formVenta" method="post" asp-page-handler="ProcesarVenta">
+        <!-- Inputs ocultos para enviar los datos al backend -->
+        <input type="hidden" id="clienteId" name="ClienteId" required />
+        <input type="hidden" id="totalVentaInput" name="TotalVenta" value="0.00" />
+        <!-- Contenedor dinámico de productos seleccionados para el Model Binding -->
+        <div id="productosContainerOculto"></div>
+
+        <div class="row g-4">
+            <!-- COLUMNA IZQUIERDA: Datos del Cliente, Búsqueda de Productos, Forma de Pago y Examen -->
+            <div class="col-lg-5">
+                
+                <!-- 1. Datos del Cliente -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
+                        <h5 class="fw-bold mb-0">Datos del Cliente</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Nombre del Cliente (Autocompleta Teléfono) -->
+                        <div class="mb-3 position-relative">
+                            <label class="form-label fw-semibold small">Nombre del Cliente</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                <input type="number" id="clienteId" name="ClienteId" class="form-control" placeholder="ID o Folio de Cliente (Ej. 1)" required />
+                                <input type="text" id="inputNombreCliente" class="form-control" placeholder="Nombre del cliente..." autocomplete="off" />
                             </div>
-                            <small class="text-muted">Ingrese el ID del cliente registrado en el sistema.</small>
+                            <ul id="sugerenciasClienteNombre" class="dropdown-menu w-100 shadow-sm" style="max-height: 180px; overflow-y: auto;"></ul>
                         </div>
 
-                        <!-- Selección de Producto en Stock -->
-                        <div class="mb-4">
-                            <label for="productoId" class="form-label fw-semibold">Producto a Vender (Gafas, Armazones sueltos, Accesorios) <span class="text-danger">*</span></label>
+                        <!-- Número de Teléfono (Autocompleta Nombre) -->
+                        <div class="mb-2 position-relative">
+                            <label class="form-label fw-semibold small">Num. Teléfono</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
-                                <input type="number" id="productoId" name="ProductoId" class="form-control" placeholder="Código o ID de Producto (Ej. 1)" required />
+                                <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
+                                <input type="text" id="inputTelefonoCliente" class="form-control" placeholder="10 dígitos..." autocomplete="off" />
                             </div>
-                            <small class="text-muted">Solo se procesarán productos con existencia mayor a 0.</small>
+                            <ul id="sugerenciasClienteTel" class="dropdown-menu w-100 shadow-sm" style="max-height: 180px; overflow-y: auto;"></ul>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Selección de Forma de Pago -->
-                        <div class="mb-4">
-                            <label for="formaPago" class="form-label fw-semibold">Forma de Pago <span class="text-danger">*</span></label>
+                <!-- 2. Productos y Detalles -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
+                        <h5 class="fw-bold mb-0">Productos y Detalles</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Búsqueda de Producto</label>
+                            <button type="button" class="btn btn-outline-primary w-100 text-start d-flex justify-content-between align-items-center py-2" onclick="abrirModalBusquedaProductos()">
+                                <span><i class="bi bi-search me-2"></i> Buscar productos en catálogo...</span>
+                                <i class="bi bi-plus-circle fw-bold"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Forma de Pago y Opciones Adicionales -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
+                        <h5 class="fw-bold mb-0">Forma de Pago</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-credit-card-fill"></i></span>
+                                <span class="input-group-text"><i class="bi bi-cash-stack"></i></span>
                                 <select id="formaPago" name="FormaPago" class="form-select" required>
                                     <option value="Efectivo" selected>Efectivo</option>
                                     <option value="Tarjeta">Tarjeta de Débito/Crédito</option>
@@ -66,148 +95,549 @@
                             </div>
                         </div>
 
-                        <!-- Opción Cobro de Examen -->
-                        <div class="card bg-light-subtle border p-3 mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="incluyeExamen" name="IncluyeExamen" value="true">
-                                <label class="form-check-label fw-semibold" for="incluyeExamen">
-                                    Incluir Examen de la Vista
-                                </label>
-                            </div>
-                            <small class="text-muted mt-1 d-block">
-                                Si el cliente realizó un examen en los últimos 30 días, la bonificación se calculará automáticamente.
-                            </small>
+                        <!-- Incluir Examen de la Vista -->
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="incluyeExamen" name="IncluyeExamen" value="true" onchange="calcularTotalesGlobales()">
+                            <label class="form-check-label fw-semibold small" for="incluyeExamen">
+                                Incluir Examen de la Vista
+                            </label>
                         </div>
 
-                        <!-- Input Oculto enviado al servidor -->
-                        <input type="hidden" id="totalVentaInput" name="TotalVenta" value="0.00" />
-                    </form>
+                        <!-- Descuentos Adicionales (Sin funcionalidad por ahora, tal como se solicitó) -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="descuentosAdicionales" disabled>
+                            <label class="form-check-label text-muted small" for="descuentosAdicionales">
+                                Descuentos Adicionales (Próximamente)
+                            </label>
+                        </div>
+                    </div>
                 </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: Tabla de Productos Seleccionados, Totales y Procesar Cobro -->
+            <div class="col-lg-7">
+                
+                <!-- Tabla de Productos en el Carrito -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
+                        <h5 class="fw-bold mb-0">Productos Seleccionados</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive table-card border rounded" style="max-height: 280px; overflow-y: auto;">
+                            <table class="table table-striped table-hover align-middle mb-0" id="tablaCarrito">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th class="ps-3">Nombre Producto</th>
+                                        <th class="text-center" style="width: 140px;">Cantidad</th>
+                                        <th class="text-end pe-3">Precio</th>
+                                        <th class="text-center" style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyCarrito">
+                                    <tr id="filaVaciaCarrito">
+                                        <td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen de la Operación y Botón Procesar -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal:</span>
+                            <span id="lblSubtotal" class="fw-semibold">$0.00 MXN</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Costo Examen:</span>
+                            <span id="lblCostoExamen" class="fw-semibold">$0.00 MXN</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 text-success">
+                            <span>Bonificación / Descuento:</span>
+                            <span id="lblBonificacion" class="fw-semibold">-$0.00 MXN</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="h5 mb-0 fw-bold">Total a cobrar:</span>
+                            <span id="lblTotalCobrar" class="h3 mb-0 fw-bold text-primary">$0.00 MXN</span>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" onclick="validarYMostrarModalPago()">
+                            <i class="bi bi-cash-stack me-2"></i> Procesar Cobro
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
+    </form>
+</div>
 
-        <!-- Columna Derecha: Resumen de Operación en Tiempo Real -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
-                <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
-                    <h5 class="fw-bold mb-0">2. Resumen de la Operación</h5>
+<!-- ================= MODAL DE BÚSQUEDA DE PRODUCTOS (SUPERPUESTO) ================= -->
+<div class="modal fade" id="modalBusquedaProductos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-search me-2"></i> Catálogo de Productos y Stock</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Filtros de Búsqueda en el Modal -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-funnel"></i></span>
+                            <input type="text" id="modalInputBuscar" class="form-control" placeholder="Buscar por nombre o categoría..." oninput="filtrarProductosModal()" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-outline-secondary w-100" onclick="cargarProductosModal()">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Actualizar Lista
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Subtotal Productos:</span>
-                        <span id="subtotalProd" class="fw-semibold">$0.00 MXN</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Costo Examen de la Vista:</span>
-                        <span id="subtotalExamen" class="fw-semibold">$0.00 MXN</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 text-success">
-                        <span>Bonificación (Examen &le; 30 días):</span>
-                        <span id="descuentoBonif" class="fw-semibold">-$0.00 MXN</span>
-                    </div>
-                    <hr />
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="h6 mb-0 fw-bold">Total a Cobrar:</span>
-                        <span id="totalFinal" class="h4 mb-0 fw-bold text-primary">$0.00 MXN</span>
-                    </div>
 
-                    <button type="button" class="btn btn-success w-100 py-3 fw-bold fs-5 shadow-sm" onclick="abrirModalCobro()">
-                        <i class="bi bi-cash-stack me-2"></i> Procesar Cobro en Caja
-                    </button>
+                <!-- Tabla de Resultados para Seleccionar Múltiples Productos -->
+                <div class="table-responsive border rounded" style="max-height: 350px;">
+                    <table class="table table-hover align-middle mb-0" id="tablaModalProductos">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="text-center" style="width: 50px;">Sel.</th>
+                                <th class="ps-3">Nombre</th>
+                                <th>Categoría</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-end pe-3">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyModalProductos">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">Cargando productos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary px-4 fw-bold" onclick="agregarProductosSeleccionados()">
+                    <i class="bi bi-check2-all me-1"></i> Añadir Seleccionados al Carrito
+                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Carga de la Vista Parcial de Modales -->
-    <partial name="Modales/_ModalesVenta-CobroExamen" />
+<!-- ================= MODAL DE PROCESAR COBRO (EFECTIVO / CAMBIO / TARJETA) ================= -->
+<div class="modal fade" id="modalProcesarCobro" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="bi bi-cash-register me-2"></i> Finalizar Cobro</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <span class="text-muted d-block small">Monto Total a Pagar</span>
+                    <h2 class="fw-bold text-primary" id="modalMontoTotalTexto">$0.00 MXN</h2>
+                </div>
+
+                <!-- Contenedor específico para pago en Efectivo -->
+                <div id="seccionEfectivo" class="mb-3">
+                    <label class="form-label fw-semibold">Cantidad Recibida en Efectivo</label>
+                    <div class="input-group input-group-lg mb-3">
+                        <span class="input-group-text">$</span>
+                        <input type="number" id="inputEfectivoRecibido" class="form-control" placeholder="0.00" step="0.50" min="0" oninput="calcularCambioEfectivo()" />
+                        <span class="input-group-text">MXN</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded border">
+                        <span class="fw-bold text-secondary">Cambio a Devolver:</span>
+                        <span id="lblCambioDevolver" class="h4 mb-0 fw-bold text-success">$0.00 MXN</span>
+                    </div>
+                </div>
+
+                <!-- Contenedor para Tarjeta / Transferencia -->
+                <div id="seccionElectronico" class="mb-3 d-none text-center p-3 bg-light rounded border">
+                    <p class="mb-0 text-muted">El cobro se procesará mediante <strong id="lblMetodoPagoText">Tarjeta</strong>.</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 justify-content-center py-3">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success px-4 fw-bold" onclick="enviarFormularioVenta()">
+                    <i class="bi bi-check-circle me-1"></i> Finalizar Cobro
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script>
-        let precioProductoActual = 0.00;
-        let costoExamenBase = 250.00;
-        let descuentoExamen = 0.00;
+        // Array global para los productos agregados al carrito
+        let carritoProductos = [];
+        let catalogoProductosGlobal = [];
+        let precioExamenBase = 250.00;
+        let diasVigenciaBonif = 30;
+        let clienteTieneBonificacion = false;
 
         document.addEventListener("DOMContentLoaded", function () {
-            const inputProducto = document.getElementById('productoId');
-            const inputCliente = document.getElementById('clienteId');
-            const chkExamen = document.getElementById('incluyeExamen');
-
-            if (inputProducto) inputProducto.addEventListener('change', calcularTotales);
-            if (inputCliente) inputCliente.addEventListener('change', calcularTotales);
-            if (chkExamen) chkExamen.addEventListener('change', calcularTotales);
+            inicializarBusquedaCliente();
+            cargarParametrosNegocio();
         });
 
-        function calcularTotales() {
-            const idProd = document.getElementById('productoId').value;
-            const idCli = document.getElementById('clienteId').value || 0;
-            const incluyeExamen = document.getElementById('incluyeExamen').checked;
+        // ================= 1. BÚSQUEDA DUAL DE CLIENTE (NOMBRE <-> TELÉFONO) =================
+        function inicializarBusquedaCliente() {
+            const inputNombre = document.getElementById('inputNombreCliente');
+            const ulNombre = document.getElementById('sugerenciasClienteNombre');
+            const inputTel = document.getElementById('inputTelefonoCliente');
+            const ulTel = document.getElementById('sugerenciasClienteTel');
+            const inputHiddenId = document.getElementById('clienteId');
 
-            if (!idProd || idProd <= 0) {
-                resetearResumen();
-                return;
-            }
+            inputNombre.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (query.length < 2) { ulNombre.classList.remove('show'); return; }
 
-            // Petición AJAX al handler C# OnGetConsultarProductoAsync
-            fetch(`?handler=ConsultarProducto&idProducto=${idProd}&idCliente=${idCli}`)
+                fetch(`?handler=BuscarClientes&criterio=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        ulNombre.innerHTML = '';
+                        if (data.length === 0) {
+                            ulNombre.innerHTML = '<li class="dropdown-item text-muted disabled">No encontrado</li>';
+                        } else {
+                            data.forEach(c => {
+                                const li = document.createElement('li');
+                                li.className = 'dropdown-item d-flex justify-content-between align-items-center';
+                                li.style.cursor = 'pointer';
+                                li.innerHTML = `<span><strong>${c.nombre}</strong></span> <small class="text-muted">${c.telefono || 'Sin tel'}</small>`;
+                                li.onclick = function () {
+                                    inputNombre.value = c.nombre;
+                                    inputTel.value = c.telefono || '';
+                                    inputHiddenId.value = c.id;
+                                    ulNombre.classList.remove('show');
+                                    verificarBonificacionCliente(c.id);
+                                };
+                                ulNombre.appendChild(li);
+                            });
+                        }
+                        ulNombre.classList.add('show');
+                    });
+            });
+
+            inputTel.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (query.length < 2) { ulTel.classList.remove('show'); return; }
+
+                fetch(`?handler=BuscarClientes&criterio=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        ulTel.innerHTML = '';
+                        if (data.length === 0) {
+                            ulTel.innerHTML = '<li class="dropdown-item text-muted disabled">No encontrado</li>';
+                        } else {
+                            data.forEach(c => {
+                                const li = document.createElement('li');
+                                li.className = 'dropdown-item d-flex justify-content-between align-items-center';
+                                li.style.cursor = 'pointer';
+                                li.innerHTML = `<span>${c.nombre}</span> <small class="text-muted fw-bold">${c.telefono || ''}</small>`;
+                                li.onclick = function () {
+                                    inputTel.value = c.telefono || '';
+                                    inputNombre.value = c.nombre;
+                                    inputHiddenId.value = c.id;
+                                    ulTel.classList.remove('show');
+                                    verificarBonificacionCliente(c.id);
+                                };
+                                ulTel.appendChild(li);
+                            });
+                        }
+                        ulTel.classList.add('show');
+                    });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!inputNombre.contains(e.target) && !ulNombre.contains(e.target)) ulNombre.classList.remove('show');
+                if (!inputTel.contains(e.target) && !ulTel.contains(e.target)) ulTel.classList.remove('show');
+            });
+        }
+
+        function verificarBonificacionCliente(clienteId) {
+            fetch(`?handler=ConsultarProducto&idProducto=0&idCliente=${clienteId}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (!data.success) {
-                        mostrarAlerta(data.mensaje, "warning");
-                        resetearResumen();
-                        return;
+                    // El backend valida la receta previa en este handler
+                    clienteTieneBonificacion = data.aplicaBonificacion || false;
+                    calcularTotalesGlobales();
+                }).catch(() => { clienteTieneBonificacion = false; });
+        }
+
+        function cargarParametrosNegocio() {
+            fetch(`?handler=ConsultarProducto&idProducto=1&idCliente=0`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        precioExamenBase = data.precioExamen || 250.00;
                     }
+                }).catch(() => {});
+        }
 
-                    cerrarAlerta();
-                    precioProductoActual = data.precio;
-                    costoExamenBase = data.precioExamen;
+        // ================= 2. MODAL Y BÚSQUEDA DE PRODUCTOS =================
+        function abrirModalBusquedaProductos() {
+            var modalEl = document.getElementById('modalBusquedaProductos');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            cargarProductosModal();
+        }
 
-                    let subtotalExamen = incluyeExamen ? costoExamenBase : 0.00;
-                    descuentoExamen = (incluyeExamen && data.aplicaBonificacion) ? costoExamenBase : 0.00;
+        function cargarProductosModal() {
+            const tbody = document.getElementById('tbodyModalProductos');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Buscando productos...</td></tr>';
 
-                    let totalFinal = precioProductoActual + subtotalExamen - descuentoExamen;
-                    if (totalFinal < 0) totalFinal = 0;
-
-                    // Actualizar etiquetas en la interfaz
-                    document.getElementById('subtotalProd').textContent = `$${precioProductoActual.toFixed(2)} MXN`;
-                    document.getElementById('subtotalExamen').textContent = `$${subtotalExamen.toFixed(2)} MXN`;
-                    document.getElementById('descuentoBonif').textContent = `-$${descuentoExamen.toFixed(2)} MXN`;
-                    document.getElementById('totalFinal').textContent = `$${totalFinal.toFixed(2)} MXN`;
-
-                    // Actualizar input oculto para enviar al backend al cobrar
-                    document.getElementById('totalVentaInput').value = totalFinal.toFixed(2);
+            fetch(`?handler=BuscarProductos&criterio=`)
+                .then(res => res.json())
+                .then(data => {
+                    catalogoProductosGlobal = data;
+                    renderizarTablaModal(data);
                 })
-                .catch(err => {
-                    console.error("Error al consultar el producto:", err);
+                .catch(() => {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar el catálogo.</td></tr>';
                 });
         }
 
-        function resetearResumen() {
-            precioProductoActual = 0.00;
-            document.getElementById('subtotalProd').textContent = "$0.00 MXN";
-            document.getElementById('subtotalExamen').textContent = "$0.00 MXN";
-            document.getElementById('descuentoBonif').textContent = "-$0.00 MXN";
-            document.getElementById('totalFinal').textContent = "$0.00 MXN";
-            document.getElementById('totalVentaInput').value = "0.00";
-        }
-
-        function abrirModalCobro() {
-            var cliente = document.getElementById('clienteId').value;
-            var producto = document.getElementById('productoId').value;
-
-            if (!cliente || !producto) {
-                mostrarAlerta("Por favor complete los campos obligatorios del cliente y producto.", "danger");
+        function renderizarTablaModal(productos) {
+            const tbody = document.getElementById('tbodyModalProductos');
+            tbody.innerHTML = '';
+            if (productos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay productos disponibles.</td></tr>';
                 return;
             }
 
-            var modalEl = document.getElementById('modalConfirmarVenta');
-            if (modalEl) {
-                var modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            } else {
-                document.getElementById('formVenta').submit();
+            productos.forEach(p => {
+                const tr = document.createElement('tr');
+                const badgeClass = p.existencia > 0 ? 'bg-success' : 'bg-danger';
+                tr.innerHTML = `
+                    <td class="text-center">
+                        <input class="form-check-input check-prod-modal" type="checkbox" value="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" data-stock="${p.existencia}" ${p.existencia <= 0 ? 'disabled' : ''}>
+                    </td>
+                    <td class="ps-3 fw-medium">${p.nombre}</td>
+                    <td><span class="badge bg-secondary-subtle text-secondary">${p.categoria}</span></td>
+                    <td class="text-center"><span class="badge ${badgeClass}">${p.existencia}</span></td>
+                    <td class="text-end pe-3 fw-bold text-primary">$${p.precio.toFixed(2)} MXN</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filtrarProductosModal() {
+            const query = document.getElementById('modalInputBuscar').value.toLowerCase().trim();
+            const filtrados = catalogoProductosGlobal.filter(p => 
+                p.nombre.toLowerCase().includes(query) || p.categoria.toLowerCase().includes(query)
+            );
+            renderizarTablaModal(filtrados);
+        }
+
+        function agregarProductosSeleccionados() {
+            const checkboxes = document.querySelectorAll('.check-prod-modal:checked');
+            if (checkboxes.length === 0) {
+                alert("Selecciona al menos un producto.");
+                return;
             }
+
+            checkboxes.forEach(chk => {
+                const id = parseInt(chk.value);
+                const nombre = chk.getAttribute('data-nombre');
+                const precio = parseFloat(chk.getAttribute('data-precio'));
+                const stock = parseInt(chk.getAttribute('data-stock'));
+
+                // Verificar si ya está en el carrito
+                const existente = carritoProductos.find(item => item.id === id);
+                if (existente) {
+                    if (existente.cantidad < stock) {
+                        existente.cantidad += 1;
+                    }
+                } else {
+                    carritoProductos.push({
+                        id: id,
+                        nombre: nombre,
+                        precioUnitario: precio,
+                        cantidad: 1,
+                        stockMax: stock
+                    });
+                }
+            });
+
+            // Cerrar modal
+            var modalEl = document.getElementById('modalBusquedaProductos');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            actualizarTablaCarrito();
+            calcularTotalesGlobales();
+        }
+
+        // ================= 3. CONTROL DE CARRITO Y CANTIDADES (+ / -) =================
+        function cambiarCantidad(id, delta) {
+            const item = carritoProductos.find(i => i.id === id);
+            if (!item) return;
+
+            item.cantidad += delta;
+            if (item.cantidad <= 0) {
+                carritoProductos = carritoProductos.filter(i => i.id !== id);
+            } else if (item.cantidad > item.stockMax) {
+                item.cantidad = item.stockMax;
+                alert("Has alcanzado el límite de stock disponible.");
+            }
+
+            actualizarTablaCarrito();
+            calcularTotalesGlobales();
+        }
+
+        function eliminarDelCarrito(id) {
+            carritoProductos = carritoProductos.filter(i => i.id !== id);
+            actualizarTablaCarrito();
+            calcularTotalesGlobales();
+        }
+
+        function actualizarTablaCarrito() {
+            const tbody = document.getElementById('tbodyCarrito');
+            const containerOculto = document.getElementById('productosContainerOculto');
+            tbody.innerHTML = '';
+            containerOculto.innerHTML = '';
+
+            if (carritoProductos.length === 0) {
+                tbody.innerHTML = `<tr id="filaVaciaCarrito"><td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td></tr>`;
+                return;
+            }
+
+            carritoProductos.forEach((item, index) => {
+                const totalLinea = item.precioUnitario * item.cantidad;
+
+                // Fila visual
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-3 fw-medium">${item.nombre}</td>
+                    <td class="text-center">
+                        <div class="input-group input-group-sm justify-content-center">
+                            <button type="button" class="btn btn-outline-secondary px-2" onclick="cambiarCantidad(${item.id}, -1)">-</button>
+                            <span class="px-3 py-1 bg-light border fw-semibold">${item.cantidad}</span>
+                            <button type="button" class="btn btn-outline-secondary px-2" onclick="cambiarCantidad(${item.id}, 1)">+</button>
+                        </div>
+                    </td>
+                    <td class="text-end pe-3 fw-bold">$${totalLinea.toFixed(2)} MXN</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm text-danger" onclick="eliminarDelCarrito(${item.id})"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Inputs ocultos para que el backend C# reciba el producto y la cantidad (asumiendo manejo del primer producto o múltiples según tu backend)
+                // Nota: Tu backend actual procesa `ProductoId`. Si decides adaptarlo a múltiples, aquí se envían. Para mantener compatibilidad con tu backend actual, enviamos el primer producto o el ID principal.
+                if (index === 0) {
+                    const inputHiddenProd = document.createElement('input');
+                    inputHiddenProd.type = 'hidden';
+                    inputHiddenProd.name = 'ProductoId';
+                    inputHiddenProd.value = item.id;
+                    containerOculto.appendChild(inputHiddenProd);
+                }
+            });
+        }
+
+        // ================= 4. CÁLCULO DE TOTALES Y RESUMEN =================
+        function calcularTotalesGlobales() {
+            let subtotalProductos = 0;
+            carritoProductos.forEach(item => {
+                subtotalProductos += (item.precioUnitario * item.cantidad);
+            });
+
+            const incluyeExamen = document.getElementById('incluyeExamen').checked;
+            let costoExamen = incluyeExamen ? precioExamenBase : 0.00;
+            let bonificacion = (incluyeExamen && (clienteTieneBonificacion || carritoProductos.length > 0)) ? precioExamenBase : 0.00;
+
+            let totalCobrar = subtotalProductos + costoExamen - bonificacion;
+            if (totalCobrar < 0) totalCobrar = 0;
+
+            document.getElementById('lblSubtotal').textContent = `$${subtotalProductos.toFixed(2)} MXN`;
+            document.getElementById('lblCostoExamen').textContent = `$${costoExamen.toFixed(2)} MXN`;
+            document.getElementById('lblBonificacion').textContent = `-$${bonificacion.toFixed(2)} MXN`;
+            document.getElementById('lblTotalCobrar').textContent = `$${totalCobrar.toFixed(2)} MXN`;
+            document.getElementById('totalVentaInput').value = totalCobrar.toFixed(2);
+        }
+
+        // ================= 5. MODAL DE PROCESAR COBRO (CAMBIO Y TAREJTA) =================
+        function validarYMostrarModalPago() {
+            const clienteId = document.getElementById('clienteId').value;
+            const total = document.getElementById('totalVentaInput').value;
+
+            if (!clienteId || clienteId <= 0) {
+                mostrarAlerta("Por favor selecciona un cliente válido de la lista.", "danger");
+                return;
+            }
+            if (carritoProductos.length === 0) {
+                mostrarAlerta("Debes agregar al menos un producto al carrito.", "danger");
+                return;
+            }
+            if (parseFloat(total) <= 0) {
+                mostrarAlerta("El total a cobrar no puede ser $0.00.", "warning");
+                return;
+            }
+
+            cerrarAlerta();
+            const formaPago = document.getElementById('formaPago').value;
+
+            document.getElementById('modalMontoTotalTexto').textContent = `$${parseFloat(total).toFixed(2)} MXN`;
+
+            const seccionEfectivo = document.getElementById('seccionEfectivo');
+            const seccionElectronico = document.getElementById('seccionElectronico');
+
+            if (formaPago === 'Efectivo') {
+                seccionEfectivo.classList.remove('d-none');
+                seccionElectronico.classList.add('d-none');
+                document.getElementById('inputEfectivoRecibido').value = '';
+                document.getElementById('lblCambioDevolver').textContent = '$0.00 MXN';
+            } else {
+                seccionEfectivo.classList.add('d-none');
+                seccionElectronico.classList.remove('d-none');
+                document.getElementById('lblMetodoPagoText').textContent = formaPago;
+            }
+
+            var modalEl = document.getElementById('modalProcesarCobro');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        function calcularCambioEfectivo() {
+            const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
+            const recibido = parseFloat(document.getElementById('inputEfectivoRecibido').value) || 0;
+            const cambio = recibido - total;
+
+            const lblCambio = document.getElementById('lblCambioDevolver');
+            if (cambio >= 0) {
+                lblCambio.textContent = `$${cambio.toFixed(2)} MXN`;
+                lblCambio.className = "h4 mb-0 fw-bold text-success";
+            } else {
+                lblCambio.textContent = `Faltan $${Math.abs(cambio).toFixed(2)} MXN`;
+                lblCambio.className = "h4 mb-0 fw-bold text-danger";
+            }
+        }
+
+        function enviarFormularioVenta() {
+            const formaPago = document.getElementById('formaPago').value;
+            if (formaPago === 'Efectivo') {
+                const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
+                const recibido = parseFloat(document.getElementById('inputEfectivoRecibido').value) || 0;
+                if (recibido < total) {
+                    alert("La cantidad recibida en efectivo es menor al total a cobrar.");
+                    return;
+                }
+            }
+
+            // Ocultar modal y enviar formulario por POST
+            var modalEl = document.getElementById('modalProcesarCobro');
+            var modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            document.getElementById('formVenta').submit();
         }
 
         function mostrarAlerta(mensaje, tipo) {
@@ -218,8 +648,7 @@
         }
 
         function cerrarAlerta() {
-            var alerta = document.getElementById('alertaResultado');
-            alerta.classList.add('d-none');
+            document.getElementById('alertaResultado').classList.add('d-none');
         }
     </script>
 }

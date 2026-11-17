@@ -53,8 +53,16 @@
         })
         .then(data => {
             if (data.success) {
+                // 1. Mostrar mensaje de éxito en verde
                 mostrarAlerta(data.mensaje + " Total cobrado: $" + data.montoCobrado.toFixed(2) + " MXN", "success");
+                
+                // 2. Limpiar inputs del formulario
                 form.reset();
+
+                // 3. REINICIAR Y RESETEAR EL RESUMEN DE LA OPERACIÓN Y TOTALES EN PANTALLA
+                if (typeof resetearResumen === "function") {
+                    resetearResumen();
+                }
             } else {
                 mostrarAlerta("No se pudo procesar la venta.", "warning");
             }

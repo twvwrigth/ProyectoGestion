@@ -43,14 +43,23 @@ namespace Proyecto.Pages
             CajaAbierta = await _context.CajaTurno
                 .Include(c => c.MovimientoCajas)
                 .Include(c => c.IdEmpleadoNavigation) 
+                .Include(c => c.Ventas)
                 .FirstOrDefaultAsync(c => c.Estado == "Abierta");
 
             // Calculamos saldos si es el dueño de la caja O si es Admin/Encargado
             if (CajaAbierta != null && (CajaAbierta.IdEmpleado == CurrentUserId || EsAdminOEncargado))
             {
+                decimal VentasActuales = 0;
+                foreach (var v in CajaAbierta.Ventas)
+                {
+                    if (v.FormaPago == "Efectivo")
+                    {
+                        VentasActuales += v.Total;
+                    }
+                }
                 TotalEntradas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Entrada").Sum(m => m.Monto);
                 TotalSalidas = CajaAbierta.MovimientoCajas.Where(m => m.Tipo == "Salida").Sum(m => m.Monto);
-                SaldoActual = CajaAbierta.FondoInicial + TotalEntradas - TotalSalidas;
+                SaldoActual = CajaAbierta.FondoInicial + TotalEntradas - TotalSalidas + VentasActuales;
             }
 
             return Page();
