@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using Proyecto.Models; 
+using Proyecto.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto.Pages;
@@ -15,12 +15,11 @@ public class PreciosReglasPromocionesModel : PageModel
         _context = context;
     }
 
-    // LÍNEA COMENTADA: El modelo Mica ya no existe
     public List<Mica> ListaMicas { get; set; } = new();
-    
     public ParametroNegocio Parametros { get; set; } = new();
     public List<Promocion> ListaPromociones { get; set; } = new();
     public List<Producto> ListaProductos { get; set; } = new();
+    public List<Categoria> ListaCategorias { get; set; } = new();
 
     [BindProperty]
     public string ActiveTab { get; set; } = "micas";
@@ -50,81 +49,185 @@ public class PreciosReglasPromocionesModel : PageModel
         await CargarDatosBasicosAsync();
     }
 
-    public async Task<IActionResult> OnPostCrearMicaAsync()
+    // ==================== HANDLERS AJAX: MICAS ====================
+    public async Task<IActionResult> OnPostCrearMicaAjaxAsync()
     {
-        ActiveTab = "micas";
         ModelState.Clear();
 
-
-        if (string.IsNullOrWhiteSpace(Material) || Precio <= 0)
+        if (string.IsNullOrWhiteSpace(Material) || string.IsNullOrWhiteSpace(Tratamiento) || string.IsNullOrWhiteSpace(RangoGraduacion) || Precio <= 0)
         {
-            TempData["ErrorMessage"] = "Los datos ingresados no son válidos.";
-            return RedirectToPage();
+            return new JsonResult(new { success = false, message = "Todos los campos de la mica son obligatorios y el precio debe ser mayor a $0.00." });
         }
 
-        bool existeCombinacion = await _context.Micas.AnyAsync(m => 
-            m.Material == Material && 
-            m.Tratamiento == Tratamiento && 
-            m.RangoGraduacion == RangoGraduacion);
+        string materialLimpio = Material.Trim();
+        string tratamientoLimpio = Tratamiento.Trim();
+        string rangoLimpio = RangoGraduacion.Trim();
+
+        bool existeCombinacion = await _context.Micas.AnyAsync(m =>
+            m.Material == materialLimpio &&
+            m.Tratamiento == tratamientoLimpio &&
+            m.RangoGraduacion == rangoLimpio);
 
         if (existeCombinacion)
         {
-            TempData["ErrorMessage"] = "Esta combinación de Mica ya está registrada en la matriz de precios.";
-            return RedirectToPage();
+            return new JsonResult(new { success = false, message = "Esta combinación de Mica ya está registrada en la matriz de precios." });
         }
 
-        var nuevaMica = new Mica
+        try
         {
-            Material = Material,
-            Tratamiento = Tratamiento,
-            RangoGraduacion = RangoGraduacion,
-            Precio = Precio
-        };
+            var nuevaMica = new Mica
+            {
+                Material = materialLimpio,
+                Tratamiento = tratamientoLimpio,
+                RangoGraduacion = rangoLimpio,
+                Precio = Precio
+            };
 
-        _context.Micas.Add(nuevaMica);
-        await _context.SaveChangesAsync();
-        
-        TempData["SuccessMessage"] = "Mica registrada exitosamente.";
-        return RedirectToPage();
-    }
+            _context.Micas.Add(nuevaMica);
+            await _context.SaveChangesAsync();
 
-    public async Task<IActionResult> OnPostGuardarParametrosAsync()
-    {
-        ActiveTab = "parametros";
-        ModelState.Clear();
-
-        var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
-        if (param != null)
-        {
-            param.PrecioExamen = PrecioExamen;
-            param.VigenciaBonificacion = VigenciaBonificacion;
-            param.AnticipoMinimo = AnticipoMinimo;
-            _context.ParametroNegocios.Update(param);
-        }
-        else
-        {
-            _context.ParametroNegocios.Add(new ParametroNegocio 
-            { 
-                PrecioExamen = PrecioExamen, 
-                VigenciaBonificacion = VigenciaBonificacion, 
-                AnticipoMinimo = AnticipoMinimo 
+            return new JsonResult(new
+            {
+                success = true,
+                message = "Mica registrada exitosamente.",
+                data = new
+                {
+                    id = nuevaMica.IdMica,
+                    material = nuevaMica.Material,
+                    tratamiento = nuevaMica.Tratamiento,
+                    rangoGraduacion = nuevaMica.RangoGraduacion,
+                    precio = nuevaMica.Precio.ToString("0.00")
+                }
             });
         }
-
-        await _context.SaveChangesAsync();
-        TempData["SuccessMessage"] = "Parámetros actualizados exitosamente en la base de datos.";
-        return RedirectToPage();
+        catch (Exception)
+        {
+            return new JsonResult(new { success = false, message = "Ocurrió un error interno al guardar la mica en la base de datos." });
+        }
     }
 
-    public async Task<IActionResult> OnPostCrearPromocionAsync()
+    public async Task<IActionResult> OnPostEliminarMicaAjaxAsync(int id)
     {
-        ActiveTab = "promociones";
+        try
+        {
+            var mica = await _context.Micas.FindAsync(id);
+            if (mica == null)
+            {
+                return new JsonResult(new { success = false, message = "La mica seleccionada no existe o ya fue eliminada." });
+            }
+
+            _context.Micas.Remove(mica);
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { success = true, message = "Mica eliminada correctamente." });
+        }
+        catch (Exception)
+        {
+            return new JsonResult(new { success = false, message = "No se puede eliminar esta mica porque está asociada a registros históricos." });
+        }
+    }
+
+    // ==================== HANDLER AJAX: PARÁMETROS ====================
+    public async Task<IActionResult> OnPostGuardarParametrosAjaxAsync()
+    {
+        ModelState.Clear();
+
+        if (PrecioExamen < 0 || VigenciaBonificacion < 1 || AnticipoMinimo < 1 || AnticipoMinimo > 100)
+        {
+            return new JsonResult(new { success = false, message = "Verifica los valores: el examen no puede ser negativo, los días mínimos son 1 y el anticipo debe estar entre 1% y 100%." });
+        }
+
+        try
+        {
+            var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
+            if (param != null)
+            {
+                param.PrecioExamen = PrecioExamen;
+                param.VigenciaBonificacion = VigenciaBonificacion;
+                param.AnticipoMinimo = AnticipoMinimo;
+                _context.ParametroNegocios.Update(param);
+            }
+            else
+            {
+                _context.ParametroNegocios.Add(new ParametroNegocio
+                {
+                    IdParametro = 1,
+                    PrecioExamen = PrecioExamen,
+                    VigenciaBonificacion = VigenciaBonificacion,
+                    AnticipoMinimo = AnticipoMinimo
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return new JsonResult(new { success = true, message = "Parámetros del negocio actualizados. Aplicarán para todas las operaciones nuevas." });
+        }
+        catch (Exception)
+        {
+            return new JsonResult(new { success = false, message = "Error al guardar los parámetros en la base de datos." });
+        }
+    }
+
+    // ==================== HANDLER AJAX: BÚSQUEDA DE PRODUCTOS PARA MODAL ====================
+    public async Task<JsonResult> OnGetBuscarProductosPromoAsync(string? criterio, int? idCategoria)
+    {
+        var query = _context.Productos
+            .Include(p => p.IdCategoriaNavigation)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(criterio))
+        {
+            string term = criterio.Trim().ToLower();
+            query = query.Where(p => p.Nombre.ToLower().Contains(term));
+        }
+
+        if (idCategoria.HasValue && idCategoria.Value > 0)
+        {
+            query = query.Where(p => p.IdCategoria == idCategoria.Value);
+        }
+
+        var resultados = await query
+            .OrderBy(p => p.Nombre)
+            .Select(p => new
+            {
+                id = p.IdProducto,
+                nombre = p.Nombre,
+                categoria = p.IdCategoriaNavigation != null ? p.IdCategoriaNavigation.NombreCategoria : "General",
+                precio = p.Precio,
+                existencia = p.Existencia
+            })
+            .ToListAsync();
+
+        return new JsonResult(resultados);
+    }
+
+    // ==================== HANDLERS AJAX: PROMOCIONES ====================
+    public async Task<IActionResult> OnPostCrearPromocionAjaxAsync()
+    {
         ModelState.Clear();
 
         if (string.IsNullOrWhiteSpace(NombrePromocion))
         {
-            await CargarDatosBasicosAsync();
-            return Page();
+            return new JsonResult(new { success = false, message = "El nombre de la promoción es obligatorio." });
+        }
+
+        if (PorcentajePromo <= 0)
+        {
+            return new JsonResult(new { success = false, message = "El valor del descuento debe ser mayor a 0." });
+        }
+
+        if (TipoPromocion == "Porcentaje" && PorcentajePromo > 100)
+        {
+            return new JsonResult(new { success = false, message = "El descuento por porcentaje no puede ser mayor al 100%." });
+        }
+
+        if (FechaFin < FechaInicio)
+        {
+            return new JsonResult(new { success = false, message = "La fecha de vigencia (fin) no puede ser anterior a la fecha de inicio." });
+        }
+
+        if (ProductosIds == null || !ProductosIds.Any())
+        {
+            return new JsonResult(new { success = false, message = "Debes seleccionar al menos un producto desde la ventana de búsqueda." });
         }
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -132,7 +235,7 @@ public class PreciosReglasPromocionesModel : PageModel
         {
             var nuevaPromo = new Promocion
             {
-                NombrePromocion = NombrePromocion,
+                NombrePromocion = NombrePromocion.Trim(),
                 TipoPromocion = TipoPromocion,
                 PorcentajePromo = PorcentajePromo,
                 FechaInicio = FechaInicio,
@@ -143,81 +246,101 @@ public class PreciosReglasPromocionesModel : PageModel
             _context.Promociones.Add(nuevaPromo);
             await _context.SaveChangesAsync();
 
-            if (ProductosIds != null && ProductosIds.Any())
+            var nombresProductos = new List<string>();
+            foreach (var prodId in ProductosIds.Distinct())
             {
-                foreach (var prodId in ProductosIds)
+                var producto = await _context.Productos.FindAsync(prodId);
+                if (producto != null)
                 {
-                    var producto = await _context.Productos.FindAsync(prodId);
-                    if (producto != null)
-                    {
-                        // EF Core mapeó la colección como "IdProductos"
-                        nuevaPromo.IdProductos.Add(producto);
-                    }
+                    nuevaPromo.IdProductos.Add(producto);
+                    nombresProductos.Add(producto.Nombre);
                 }
-                await _context.SaveChangesAsync();
             }
-
+            await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-            TempData["SuccessMessage"] = "Promoción registrada exitosamente en la base de datos.";
+
+            return new JsonResult(new
+            {
+                success = true,
+                message = "Promoción registrada exitosamente.",
+                data = new
+                {
+                    id = nuevaPromo.IdPromocion,
+                    nombre = nuevaPromo.NombrePromocion,
+                    tipo = nuevaPromo.TipoPromocion,
+                    valorFormateado = nuevaPromo.TipoPromocion == "Porcentaje"
+                        ? Convert.ToDecimal(nuevaPromo.PorcentajePromo).ToString("0.00") + "%"
+                        : "$" + Convert.ToDecimal(nuevaPromo.PorcentajePromo).ToString("0.00"),
+                    vigencia = $"{nuevaPromo.FechaInicio} al {nuevaPromo.FechaFin}",
+                    productos = string.Join(", ", nombresProductos),
+                    acumulable = nuevaPromo.Acumulable == true
+                }
+            });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await transaction.RollbackAsync();
-            Console.WriteLine($"Error en transacción: {ex.Message}");
-            TempData["ErrorMessage"] = "Hubo un error al guardar la promoción en la base de datos.";
+            return new JsonResult(new { success = false, message = "Hubo un error al guardar la promoción en la base de datos." });
         }
-
-        return RedirectToPage();
-    }
-    
-    public async Task<IActionResult> OnPostEliminarMicaAsync(int id)
-    {
-        ActiveTab = "micas";
-        var mica = await _context.Micas.FindAsync(id);
-        if (mica != null)
-        {
-            _context.Micas.Remove(mica);
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Mica eliminada de la base de datos.";
-        }
-        return RedirectToPage();
     }
 
-    public async Task<IActionResult> OnPostEliminarPromocionAsync(int id)
+    public async Task<IActionResult> OnPostEliminarPromocionAjaxAsync(int id)
     {
-        ActiveTab = "promociones";
-        // Usamos IdProductos en el Include
-        var promo = await _context.Promociones.Include(p => p.IdProductos).FirstOrDefaultAsync(p => p.IdPromocion == id);
-        if (promo != null)
+        try
         {
+            var promo = await _context.Promociones
+                .Include(p => p.IdProductos)
+                .FirstOrDefaultAsync(p => p.IdPromocion == id);
+
+            if (promo == null)
+            {
+                return new JsonResult(new { success = false, message = "La promoción no existe o ya fue eliminada." });
+            }
+
+            promo.IdProductos.Clear();
             _context.Promociones.Remove(promo);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Promoción eliminada de la base de datos.";
+
+            return new JsonResult(new { success = true, message = "Promoción eliminada correctamente." });
         }
-        return RedirectToPage();
+        catch (Exception)
+        {
+            return new JsonResult(new { success = false, message = "No se pudo eliminar la promoción porque ya está vinculada a ventas realizadas." });
+        }
     }
 
     private async Task CargarDatosBasicosAsync()
     {
-        ListaMicas = await _context.Micas.ToListAsync();
-        
+        ListaMicas = await _context.Micas.OrderBy(m => m.Material).ToListAsync();
+
         var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
         if (param != null)
         {
             Parametros = param;
-            if (PrecioExamen == 0) PrecioExamen = param.PrecioExamen;
-            if (VigenciaBonificacion == 0) VigenciaBonificacion = param.VigenciaBonificacion;
-            if (AnticipoMinimo == 0) AnticipoMinimo = param.AnticipoMinimo;
+            PrecioExamen = param.PrecioExamen;
+            VigenciaBonificacion = param.VigenciaBonificacion;
+            AnticipoMinimo = param.AnticipoMinimo;
         }
         else
         {
-             Parametros = new ParametroNegocio { PrecioExamen = 250m, VigenciaBonificacion = 30, AnticipoMinimo = 50 };
-             if (PrecioExamen == 0) PrecioExamen = 250m;
-             if (VigenciaBonificacion == 0) VigenciaBonificacion = 30;
-             if (AnticipoMinimo == 0) AnticipoMinimo = 50;
+            Parametros = new ParametroNegocio { PrecioExamen = 250m, VigenciaBonificacion = 30, AnticipoMinimo = 50 };
+            PrecioExamen = 250m;
+            VigenciaBonificacion = 30;
+            AnticipoMinimo = 50;
         }
 
-        ListaPromociones = await _context.Promociones.ToListAsync();
-        ListaProductos = await _context.Productos.ToListAsync();
+        ListaPromociones = await _context.Promociones
+            .Include(p => p.IdProductos)
+            .OrderByDescending(p => p.IdPromocion)
+            .ToListAsync();
+
+        ListaProductos = await _context.Productos
+            .Include(p => p.IdCategoriaNavigation)
+            .OrderBy(p => p.Nombre)
+            .ToListAsync();
+
+        ListaCategorias = await _context.Categorias
+            .OrderBy(c => c.NombreCategoria)
+            .ToListAsync();
     }
 }

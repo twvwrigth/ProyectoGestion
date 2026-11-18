@@ -6,20 +6,17 @@
 
 <div class="container-fluid py-4">
 
-    <!-- ALERTA DE ÉXITO EN FORMATO BANNER DE BOOTSTRAP -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
+    <!-- CONTENEDOR DE ALERTAS DINÁMICAS (ESTILO BANNER BOOTSTRAP) -->
+    <div id="contenedorAlertaAjax"></div>
+
     <!-- Encabezado Principal de la Vista -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="h5 mb-1 fw-bold">Gestión de Precios, Parámetros y Promociones</h2>
+                <p class="text-muted small mb-0">Configuración de matriz de micas, reglas operativas y promociones activas</p>
             </div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Rol: Encargado</span>
         </div>
     </div>
 
@@ -28,17 +25,17 @@
         <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
             <ul class="nav nav-tabs card-header-tabs" id="huTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link @(Model.ActiveTab == "micas" ? "active fw-semibold" : "fw-semibold text-secondary")" id="micas-tab" data-bs-toggle="tab" data-bs-target="#micas" type="button" role="tab" aria-controls="micas" aria-selected="@(Model.ActiveTab == "micas" ? "true" : "false")">
+                    <button class="nav-link active fw-semibold" id="micas-tab" data-bs-toggle="tab" data-bs-target="#micas" type="button" role="tab" aria-controls="micas" aria-selected="true">
                         Precios de Micas
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link @(Model.ActiveTab == "parametros" ? "active fw-semibold" : "fw-semibold text-secondary")" id="parametros-tab" data-bs-toggle="tab" data-bs-target="#parametros" type="button" role="tab" aria-controls="parametros" aria-selected="@(Model.ActiveTab == "parametros" ? "true" : "false")">
+                    <button class="nav-link fw-semibold text-secondary" id="parametros-tab" data-bs-toggle="tab" data-bs-target="#parametros" type="button" role="tab" aria-controls="parametros" aria-selected="false">
                         Parámetros del Negocio
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link @(Model.ActiveTab == "promociones" ? "active fw-semibold" : "fw-semibold text-secondary")" id="promociones-tab" data-bs-toggle="tab" data-bs-target="#promociones" type="button" role="tab" aria-controls="promociones" aria-selected="@(Model.ActiveTab == "promociones" ? "true" : "false")">
+                    <button class="nav-link fw-semibold text-secondary" id="promociones-tab" data-bs-toggle="tab" data-bs-target="#promociones" type="button" role="tab" aria-controls="promociones" aria-selected="false">
                         Promociones
                     </button>
                 </li>
@@ -49,10 +46,11 @@
             <div class="tab-content" id="huTabsContent">
 
                 <!-- ================= Pestaña 1: Precios de Micas ================= -->
-                <div class="tab-pane fade @(Model.ActiveTab == "micas" ? "show active" : "")" id="micas" role="tabpanel" aria-labelledby="micas-tab">
+                <div class="tab-pane fade show active" id="micas" role="tabpanel" aria-labelledby="micas-tab">
                     <h5 class="fw-bold mb-3">Matriz de Precios</h5>
 
-                    <form method="post" asp-page-handler="CrearMica" class="row g-3 mb-4 align-items-end">
+                    <form id="formCrearMica" class="row g-3 mb-4 align-items-end">
+                        @Html.AntiForgeryToken()
                         <div class="col-md-3">
                             <label for="material" class="form-label">Material</label>
                             <select id="material" name="Material" class="form-select" required>
@@ -81,7 +79,7 @@
                             <input type="number" id="precioMica" name="Precio" class="form-control" placeholder="0.00" step="0.01" min="0.01" required />
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">+ Agregar</button>
+                            <button type="submit" class="btn btn-primary w-100" id="btnGuardarMica">+ Agregar</button>
                         </div>
                     </form>
 
@@ -96,28 +94,27 @@
                                     <th scope="col" class="text-end pe-3">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tbodyMicas">
                                 @if (Model.ListaMicas != null && Model.ListaMicas.Any())
                                 {
                                     foreach (var mica in Model.ListaMicas)
                                     {
-                                        <tr>
+                                        <tr id="fila-mica-@mica.IdMica">
                                             <td class="ps-3 fw-medium">@mica.Material</td>
                                             <td>@mica.Tratamiento</td>
                                             <td>@mica.RangoGraduacion</td>
                                             <td class="fw-bold text-success">$@mica.Precio.ToString("0.00")</td>
                                             <td class="text-end pe-3">
-                                                <form method="post" asp-page-handler="EliminarMica" class="d-inline">
-                                                    <input type="hidden" name="id" value="@mica.IdMica" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar esta mica?');">Eliminar</button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarMicaAjax(@mica.IdMica)">
+                                                    Eliminar
+                                                </button>
                                             </td>
                                         </tr>
                                     }
                                 }
                                 else
                                 {
-                                    <tr>
+                                    <tr id="fila-vacia-micas">
                                         <td colspan="5" class="text-center text-muted py-3">No hay micas registradas en la base de datos.</td>
                                     </tr>
                                 }
@@ -127,10 +124,11 @@
                 </div>
 
                 <!-- ================= Pestaña 2: Parámetros del Negocio ================= -->
-                <div class="tab-pane fade @(Model.ActiveTab == "parametros" ? "show active" : "")" id="parametros" role="tabpanel" aria-labelledby="parametros-tab">
+                <div class="tab-pane fade" id="parametros" role="tabpanel" aria-labelledby="parametros-tab">
                     <h5 class="fw-bold mb-3">Reglas de Operación y Cobros</h5>
 
-                    <form method="post" asp-page-handler="GuardarParametros">
+                    <form id="formGuardarParametros">
+                        @Html.AntiForgeryToken()
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
                                 <div class="card h-100 border bg-light-subtle">
@@ -174,19 +172,20 @@
                         </div>
 
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary px-4">Guardar Parámetros</button>
+                            <button type="submit" class="btn btn-primary px-4" id="btnGuardarParametros">Guardar Parámetros</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- ================= Pestaña 3: Promociones ================= -->
-                <div class="tab-pane fade @(Model.ActiveTab == "promociones" ? "show active" : "")" id="promociones" role="tabpanel" aria-labelledby="promociones-tab">
-                    <h5 class="fw-bold mb-3">Crear Nueva Promoción o Paquete</h5>
+                <div class="tab-pane fade" id="promociones" role="tabpanel" aria-labelledby="promociones-tab">
+                    <h5 class="fw-bold mb-3">Crear Nueva Promoción</h5>
 
-                    <form method="post" asp-page-handler="CrearPromocion" class="row g-3 mb-4">
+                    <form id="formCrearPromocion" class="row g-3 mb-4">
+                        @Html.AntiForgeryToken()
                         <div class="col-md-3">
                             <label for="nombrePromo" class="form-label">Nombre de Promoción</label>
-                            <input type="text" id="nombrePromo" name="NombrePromocion" class="form-control" placeholder="Ej. Paquete Escolar" required />
+                            <input type="text" id="nombrePromo" name="NombrePromocion" class="form-control" placeholder="Ej. Descuento Verano" required />
                         </div>
                         <div class="col-md-2">
                             <label for="tipoPromo" class="form-label">Tipo</label>
@@ -199,51 +198,30 @@
                             <label for="valorPromo" class="form-label">Valor</label>
                             <div class="input-group">
                                 <span class="input-group-text" id="simboloPromo">%</span>
-                                <input type="number" id="valorPromo" name="PorcentajePromo" class="form-control" placeholder="" step="0.01" min="0.1" required />
+                                <input type="number" id="valorPromo" name="PorcentajePromo" class="form-control" placeholder="0.00" step="0.01" min="0.01" required />
                             </div>
                         </div>
-                        <div class="col-md-5">
-        <label class="form-label">Aplica a (Selecciona los productos)</label>
-        <div class="dropdown w-100">
-            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start bg-white text-dark border" type="button" id="dropdownProductos" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Seleccionar productos...
-            </button>
-            <ul class="dropdown-menu w-100 shadow p-2" aria-labelledby="dropdownProductos" style="max-height: 250px; overflow-y: auto;">
-                <li class="mb-2">
-                    <input type="text" class="form-control form-control-sm" id="buscarProducto" placeholder="Buscar por nombre..." oninput="filtrarProductos()">
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <div id="listaProductos">
-                    @if (Model.ListaProductos != null && Model.ListaProductos.Count > 0)
-                    {
-                        foreach (var prod in Model.ListaProductos)
-                        {
-                            <li class="dropdown-item px-2 py-1" style="cursor: pointer;" onclick="toggleCheckbox('prod_@prod.IdProducto')">
-                                <div class="form-check mb-0">
-                                    <input class="form-check-input check-producto" type="checkbox" name="ProductosIds" value="@prod.IdProducto" id="prod_@prod.IdProducto" onclick="event.stopPropagation(); actualizarTextoDropdown();">
-                                    <label class="form-check-label w-100" for="prod_@prod.IdProducto" style="cursor: pointer;" onclick="event.stopPropagation();">
-                                        @prod.Nombre
-                                    </label>
-                                </div>
-                            </li>
-                        }
-                    }
-                    else
-                    {
-                        <li><span class="dropdown-item-text text-muted small">No hay productos en BD</span></li>
-                    }
-                </div>
-            </ul>
-        </div>
+
+                        <!-- BOTÓN PARA ABRIR MODAL DE BÚSQUEDA DE PRODUCTOS (ESTILO HU-09) -->
+<div class="col-md-5">
+    <label class="form-label">Aplica a (Productos incluidos)</label>
+    <div class="input-group">
+        <input type="text" id="resumenProductosInput" class="form-control bg-white" placeholder="Haz clic para buscar productos..." readonly style="cursor: pointer;" onclick="abrirModalProductosPromo()" />
+        <button type="button" class="btn btn-outline-primary" onclick="abrirModalProductosPromo()">
+            <i class="bi bi-search me-1"></i> Buscar Productos
+        </button>
     </div>
+    <!-- Contenedor de badges visuales de productos seleccionados -->
+    <div id="badgesProductosSeleccionados" class="d-flex flex-wrap gap-1 mt-2"></div>
+</div>
 
                         <div class="col-md-3">
                             <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
-                            <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            <input type="date" id="fechaInicio" name="FechaInicio" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
                         <div class="col-md-3">
                             <label for="vigenciaPromo" class="form-label">Vigencia (Fin)</label>
-                            <input type="date" id="vigenciaPromo" name="FechaFin" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                            <input type="date" id="vigenciaPromo" name="FechaFin" class="form-control" value="@DateTime.Today.AddMonths(1).ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
                         <div class="col-md-3 d-flex align-items-center">
                             <div class="form-check pt-4">
@@ -254,11 +232,11 @@
                             </div>
                         </div>
                         <div class="col-md-3 pt-4">
-                            <button type="submit" class="btn btn-primary w-100">Registrar Promoción</button>
+                            <button type="submit" class="btn btn-primary w-100" id="btnGuardarPromocion">Registrar Promoción</button>
                         </div>
                     </form>
 
-                    <h5 class="fw-bold mb-3">Promociones Activas</h5>
+                    <h5 class="fw-bold mb-3">Promociones Registradas</h5>
                     <div class="table-responsive table-card border rounded">
                         <table class="table table-striped table-hover align-middle mb-0">
                             <thead class="table-light">
@@ -266,27 +244,33 @@
                                     <th scope="col" class="ps-3">Nombre</th>
                                     <th scope="col">Tipo</th>
                                     <th scope="col">Valor</th>
+                                    <th scope="col">Aplica a</th>
                                     <th scope="col">Vigencia</th>
                                     <th scope="col" class="text-center">Acumulable</th>
                                     <th scope="col" class="text-end pe-3">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tbodyPromociones">
                                 @if (Model.ListaPromociones != null && Model.ListaPromociones.Any())
                                 {
                                     foreach (var promo in Model.ListaPromociones)
                                     {
-                                        <tr>
+                                        var nombresProd = promo.IdProductos != null && promo.IdProductos.Any()
+                                            ? string.Join(", ", promo.IdProductos.Select(p => p.Nombre))
+                                            : "Sin productos asignados";
+
+                                        <tr id="fila-promo-@promo.IdPromocion">
                                             <td class="ps-3 fw-medium">@promo.NombrePromocion</td>
                                             <td>@promo.TipoPromocion</td>
                                             <td class="fw-bold text-primary">
                                                 @(promo.TipoPromocion == "Porcentaje"
-    ? Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00") + "%"
-    : "$" + Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00"))
+                                                    ? Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00") + "%"
+                                                    : "$" + Convert.ToDecimal(promo.PorcentajePromo).ToString("0.00"))
                                             </td>
+                                            <td class="small text-muted" style="max-width: 220px;">@nombresProd</td>
                                             <td>
-                                                @(promo.FechaInicio.HasValue ? promo.FechaInicio.Value.ToString() : "-") 
-                                                al 
+                                                @(promo.FechaInicio.HasValue ? promo.FechaInicio.Value.ToString() : "-")
+                                                al
                                                 @(promo.FechaFin.HasValue ? promo.FechaFin.Value.ToString() : "-")
                                             </td>
                                             <td class="text-center">
@@ -300,21 +284,17 @@
                                                 }
                                             </td>
                                             <td class="text-end pe-3">
-                                            
-                                            
-                                            
-                                                <form method="post" asp-page-handler="EliminarPromocion" class="d-inline">
-                                                    <input type="hidden" name="id" value="@promo.IdPromocion" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Estás seguro de eliminar esta promoción?');">Eliminar</button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPromocionAjax(@promo.IdPromocion)">
+                                                    Eliminar
+                                                </button>
                                             </td>
                                         </tr>
                                     }
                                 }
                                 else
                                 {
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted py-3">No hay promociones registradas.</td>
+                                    <tr id="fila-vacia-promociones">
+                                        <td colspan="7" class="text-center text-muted py-3">No hay promociones registradas.</td>
                                     </tr>
                                 }
                             </tbody>
@@ -325,25 +305,23 @@
             </div>
         </div>
     </div>
-    
-<partial name="Modales/_ModalesPreciosReglasPromociones" />
+
+    <!-- PARCIAL DE MODALES -->
+    <partial name="Modales/_ModalesPreciosReglasPromociones" model="Model" />
 </div>
 
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // 1. Limpieza de clases o capas residuales en el DOM
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
+        // Mapa en memoria para conservar los productos seleccionados aunque se cambien los filtros de búsqueda en el modal
+        const productosSeleccionadosMap = new Map();
 
-            // 2. Control dinámico de Fechas (Inicio vs Fin)
+        document.addEventListener("DOMContentLoaded", function () {
+            // Control dinámico de Fechas (Inicio vs Fin)
             const fechaInicio = document.getElementById('fechaInicio');
             const fechaFin = document.getElementById('vigenciaPromo');
 
             if (fechaInicio && fechaFin) {
-                fechaInicio.addEventListener('change', function() {
+                fechaInicio.addEventListener('change', function () {
                     fechaFin.min = this.value;
                     if (fechaFin.value && fechaFin.value < this.value) {
                         fechaFin.value = this.value;
@@ -351,63 +329,395 @@
                 });
             }
 
-            // 3. Alertas de Error (Opcional si usas alert nativo)
-            var mensajeError = "@Html.Raw(TempData["ErrorMessage"])";
-            if (mensajeError && mensajeError.trim() !== "") {
-                alert(mensajeError);
+            // Cambio visual de color en pestañas al navegar
+            document.querySelectorAll('#huTabs button[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (event) {
+                    document.querySelectorAll('#huTabs button').forEach(btn => btn.classList.add('text-secondary'));
+                    event.target.classList.remove('text-secondary');
+                });
+            });
+
+            // Eventos de filtrado AJAX en tiempo real dentro del modal de productos
+            const inputFiltroNombre = document.getElementById('filtroNombreProdModal');
+            const selectFiltroCat = document.getElementById('filtroCategoriaProdModal');
+
+            if (inputFiltroNombre) {
+                inputFiltroNombre.addEventListener('input', buscarProductosModalAjax);
+            }
+            if (selectFiltroCat) {
+                selectFiltroCat.addEventListener('change', buscarProductosModalAjax);
             }
         });
 
-        // Cambiar símbolo de Promoción (% o $)
+        // ==================== LÓGICA DEL MODAL DE PRODUCTOS (ESTILO HU-09) ====================
+        async function buscarProductosModalAjax() {
+            const criterio = document.getElementById('filtroNombreProdModal').value.trim();
+            const idCategoria = document.getElementById('filtroCategoriaProdModal').value;
+            const tbody = document.getElementById('tbodyResultadosModalPromo');
+            const contador = document.getElementById('contadorResultadosModal');
+
+            try {
+                const url = `?handler=BuscarProductosPromo&criterio=${encodeURIComponent(criterio)}&idCategoria=${encodeURIComponent(idCategoria)}`;
+                const response = await fetch(url);
+                const productos = await response.json();
+
+                tbody.innerHTML = '';
+                contador.textContent = `${productos.length} producto(s) encontrado(s)`;
+
+                if (productos.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron productos con esos filtros.</td></tr>`;
+                    return;
+                }
+
+                productos.forEach(p => {
+                    const estaMarcado = productosSeleccionadosMap.has(p.id) ? 'checked' : '';
+                    const badgeStock = p.existencia > 0
+                        ? 'bg-success-subtle text-success border-success-subtle'
+                        : 'bg-danger-subtle text-danger border-danger-subtle';
+                    const nombreEscapado = p.nombre.replace(/'/g, "\\'");
+
+                    const fila = `
+                        <tr style="cursor: pointer;" onclick="toggleFilaProductoModal(${p.id}, '${nombreEscapado}')">
+                            <td class="text-center" onclick="event.stopPropagation();">
+                                <input class="form-check-input check-modal-promo"
+                                       type="checkbox"
+                                       id="chk_modal_${p.id}"
+                                       value="${p.id}"
+                                       data-nombre="${p.nombre}"
+                                       ${estaMarcado}
+                                       onchange="sincronizarSeleccionProducto(${p.id}, '${nombreEscapado}', this.checked)" />
+                            </td>
+                            <td class="fw-medium">${p.nombre}</td>
+                            <td><span class="badge bg-light text-dark border">${p.categoria}</span></td>
+                            <td class="fw-semibold text-primary">$${Number(p.precio).toFixed(2)}</td>
+                            <td class="text-center">
+                                <span class="badge border ${badgeStock}">${p.existencia}</span>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', fila);
+                });
+            } catch (err) {
+                console.error("Error al filtrar productos:", err);
+            }
+        }
+
+        function toggleFilaProductoModal(id, nombre) {
+            const chk = document.getElementById(`chk_modal_${id}`);
+            if (chk) {
+                chk.checked = !chk.checked;
+                sincronizarSeleccionProducto(id, nombre, chk.checked);
+            }
+        }
+function abrirModalProductosPromo() {
+    const modalEl = document.getElementById('modalBuscarProductosPromo');
+    if (!modalEl) {
+        alert("No se encontró el modal en la página. Verifica la ruta de <partial name=\"...\" />.");
+        return;
+    }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+    
+    // Enfoca automáticamente la barra de búsqueda al abrirse
+    modalEl.addEventListener('shown.bs.modal', function () {
+        document.getElementById('filtroNombreProdModal')?.focus();
+    }, { once: true });
+}
+        function sincronizarSeleccionProducto(id, nombre, seleccionado) {
+            if (seleccionado) {
+                productosSeleccionadosMap.set(id, nombre);
+            } else {
+                productosSeleccionadosMap.delete(id);
+            }
+            actualizarContadorModal();
+        }
+
+        function seleccionarVisiblesModal(marcar) {
+            document.querySelectorAll('.check-modal-promo').forEach(chk => {
+                chk.checked = marcar;
+                const id = parseInt(chk.value);
+                const nombre = chk.getAttribute('data-nombre');
+                if (marcar) {
+                    productosSeleccionadosMap.set(id, nombre);
+                } else {
+                    productosSeleccionadosMap.delete(id);
+                }
+            });
+            actualizarContadorModal();
+        }
+
+        function limpiarSeleccionModal() {
+            productosSeleccionadosMap.clear();
+            document.querySelectorAll('.check-modal-promo').forEach(chk => chk.checked = false);
+            actualizarContadorModal();
+            aplicarSeleccionAlFormulario();
+        }
+
+        function actualizarContadorModal() {
+            const total = productosSeleccionadosMap.size;
+            const label = document.getElementById('resumenSeleccionModal');
+            if (label) {
+                label.textContent = total === 1
+                    ? '1 producto seleccionado'
+                    : `${total} productos seleccionados`;
+            }
+        }
+
+        function aplicarSeleccionAlFormulario() {
+            const total = productosSeleccionadosMap.size;
+            const inputResumen = document.getElementById('resumenProductosInput');
+            const contenedorBadges = document.getElementById('badgesProductosSeleccionados');
+
+            if (total === 0) {
+                inputResumen.value = '';
+                contenedorBadges.innerHTML = '';
+                return;
+            }
+
+            inputResumen.value = total === 1
+                ? '1 producto seleccionado'
+                : `${total} productos seleccionados`;
+
+            contenedorBadges.innerHTML = '';
+            productosSeleccionadosMap.forEach((nombre, id) => {
+                const badge = `
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1 py-1 px-2">
+                        ${nombre}
+                        <button type="button" class="btn-close" style="font-size: 0.6rem;" aria-label="Quitar" onclick="quitarProductoDesdeBadge(${id})"></button>
+                    </span>
+                `;
+                contenedorBadges.insertAdjacentHTML('beforeend', badge);
+            });
+        }
+
+        function quitarProductoDesdeBadge(id) {
+            productosSeleccionadosMap.delete(id);
+            const chk = document.getElementById(`chk_modal_${id}`);
+            if (chk) chk.checked = false;
+            actualizarContadorModal();
+            aplicarSeleccionAlFormulario();
+        }
+
+        // ==================== FUNCIÓN CENTRAL DE ALERTAS (ESTILO BANNER BOOTSTRAP) ====================
+        function mostrarBannerAlerta(mensaje, tipo = 'success') {
+            const contenedor = document.getElementById('contenedorAlertaAjax');
+            const icono = tipo === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+            const claseAlert = tipo === 'success' ? 'alert-success' : 'alert-danger';
+
+            contenedor.innerHTML = `
+                <div class="alert ${claseAlert} alert-dismissible fade show shadow-sm mb-4" role="alert">
+                    <i class="bi ${icono} me-2"></i> ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function obtenerTokenAntiForgery() {
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            return tokenInput ? tokenInput.value : '';
+        }
+
+        // ==================== AJAX 1: CREAR Y ELIMINAR MICA ====================
+        document.getElementById('formCrearMica').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardarMica');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('?handler=CrearMicaAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    mostrarBannerAlerta(res.message, 'success');
+                    this.reset();
+
+                    const filaVacia = document.getElementById('fila-vacia-micas');
+                    if (filaVacia) filaVacia.remove();
+
+                    const tbody = document.getElementById('tbodyMicas');
+                    const nuevaFila = `
+                        <tr id="fila-mica-${res.data.id}">
+                            <td class="ps-3 fw-medium">${res.data.material}</td>
+                            <td>${res.data.tratamiento}</td>
+                            <td>${res.data.rangoGraduacion}</td>
+                            <td class="fw-bold text-success">$${res.data.precio}</td>
+                            <td class="text-end pe-3">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarMicaAjax(${res.data.id})">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', nuevaFila);
+                } else {
+                    mostrarBannerAlerta(res.message, 'danger');
+                }
+            } catch (error) {
+                mostrarBannerAlerta('Error de conexión al registrar la mica.', 'danger');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        async function eliminarMicaAjax(id) {
+            if (!confirm('¿Estás seguro de eliminar esta combinación de mica?')) return;
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('__RequestVerificationToken', obtenerTokenAntiForgery());
+
+            try {
+                const response = await fetch('?handler=EliminarMicaAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    mostrarBannerAlerta(res.message, 'success');
+                    const fila = document.getElementById(`fila-mica-${id}`);
+                    if (fila) fila.remove();
+
+                    const tbody = document.getElementById('tbodyMicas');
+                    if (tbody.children.length === 0) {
+                        tbody.innerHTML = `<tr id="fila-vacia-micas"><td colspan="5" class="text-center text-muted py-3">No hay micas registradas en la base de datos.</td></tr>`;
+                    }
+                } else {
+                    mostrarBannerAlerta(res.message, 'danger');
+                }
+            } catch (error) {
+                mostrarBannerAlerta('Error de conexión al intentar eliminar la mica.', 'danger');
+            }
+        }
+
+        // ==================== AJAX 2: GUARDAR PARÁMETROS ====================
+        document.getElementById('formGuardarParametros').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardarParametros');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('?handler=GuardarParametrosAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await response.json();
+
+                mostrarBannerAlerta(res.message, res.success ? 'success' : 'danger');
+            } catch (error) {
+                mostrarBannerAlerta('Error de conexión al actualizar los parámetros.', 'danger');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // ==================== AJAX 3: CREAR Y ELIMINAR PROMOCIÓN ====================
+        document.getElementById('formCrearPromocion').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            if (productosSeleccionadosMap.size === 0) {
+                mostrarBannerAlerta('Debes seleccionar al menos un producto desde el buscador.', 'danger');
+                return;
+            }
+
+            const btn = document.getElementById('btnGuardarPromocion');
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData(this);
+                // Adjuntamos todos los IDs de productos guardados en el Map
+                productosSeleccionadosMap.forEach((_, idProd) => {
+                    formData.append('ProductosIds', idProd);
+                });
+
+                const response = await fetch('?handler=CrearPromocionAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    mostrarBannerAlerta(res.message, 'success');
+                    this.reset();
+                    document.getElementById('simboloPromo').textContent = '%';
+                    limpiarSeleccionModal();
+
+                    const filaVacia = document.getElementById('fila-vacia-promociones');
+                    if (filaVacia) filaVacia.remove();
+
+                    const badgeAcumulable = res.data.acumulable
+                        ? `<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Sí</span>`
+                        : `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">No</span>`;
+
+                    const tbody = document.getElementById('tbodyPromociones');
+                    const nuevaFila = `
+                        <tr id="fila-promo-${res.data.id}">
+                            <td class="ps-3 fw-medium">${res.data.nombre}</td>
+                            <td>${res.data.tipo}</td>
+                            <td class="fw-bold text-primary">${res.data.valorFormateado}</td>
+                            <td class="small text-muted" style="max-width: 220px;">${res.data.productos}</td>
+                            <td>${res.data.vigencia}</td>
+                            <td class="text-center">${badgeAcumulable}</td>
+                            <td class="text-end pe-3">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarPromocionAjax(${res.data.id})">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('afterbegin', nuevaFila);
+                } else {
+                    mostrarBannerAlerta(res.message, 'danger');
+                }
+            } catch (error) {
+                mostrarBannerAlerta('Error de conexión al registrar la promoción.', 'danger');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        async function eliminarPromocionAjax(id) {
+            if (!confirm('¿Estás seguro de eliminar esta promoción?')) return;
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('__RequestVerificationToken', obtenerTokenAntiForgery());
+
+            try {
+                const response = await fetch('?handler=EliminarPromocionAjax', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await response.json();
+
+                if (res.success) {
+                    mostrarBannerAlerta(res.message, 'success');
+                    const fila = document.getElementById(`fila-promo-${id}`);
+                    if (fila) fila.remove();
+
+                    const tbody = document.getElementById('tbodyPromociones');
+                    if (tbody.children.length === 0) {
+                        tbody.innerHTML = `<tr id="fila-vacia-promociones"><td colspan="7" class="text-center text-muted py-3">No hay promociones registradas.</td></tr>`;
+                    }
+                } else {
+                    mostrarBannerAlerta(res.message, 'danger');
+                }
+            } catch (error) {
+                mostrarBannerAlerta('Error de conexión al intentar eliminar la promoción.', 'danger');
+            }
+        }
+
         function cambiarSimbologia(selectElement) {
             var simbolo = document.getElementById('simboloPromo');
             if (simbolo) {
                 simbolo.textContent = selectElement.value === 'Porcentaje' ? '%' : '$';
             }
         }
-
-        // Buscador de Productos en tiempo real
-        function filtrarProductos() {
-            var input = document.getElementById("buscarProducto").value.toLowerCase().trim();
-            var lista = document.getElementById("listaProductos");
-            if (!lista) return;
-            var items = lista.getElementsByTagName("li");
-
-            for (var i = 0; i < items.length; i++) {
-                var label = items[i].getElementsByTagName("label")[0];
-                if (label) {
-                    var texto = label.textContent || label.innerText;
-                    if (texto.toLowerCase().indexOf(input) > -1) {
-                        items[i].style.setProperty("display", "", "important");
-                    } else {
-                        items[i].style.setProperty("display", "none", "important");
-                    }
-                }
-            }
-        }
-
-        // Selección visual de checkboxes
-        function toggleCheckbox(id) {
-            var checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                actualizarTextoDropdown();
-            }
-        }
-
-        function actualizarTextoDropdown() {
-            var seleccionados = document.querySelectorAll('.check-producto:checked').length;
-            var btn = document.getElementById('dropdownProductos');
-            if (!btn) return;
-            
-            if (seleccionados === 0) {
-                btn.textContent = "Seleccionar productos...";
-            } else if (seleccionados === 1) {
-                btn.textContent = "1 producto seleccionado";
-            } else {
-                btn.textContent = seleccionados + " productos seleccionados";
-            }
-        }
     </script>
 }
-    

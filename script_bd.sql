@@ -36,7 +36,7 @@ CREATE TABLE `bitacora` (
   KEY `fk_bitacora_encargado` (`idEncargado`),
   CONSTRAINT `fk_bitacora_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_bitacora_encargado` FOREIGN KEY (`idEncargado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,6 +45,7 @@ CREATE TABLE `bitacora` (
 
 LOCK TABLES `bitacora` WRITE;
 /*!40000 ALTER TABLE `bitacora` DISABLE KEYS */;
+INSERT INTO `bitacora` VALUES (1,3,1,'2026-11-12','Autorización de descuento especial a cliente frecuente','Se aplicó bonificación completa del examen visual en cotización #4'),(2,2,1,'2026-11-16','Incidencia reportada por laboratorio externo en pedido #3','Se cambió estado del pedido #3 a Con incidencia para reposición de mica');
 /*!40000 ALTER TABLE `bitacora` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -69,7 +70,7 @@ CREATE TABLE `cajaturno` (
   PRIMARY KEY (`idCajaTurno`),
   KEY `fk_caja_empleado` (`idEmpleado`),
   CONSTRAINT `fk_caja_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,7 +79,7 @@ CREATE TABLE `cajaturno` (
 
 LOCK TABLES `cajaturno` WRITE;
 /*!40000 ALTER TABLE `cajaturno` DISABLE KEYS */;
-INSERT INTO `cajaturno` VALUES (1,2,'2026-10-24 10:58:34',0.00,'Cerrada','2026-10-24 10:59:43',0.00,0.00,0.00,NULL),(2,2,'2026-10-24 11:15:05',0.00,'Cerrada','2026-10-24 11:16:51',1.00,1.00,0.00,NULL),(3,2,'2026-10-24 11:21:45',1.00,'Cerrada','2026-10-24 12:09:56',4.00,4.00,0.00,NULL),(4,2,'2026-10-24 12:11:17',0.00,'Cerrada','2026-10-26 18:37:02',0.00,0.00,0.00,NULL),(5,2,'2026-10-28 10:56:22',0.00,'Cerrada','2026-10-28 16:11:19',-100.00,0.00,100.00,'s'),(6,6,'2026-10-28 10:57:43',0.00,'Cerrada','2026-10-28 16:11:04',0.00,0.00,0.00,NULL),(7,6,'2026-10-28 16:11:07',0.00,'Cerrada','2026-10-28 16:11:11',0.00,0.00,0.00,NULL),(8,6,'2026-10-28 16:14:51',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `cajaturno` VALUES (1,2,'2026-11-17 09:00:00',1500.00,'Cerrada','2026-11-17 19:00:00',2240.00,2240.00,0.00,NULL),(2,2,'2026-11-18 09:00:00',1500.00,'Cerrada','2026-11-18 16:18:48',16335.00,16335.00,0.00,NULL),(3,1,'2026-11-18 16:18:51',0.00,'Abierta',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `cajaturno` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,7 +95,7 @@ CREATE TABLE `categoria` (
   `nombreCategoria` varchar(50) NOT NULL,
   `camposRequeridos` json DEFAULT NULL,
   PRIMARY KEY (`idCategoria`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -103,7 +104,7 @@ CREATE TABLE `categoria` (
 
 LOCK TABLES `categoria` WRITE;
 /*!40000 ALTER TABLE `categoria` DISABLE KEYS */;
-INSERT INTO `categoria` VALUES (1,'General','{}'),(2,'Gotas','[\"Marca\", \"Contenido\", \"Función\"]'),(3,'Gafas','[\"Material\", \"Color\"]'),(4,'Micas','[\"material\", \"tratamiento\", \"graduación\", \"precio\"]'),(5,'Gafas de sol','[]'),(6,'lentes03','[{\"tipo\": \"number\", \"nombre\": \"tamaño\"}]');
+INSERT INTO `categoria` VALUES (1,'Armazones Oftálmicos','[\"Marca\", \"Material\", \"Color\", \"TipoAro\"]'),(2,'Lentes de Sol','[\"Marca\", \"Polarizado\", \"FiltroUV\", \"Color\"]'),(3,'Lentes de Contacto','[\"Marca\", \"Duracion\", \"ContenidoCaja\"]'),(4,'Soluciones y Gotas','[\"Marca\", \"ContenidoML\", \"Funcion\"]'),(5,'Accesorios','[\"Material\", \"Color\"]');
 /*!40000 ALTER TABLE `categoria` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -120,7 +121,7 @@ CREATE TABLE `clase_precio` (
   `rangoMinimo` int DEFAULT NULL,
   `rangoMaximo` int DEFAULT NULL,
   PRIMARY KEY (`idClasePrecio`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -129,6 +130,7 @@ CREATE TABLE `clase_precio` (
 
 LOCK TABLES `clase_precio` WRITE;
 /*!40000 ALTER TABLE `clase_precio` DISABLE KEYS */;
+INSERT INTO `clase_precio` VALUES (1,'Económica',500,1200),(2,'Intermedia',1201,2800),(3,'Premium',2801,7500);
 /*!40000 ALTER TABLE `clase_precio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -145,7 +147,7 @@ CREATE TABLE `cliente` (
   `telefono` varchar(10) DEFAULT NULL,
   `avisoPrivacidad` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idCliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +156,7 @@ CREATE TABLE `cliente` (
 
 LOCK TABLES `cliente` WRITE;
 /*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
-INSERT INTO `cliente` VALUES (1,'tahci',NULL,0),(2,'Juan Pérez','2281234567',1),(3,'María García','5512345678',1);
+INSERT INTO `cliente` VALUES (1,'Alejandro Ramírez Cruz','2291457890',1),(2,'Mariana Delgado Soto','2292345612',1),(3,'José Luis Hernández','2298765432',1),(4,'Patricia Navarro Gil','2293456789',1),(5,'Fernando Castillo Ruiz','2294567890',1),(6,'Valeria Peña Mendoza','2295678901',1),(7,'Ricardo Ochoa Salinas','2296789012',1),(8,'Gabriela Torres León','2297890123',1);
 /*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -163,7 +165,7 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `cotizacion`;
-/*!40101 SET @saved_cs_client      = @@character_set_client */;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cotizacion` (
   `idCotizacion` int NOT NULL AUTO_INCREMENT,
@@ -183,7 +185,7 @@ CREATE TABLE `cotizacion` (
   CONSTRAINT `fk_cotizacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_cotizacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -192,7 +194,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
-INSERT INTO `cotizacion` VALUES (1,2,2,1,'2026-10-28',2500.00,'2026-11-12',0,1, NULL),(2,3,2,2,'2026-10-28',800.00,'2026-11-12',0,1, NULL);
+INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)'),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)'),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)'),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)'),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.');
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -219,7 +221,7 @@ CREATE TABLE `empleado` (
   KEY `fk_empleado_laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`),
   CONSTRAINT `fk_empleado_rol` FOREIGN KEY (`idRol`) REFERENCES `rol` (`idRol`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,7 +230,7 @@ CREATE TABLE `empleado` (
 
 LOCK TABLES `empleado` WRITE;
 /*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
-INSERT INTO `empleado` VALUES (1,4,1,'Emmanuel','kngmtzz','123456789',1,0,NULL),(2,1,1,'Edgar','edgar','1',1,0,NULL),(3,2,1,'dos','dos','2',1,0,NULL),(4,3,1,'tres','tres','3',1,0,NULL),(5,4,1,'Sosa Seso','coppelzenduo@gmail.com','contrasenacoppelzenduo@gmail.com',1,0,NULL),(6,1,1,'1','1','1',1,0,NULL),(7,3,NULL,'juan','contrasenasdsdsd@sosa','contrasena',1,0,NULL);
+INSERT INTO `empleado` VALUES (1,1,NULL,'Luis David Sosa Fernandez','sosa','admin123',1,0,NULL),(2,2,NULL,'Laura Sánchez','lsanchez','Venta123',1,0,NULL),(3,2,NULL,'Diego Morales','dmorales','Venta123',1,0,NULL),(4,3,NULL,'Dra. Fernanda Ortiz','fortiz','Opto123',1,0,NULL),(5,4,1,'Carlos Domínguez','cdominguez','Lab123',1,0,NULL),(6,4,2,'Héctor Vargas','hvargas','Lab123',1,0,NULL),(7,4,1,'Kendar','kakendar@sosacorp.com','contrasenakakendar@sosacorp.com',1,0,NULL),(8,4,1,'sdfsdf','sdfsd@sfsd','contrasenasd',0,0,NULL),(9,4,1,'sdfsdffsdfg','sdfs@ssdsd','contrasenasdfs@ssdsd',0,0,NULL),(10,4,1,'sdfsdfsdf','sdfsdfs@sdfsdf','contrasenasdfsdfs@sdfsdf',0,0,NULL),(11,4,1,'sdfsdfsdfsdqs','sdfsdfsdfsd@sdfsdf','contrasenasdfsdfsdfsd@sdfsdf',0,0,NULL),(12,4,1,'sdfsssssssssssssssssssssssssssssssssss','sdfsdf@asdfsdf','contrasenasdfsdf@asdfsdf',0,0,NULL);
 /*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -251,7 +253,7 @@ CREATE TABLE `historial_pedido` (
   KEY `fk_historial_empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_pedido` FOREIGN KEY (`folioPedido`) REFERENCES `pedido` (`folioPedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -260,7 +262,7 @@ CREATE TABLE `historial_pedido` (
 
 LOCK TABLES `historial_pedido` WRITE;
 /*!40000 ALTER TABLE `historial_pedido` DISABLE KEYS */;
-INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-10-28 10:00:00','Pedido creado. Anticipo del 50% cobrado.'),(2,2,2,'Registrado','2026-10-28 11:00:00','Pedido creado. Cliente liquidó el 100%.'),(3,2,2,'En proceso','2026-10-28 11:30:00','Armazón del cliente enviado al laboratorio para montaje.');
+INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-11-05 11:00:00','Pedido registrado con 50% de anticipo ($2,300.00).'),(2,1,5,'En proceso','2026-11-06 09:15:00','Biselado y montaje iniciado en taller propio.'),(3,1,5,'Terminado','2026-11-08 16:30:00','Control de calidad aprobado.'),(4,1,2,'Entregado','2026-11-10 17:20:00','Cliente liquidó saldo de $2,300.00 y recibió sus lentes.'),(5,2,2,'Registrado','2026-11-07 12:10:00','Anticipo del 50% cobrado.'),(6,2,2,'Enviado a laboratorio','2026-11-07 17:00:00','Enviado por mensajería a Essilor Veracruz.'),(7,2,2,'Recibido en óptica','2026-11-14 13:00:00','Recibido de laboratorio externo, graduación verificada.'),(8,2,2,'Listo para entrega','2026-11-14 13:20:00','Se notificó al cliente vía WhatsApp.'),(9,3,3,'Registrado','2026-11-10 10:30:00','Se recibe armazón del cliente en buen estado.'),(10,3,3,'Enviado a laboratorio','2026-11-10 16:00:00','Enviado para tallado High Index 1.67.'),(11,3,1,'Con incidencia','2026-11-16 11:45:00','Laboratorio reporta falla en tratamiento AR; se repite mica sin costo.'),(12,4,2,'Registrado','2026-11-12 14:00:00','Pedido liquidado al 100% desde mostrador.'),(13,4,5,'Terminado','2026-11-17 18:00:00','Montaje finalizado en taller central.'),(14,5,3,'Registrado','2026-11-14 11:20:00','Anticipo de $1,500.00 registrado.'),(15,5,3,'En proceso','2026-11-15 10:00:00','En tallado de oblea bifocal en Óptica Industrial del Golfo.'),(16,6,2,'Registrado','2026-11-16 16:10:00','Anticipo recibido. Pendiente de envío a laboratorio.');
 /*!40000 ALTER TABLE `historial_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -280,7 +282,7 @@ CREATE TABLE `inventario` (
   PRIMARY KEY (`idEntrada`),
   KEY `fk_inventario_producto` (`idProducto`),
   CONSTRAINT `fk_inventario_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -289,6 +291,7 @@ CREATE TABLE `inventario` (
 
 LOCK TABLES `inventario` WRITE;
 /*!40000 ALTER TABLE `inventario` DISABLE KEYS */;
+INSERT INTO `inventario` VALUES (1,1,'Luxottica México','2026-10-15',10),(2,2,'Luxottica México','2026-10-15',15),(3,3,'Distribuidora Óptica MX','2026-10-20',20),(4,6,'Bausch + Lomb Distrib.','2026-11-01',30),(5,8,'Insumos Ópticos del Sur','2026-11-05',50);
 /*!40000 ALTER TABLE `inventario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -307,7 +310,7 @@ CREATE TABLE `laboratorio` (
   `tipoLaboratorio` varchar(7) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`idLaboratorio`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -316,7 +319,7 @@ CREATE TABLE `laboratorio` (
 
 LOCK TABLES `laboratorio` WRITE;
 /*!40000 ALTER TABLE `laboratorio` DISABLE KEYS */;
-INSERT INTO `laboratorio` VALUES (1,'Ejemplo labo','2281000001','3 a 6 dias habiles','Externo',1);
+INSERT INTO `laboratorio` VALUES (1,'Taller Óptico Central (Propio)','2299314500','1 a 2 días hábiles','Interno',1),(2,'Laboratorios Essilor Veracruz','2299328810','4 a 6 días hábiles','Externo',1),(3,'Óptica Industrial del Golfo','2299351290','3 a 5 días hábiles','Externo',1);
 /*!40000 ALTER TABLE `laboratorio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,7 +338,7 @@ CREATE TABLE `lista_espera` (
   PRIMARY KEY (`idLista`),
   KEY `fk_lista_cliente` (`idCliente`),
   CONSTRAINT `fk_lista_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -344,6 +347,7 @@ CREATE TABLE `lista_espera` (
 
 LOCK TABLES `lista_espera` WRITE;
 /*!40000 ALTER TABLE `lista_espera` DISABLE KEYS */;
+INSERT INTO `lista_espera` VALUES (1,1,'2026-11-18 09:30:00',1),(2,2,'2026-11-18 10:15:00',1),(5,8,'2026-11-18 15:58:13',1);
 /*!40000 ALTER TABLE `lista_espera` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -361,7 +365,7 @@ CREATE TABLE `micas` (
   `RangoGraduacion` varchar(100) DEFAULT NULL,
   `Precio` decimal(18,2) NOT NULL,
   PRIMARY KEY (`IdMica`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -370,7 +374,7 @@ CREATE TABLE `micas` (
 
 LOCK TABLES `micas` WRITE;
 /*!40000 ALTER TABLE `micas` DISABLE KEYS */;
-INSERT INTO `micas` VALUES (1,'CR-39','Fotocromático','200-100',2500.00);
+INSERT INTO `micas` VALUES (1,'CR-39','Blanco (Sin tratamiento)','Esf -4.00 a +4.00 / Cil -2.00',650.00),(2,'CR-39','Antirreflejante Básico','Esf -4.00 a +4.00 / Cil -2.00',950.00),(3,'Policarbonato','Antirreflejante + Filtro Luz Azul','Esf -6.00 a +6.00 / Cil -3.00',1650.00),(4,'Policarbonato','Fotocromático Transitions Gen S','Esf -6.00 a +6.00 / Cil -3.00',2900.00),(5,'High Index 1.67','Antirreflejante Hidrofóbico + Luz Azul','Esf -10.00 a +8.00 / Cil -4.00',3400.00),(6,'Policarbonato','Filtro Luz Azul','6 - 8',400.00);
 /*!40000 ALTER TABLE `micas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -391,7 +395,7 @@ CREATE TABLE `movimientocaja` (
   PRIMARY KEY (`idMovimiento`),
   KEY `fk_movimiento_caja` (`idCajaTurno`),
   CONSTRAINT `fk_movimiento_caja` FOREIGN KEY (`idCajaTurno`) REFERENCES `cajaturno` (`idCajaTurno`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -400,7 +404,7 @@ CREATE TABLE `movimientocaja` (
 
 LOCK TABLES `movimientocaja` WRITE;
 /*!40000 ALTER TABLE `movimientocaja` DISABLE KEYS */;
-INSERT INTO `movimientocaja` VALUES (1,2,'Entrada',1.00,'1','2026-10-24 11:15:19'),(2,3,'Entrada',1.00,'1','2026-10-24 11:21:55'),(3,3,'Entrada',1.00,'1','2026-10-24 11:22:23'),(4,3,'Entrada',1.00,'1','2026-10-24 12:09:03'),(5,5,'Salida',100.00,'Tortillas','2026-10-28 15:45:29');
+INSERT INTO `movimientocaja` VALUES (1,1,'Salida',150.00,'Pago de mensajería local para envío de pedidos a laboratorio','2026-11-17 13:20:00'),(2,1,'Entrada',500.00,'Reposición de morralla para cambio en mostrador','2026-11-17 15:00:00'),(3,2,'Salida',85.00,'Compra de agua embotellada e insumos de limpieza','2026-11-18 11:30:00');
 /*!40000 ALTER TABLE `movimientocaja` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -426,7 +430,7 @@ CREATE TABLE `parametro_negocio` (
 
 LOCK TABLES `parametro_negocio` WRITE;
 /*!40000 ALTER TABLE `parametro_negocio` DISABLE KEYS */;
-INSERT INTO `parametro_negocio` VALUES (1,250.00,30,60);
+INSERT INTO `parametro_negocio` VALUES (1,250.00,30,50);
 /*!40000 ALTER TABLE `parametro_negocio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -457,7 +461,7 @@ CREATE TABLE `pedido` (
   CONSTRAINT `fk_cotizacion_pedido` FOREIGN KEY (`idCotizacion`) REFERENCES `cotizacion` (`idCotizacion`),
   CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_pedido_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -466,7 +470,7 @@ CREATE TABLE `pedido` (
 
 LOCK TABLES `pedido` WRITE;
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
-INSERT INTO `pedido` VALUES (1,2,1,1,'2026-10-28','2026-11-10',NULL,1,1250.00,1250.00,'Registrado','2281234567'),(2,3,2,1,'2026-10-28','2026-11-08',NULL,1,800.00,0.00,'En proceso','5512345678');
+INSERT INTO `pedido` VALUES (1,1,1,1,'2026-11-05','2026-11-10','2026-11-10 17:20:00',1,2300.00,0.00,'Entregado','2291457890'),(2,2,2,2,'2026-11-07','2026-11-15',NULL,1,2550.00,2550.00,'Listo para entrega','2292345612'),(3,3,3,2,'2026-11-10','2026-11-17',NULL,1,2000.00,1400.00,'Con incidencia','2298765432'),(4,4,4,1,'2026-11-12','2026-11-19',NULL,1,1800.00,0.00,'Terminado','2293456789'),(5,5,5,3,'2026-11-14','2026-11-20',NULL,1,1500.00,1250.00,'En proceso','2294567890'),(6,6,6,2,'2026-11-16','2026-11-24',NULL,1,3000.00,2850.00,'Registrado','2295678901'),(7,5,7,1,'2026-11-18','2026-11-25',NULL,0,NULL,4720.00,'Registrado','2294567890');
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -491,7 +495,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -500,7 +504,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,NULL,'nooooo',10,0,100.00,NULL),(2,1,NULL,'nooooooooo',5,0,100.00,NULL),(3,1,NULL,'NOSE',5,0,100.00,NULL),(4,3,NULL,'Lentes',10,0,120.00,'{\"Color\": \"gris\", \"Material\": \"vidrio\"}');
+INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',6,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}'),(2,1,2,'Oakley Holbrook Rx',12,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}'),(3,1,1,'Vogue Classic Slim',15,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}'),(4,2,3,'Ray-Ban Aviator Sol',5,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}'),(5,3,2,'Acuvue Oasys 6pz',20,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}'),(6,4,1,'Solución Renu 355ml',25,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}'),(7,4,1,'Gotas Systane Ultra',18,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}'),(8,5,1,'Kit Limpieza Microf.',40,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}');
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -521,7 +525,7 @@ CREATE TABLE `promocion` (
   `acumulable` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idPromocion`),
   CONSTRAINT `chk_valor_promocion` CHECK ((((`tipoPromocion` = _utf8mb4'Porcentaje') and (`porcentajePromo` between 0.1 and 100.00)) or ((`tipoPromocion` in (_utf8mb4'MontoFijo',_utf8mb4'Paquete')) and (`porcentajePromo` between 0.1 and 1000000.00))))
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -530,7 +534,7 @@ CREATE TABLE `promocion` (
 
 LOCK TABLES `promocion` WRITE;
 /*!40000 ALTER TABLE `promocion` DISABLE KEYS */;
-INSERT INTO `promocion` VALUES (7,'klkl','Porcentaje',45.00,'2026-10-23','2026-10-23',0),(8,'klkl','Porcentaje',87.00,'2027-05-04','2027-06-15',1),(9,'klkl','Porcentaje',20.00,'2026-11-10','2026-11-11',0);
+INSERT INTO `promocion` VALUES (1,'Buen Fin Armazones Seleccionados','Porcentaje',20.00,'2026-11-10','2026-11-25',0);
 /*!40000 ALTER TABLE `promocion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -557,12 +561,9 @@ CREATE TABLE `promocion_producto` (
 
 LOCK TABLES `promocion_producto` WRITE;
 /*!40000 ALTER TABLE `promocion_producto` DISABLE KEYS */;
+INSERT INTO `promocion_producto` VALUES (1,1),(1,3);
 /*!40000 ALTER TABLE `promocion_producto` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `receta`
---
 
 --
 -- Table structure for table `receta`
@@ -601,7 +602,7 @@ CREATE TABLE `receta` (
   CONSTRAINT `fk_receta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_receta_mica_minima` FOREIGN KEY (`micaMinima`) REFERENCES `micas` (`IdMica`),
   CONSTRAINT `fk_receta_mica_recomendada` FOREIGN KEY (`micaRecomendada`) REFERENCES `micas` (`IdMica`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -610,7 +611,7 @@ CREATE TABLE `receta` (
 
 LOCK TABLES `receta` WRITE;
 /*!40000 ALTER TABLE `receta` DISABLE KEYS */;
-INSERT INTO `receta` VALUES (1,2,4,'64mm','2026-10-28','2027-10-28',0,NULL,'-1.50',NULL,NULL,NULL,'-1.25',NULL,NULL,NULL,NULL,'Monofocal','CR-39 Blanco','CR-39 con filtro de luz azul'),(2,3,4,'60mm','2026-10-28','2027-10-28',0,NULL,'0.00',NULL,NULL,NULL,'-0.50',NULL,NULL,NULL,NULL,'Monofocal','Policarbonato Blanco','Policarbonato Antirreflejante');
+INSERT INTO `receta` VALUES (1,1,4,'64 mm','2026-11-05','2027-11-05',0,NULL,'-1.75','-0.50','180',NULL,'-2.00','-0.75','175',NULL,'18 mm','Monofocal',2,3),(2,2,4,'61 mm','2026-11-07','2027-11-07',0,NULL,'+1.25','-0.50','90','+1.75','+1.50','-0.25','85','+1.75','21 mm','Progresivo',3,4),(3,3,4,'65 mm','2026-11-10','2027-11-10',1,'Hospital Regional Alta Especialidad','-5.50','-1.25','10',NULL,'-6.00','-1.50','170',NULL,'19 mm','Monofocal',3,5),(4,4,4,'62 mm','2026-11-12','2027-11-12',0,NULL,'-0.75',NULL,NULL,NULL,'-1.00','-0.25','160',NULL,'17 mm','Monofocal',1,2),(5,5,4,'63 mm','2026-11-14','2027-11-14',0,NULL,'-2.50','-1.00','180','+1.50','-2.25','-1.25','180','+1.50','20 mm','Bifocal Flat-Top',2,3),(6,6,4,'60 mm','2026-11-16','2027-11-16',0,NULL,'-1.25','-0.50','95',NULL,'-1.25','-0.50','85',NULL,'18 mm','Monofocal',2,4),(7,8,1,'30','2026-11-18','2027-11-18',0,'Óptica (Interno)','2','2','2','2','2','2','2','2','30',NULL,3,5);
 /*!40000 ALTER TABLE `receta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -637,7 +638,7 @@ CREATE TABLE `reparacion` (
   KEY `fk_reparacion_empleado` (`idEmpleado`),
   CONSTRAINT `fk_reparacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_reparacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -646,6 +647,7 @@ CREATE TABLE `reparacion` (
 
 LOCK TABLES `reparacion` WRITE;
 /*!40000 ALTER TABLE `reparacion` DISABLE KEYS */;
+INSERT INTO `reparacion` VALUES (1,3,2,'2026-11-12','2026-11-14','Armazón metálico dorado marca Carrera','Soldadura de puente nasal fracturado',180.00,'Micas rayadas por uso previo, sin plaquetas',1),(2,7,3,'2026-11-17','2026-11-19','Armazón de acetato negro Hugo Boss','Cambio de tornillos y ajuste de varillas',80.00,'Buen estado general, varilla derecha suelta',NULL);
 /*!40000 ALTER TABLE `reparacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -670,7 +672,7 @@ CREATE TABLE `rol` (
 
 LOCK TABLES `rol` WRITE;
 /*!40000 ALTER TABLE `rol` DISABLE KEYS */;
-INSERT INTO `rol` VALUES (1,'Encargado','Administrador principal de la óptica'),(2,'Vendedor','Atención en mostrador, ventas y caja'),(3,'Optometrista','Exámenes visuales y generación de recetas'),(4,'Laboratorista','Personal técnico de laboratorio');
+INSERT INTO `rol` VALUES (1,'Encargado','Administrador general de la óptica, cortes, precios y personal'),(2,'Vendedor','Atención en mostrador, cotizaciones, ventas, pedidos y caja'),(3,'Optometrista','Realización de exámenes visuales y emisión de recetas'),(4,'Laboratorista','Tallado, biselado, montaje de micas y control de calidad');
 /*!40000 ALTER TABLE `rol` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -687,7 +689,7 @@ CREATE TABLE `ticket` (
   PRIMARY KEY (`idTicket`),
   KEY `fk_ticket_venta` (`folioVenta`),
   CONSTRAINT `fk_ticket_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -696,6 +698,7 @@ CREATE TABLE `ticket` (
 
 LOCK TABLES `ticket` WRITE;
 /*!40000 ALTER TABLE `ticket` DISABLE KEYS */;
+INSERT INTO `ticket` VALUES (1,1),(2,2),(3,3),(4,4),(5,5);
 /*!40000 ALTER TABLE `ticket` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -725,7 +728,7 @@ CREATE TABLE `venta` (
   CONSTRAINT `fk_venta_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_venta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_venta_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -734,6 +737,7 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
+INSERT INTO `venta` VALUES (1,1,4,2,6,'2026-11-17','Efectivo',180.00,0),(2,1,6,2,7,'2026-11-17','Efectivo',340.00,0),(3,1,1,2,4,'2026-11-17','Tarjeta',3500.00,0),(4,2,2,2,8,'2026-11-18','Efectivo',120.00,0),(5,2,5,3,5,'2026-11-18','Transferencia',890.00,0),(6,2,5,2,4,'2026-11-18','Efectivo',3500.00,0),(7,2,2,2,1,'2026-11-18','Efectivo',11300.00,0),(8,3,5,2,1,'2026-11-18','Efectivo',5650.00,0);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -746,4 +750,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-04 16:08:32
+-- Dump completed on 2026-11-18 16:28:27
