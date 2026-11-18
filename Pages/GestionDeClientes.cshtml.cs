@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 
 namespace Proyecto.Pages
 {
+    [Authorize(Roles = "Encargado,Vendedor,Optometrista")]
     public class GestionDeClientesModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
@@ -27,8 +29,14 @@ namespace Proyecto.Pages
             if (!string.IsNullOrWhiteSpace(TerminoBusqueda))
             {
                 string busqueda = TerminoBusqueda.Trim();
+                // Búsqueda por id: si el término es numérico (o "CLI-000001"), filtrar por IdCliente.
+                string terminoId = busqueda.StartsWith("CLI-", StringComparison.OrdinalIgnoreCase)
+                    ? busqueda[4..]
+                    : busqueda;
+                int? idBusqueda = int.TryParse(terminoId, out int id) ? id : null;
                 query = query.Where(c => EF.Functions.Like(c.Nombre, $"%{busqueda}%") ||
-                                         (c.Telefono != null && EF.Functions.Like(c.Telefono, $"%{busqueda}%")));
+                                         (c.Telefono != null && EF.Functions.Like(c.Telefono, $"%{busqueda}%")) ||
+                                         (idBusqueda.HasValue && c.IdCliente == idBusqueda.Value));
             }
 
             Clientes = await query.OrderBy(c => c.Nombre).ToListAsync();

@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@{
+    // SCRUM-3: página actual (para marcar el enlace activo) y rol del usuario (barra superior).
+    var paginaActual = (ViewContext.RouteData.Values["page"]?.ToString() ?? "").ToLowerInvariant();
+    var rolActual = User.FindFirst(ClaimTypes.Role)?.Value ?? "Sin rol";
+}
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -8,6 +14,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Proyecto.styles.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.ico" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
@@ -32,6 +39,16 @@
                     Óptica
                 </a>
 
+                <!-- Usuario logueado visible en la barra superior (SCRUM-3) -->
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <span class="ms-auto d-flex align-items-center text-secondary small">
+                        <i class="bi bi-person-circle fs-5 me-2"></i>
+                        <span class="fw-medium text-dark text-truncate">@User.Identity.Name</span>
+                        <span class="badge rounded-pill bg-primary-subtle text-primary border ms-2">@rolActual</span>
+                    </span>
+                }
+
             </div>
         </nav>
     </header>
@@ -52,74 +69,96 @@
             <ul class="navbar-nav flex-grow-1 p-3">
                 @if (User.Identity!.IsAuthenticated)
                 {
-                    @if (User.IsInRole("Encargado"))
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                     {
+                        <li class="menu-seccion px-3 mt-2 mb-1">Ventas</li>
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/cotizacion" ? "active" : "")" asp-area="" asp-page="/cotizacion">
+                                    <i class="bi bi-file-earmark-text me-2 text-secondary"></i> Cotización
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/venta-cobroexamen" ? "active" : "")" asp-area="" asp-page="/Venta-CobroExamen">
+                                    <i class="bi bi-receipt me-2 text-secondary"></i> Ventas
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeEmpleados">
-                                <i class="bi bi-people me-2 text-secondary"></i> Gestión de empleados
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/tableropedidos" ? "active" : "")" asp-area="" asp-page="/TableroPedidos">
+                                <i class="bi bi-kanban me-2 text-secondary"></i> Pedidos
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor") || User.IsInRole("Optometrista"))
+                    {
+                        <li class="menu-seccion px-3 mt-2 mb-1">Clientes</li>
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/gestiondeclientes" ? "active" : "")" asp-area="" asp-page="/GestionDeClientes">
+                                <i class="bi bi-person-lines-fill me-2 text-secondary"></i> Clientes
                             </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/PreciosReglasPromociones">
-                                <i class="bi bi-tags me-2 text-secondary"></i> Precios y promociones
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeLaboratorios">
-                                <i class="bi bi-building me-2 text-secondary"></i> Gestión de laboratorios
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/cotizacion">
-                                <i class="bi bi-file-earmark-text me-2 text-secondary"></i> Cotización
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Historial">
-                                <i class="bi bi-clock-history me-2 text-secondary"></i> Historial de Cortes
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Venta-CobroExamen">
-                                <i class="bi bi-receipt me-2 text-secondary"></i> Venta de Mostrador y Cobro de Examen
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/listaespera" ? "active" : "")" asp-area="" asp-page="/listaEspera">
+                                <i class="bi bi-list-ol me-2 text-secondary"></i> Lista de espera
                             </a>
                         </li>
                     }
 
                     @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                     {
-                        @if (User.IsInRole("Encargado"))
-                        {
-                            <li><hr class="dropdown-divider my-2"></li>
-                        }
+                        <li class="menu-seccion px-3 mt-2 mb-1">Caja</li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/catalogo">
-                                <i class="bi bi-grid me-2 text-secondary"></i> Catálogo
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/GestionDeClientes">
-                                <i class="bi bi-person-lines-fill me-2 text-secondary"></i> Clientes
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/listaEspera">
-                                <i class="bi bi-list-ol me-2 text-secondary"></i> Lista de espera
-                            </a>
-                        </li>
-                        <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/Index">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/index" ? "active" : "")" asp-area="" asp-page="/Index">
                                 <i class="bi bi-cash-coin me-2 text-secondary"></i> Caja
                             </a>
                         </li>
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/historial" ? "active" : "")" asp-area="" asp-page="/Historial">
+                                    <i class="bi bi-clock-history me-2 text-secondary"></i> Historial
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Laboratorista"))
+                    {
+                        <li class="menu-seccion px-3 mt-2 mb-1">Laboratorio</li>
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/TableroPedidos">
-                                <i class="bi bi-kanban me-2 text-secondary"></i> Tablero de Pedidos
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/trabajolaboratorista" ? "active" : "")" asp-area="" asp-page="/TrabajoLaboratorista">
+                                <i class="bi bi-eyeglasses me-2 text-secondary"></i> Laboratorio
                             </a>
                         </li>
+                    }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
+                    {
+                        <li class="menu-seccion px-3 mt-2 mb-1">Administración</li>
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/gestiondeempleados" ? "active" : "")" asp-area="" asp-page="/GestionDeEmpleados">
+                                    <i class="bi bi-people me-2 text-secondary"></i> Empleados
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/gestiondelaboratorios" ? "active" : "")" asp-area="" asp-page="/GestionDeLaboratorios">
+                                    <i class="bi bi-building me-2 text-secondary"></i> Laboratorios
+                                </a>
+                            </li>
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/preciosreglaspromociones" ? "active" : "")" asp-area="" asp-page="/PreciosReglasPromociones">
+                                    <i class="bi bi-tags me-2 text-secondary"></i> Precios
+                                </a>
+                            </li>
+                        }
                         <li class="nav-item mb-1">
-                            <a class="nav-link text-dark fw-medium px-3 rounded" asp-area="" asp-page="/TrabajoLaboratorista">
-                                <i class="bi bi-eyeglasses me-2 text-secondary"></i> Trabajo Laboratorista
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/catalogo" ? "active" : "")" asp-area="" asp-page="/catalogo">
+                                <i class="bi bi-grid me-2 text-secondary"></i> Catálogo
                             </a>
                         </li>
                     }
