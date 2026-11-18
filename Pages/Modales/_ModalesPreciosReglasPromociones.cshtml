@@ -1,21 +1,108 @@
-<!-- MODAL DE OPERACIÓN EXITOSA -->
-<div class="modal fade" id="modalExito" tabindex="-1" aria-labelledby="modalExitoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center border-0 shadow">
-            <div class="modal-header border-0 pb-0 justify-content-between" style="background-color: #198754;">
-                <h5 class="modal-title text-white fw-bold ps-3" id="modalExitoLabel">Operación Exitosa</h5>
-                <button type="button" class="btn-close btn-close-white me-2 mt-2" data-bs-dismiss="modal" aria-label="Close"></button>
+@model Proyecto.Pages.PreciosReglasPromocionesModel
+
+<!-- MODAL DE BÚSQUEDA AVANZADA DE PRODUCTOS PARA PROMOCIÓN (ESTILO HU-09) -->
+<div class="modal fade" id="modalBuscarProductosPromo" tabindex="-1" aria-labelledby="modalBuscarProductosPromoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalBuscarProductosPromoLabel">
+                    <i class="bi bi-search me-2"></i>Seleccionar Productos para la Promoción
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body py-5">
-                <div class="mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" fill="#6f42c1" class="bi bi-check-lg" viewBox="0 0 16 16" style="stroke: #6f42c1; stroke-width: 1.5;">
-                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
-                    </svg>
+
+            <div class="modal-body p-4">
+                <!-- Barra de Filtros: Nombre y Categoría -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <label for="filtroNombreProdModal" class="form-label small fw-semibold text-muted mb-1">Buscar por nombre de producto</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-box-seam"></i></span>
+                            <input type="text" id="filtroNombreProdModal" class="form-control" placeholder="Escribe el nombre del producto..." autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="filtroCategoriaProdModal" class="form-label small fw-semibold text-muted mb-1">Filtrar por categoría</label>
+                        <select id="filtroCategoriaProdModal" class="form-select">
+                            <option value="0">Todas las categorías</option>
+                            @if (Model.ListaCategorias != null)
+                            {
+                                foreach (var cat in Model.ListaCategorias)
+                                {
+                                    <option value="@cat.IdCategoria">@cat.NombreCategoria</option>
+                                }
+                            }
+                        </select>
+                    </div>
                 </div>
-                <p class="fs-5 text-dark mb-0" id="mensajeExitoTexto">El registro fue guardado exitosamente.</p>
+
+                <!-- Barra de acciones rápidas de selección -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <small class="text-muted" id="contadorResultadosModal">Mostrando productos disponibles</small>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 me-3" onclick="seleccionarVisiblesModal(true)">Seleccionar visibles</button>
+                        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0" onclick="limpiarSeleccionModal()">Limpiar selección</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Resultados -->
+                <div class="table-responsive border rounded" style="max-height: 320px;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th scope="col" class="text-center" style="width: 45px;">
+                                    <i class="bi bi-check2-square"></i>
+                                </th>
+                                <th scope="col">Producto</th>
+                                <th scope="col">Categoría</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col" class="text-center">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyResultadosModalPromo">
+                            @if (Model.ListaProductos != null && Model.ListaProductos.Any())
+                            {
+                                foreach (var prod in Model.ListaProductos)
+                                {
+                                    var catNombre = prod.IdCategoriaNavigation != null ? prod.IdCategoriaNavigation.NombreCategoria : "General";
+                                    var badgeStock = prod.Existencia > 0 ? "bg-success-subtle text-success border-success-subtle" : "bg-danger-subtle text-danger border-danger-subtle";
+                                    <tr style="cursor: pointer;" onclick="toggleFilaProductoModal(@prod.IdProducto, '@prod.Nombre.Replace("'", "\\'")')">
+                                        <td class="text-center" onclick="event.stopPropagation();">
+                                            <input class="form-check-input check-modal-promo"
+                                                   type="checkbox"
+                                                   id="chk_modal_@prod.IdProducto"
+                                                   value="@prod.IdProducto"
+                                                   data-nombre="@prod.Nombre"
+                                                   onchange="sincronizarSeleccionProducto(@prod.IdProducto, '@prod.Nombre.Replace("'", "\\'")', this.checked)" />
+                                        </td>
+                                        <td class="fw-medium">@prod.Nombre</td>
+                                        <td><span class="badge bg-light text-dark border">@catNombre</span></td>
+                                        <td class="fw-semibold text-primary">$@prod.Precio.ToString("0.00")</td>
+                                        <td class="text-center">
+                                            <span class="badge border @badgeStock">@prod.Existencia</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No hay productos registrados en la base de datos.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="modal-footer justify-content-center border-0 pb-4 pt-0">
-                <button type="button" class="btn btn-success px-5" data-bs-dismiss="modal" style="background-color: #198754; border-color: #198754;">Aceptar</button>
+
+            <div class="modal-footer bg-light justify-content-between">
+                <span class="fw-semibold text-primary" id="resumenSeleccionModal">0 productos seleccionados</span>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" onclick="aplicarSeleccionAlFormulario()">
+                        Confirmar Selección
+                    </button>
+                </div>
             </div>
         </div>
     </div>

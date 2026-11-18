@@ -17,45 +17,45 @@
         </div>
     </div>
 
-    <!-- Alerta de Respuesta -->
+    <!-- Alerta Dinámica de Respuesta AJAX -->
     <div id="alertaResultado" class="alert alert-dismissible fade show d-none shadow-sm mb-4" role="alert">
         <span id="alertaMensaje"></span>
         <button type="button" class="btn-close" onclick="cerrarAlerta()"></button>
     </div>
 
     <form id="formVenta" method="post" asp-page-handler="ProcesarVenta">
-        <!-- Inputs ocultos para enviar los datos al backend -->
+        @Html.AntiForgeryToken()
         <input type="hidden" id="clienteId" name="ClienteId" required />
         <input type="hidden" id="totalVentaInput" name="TotalVenta" value="0.00" />
-        <!-- Contenedor dinámico de productos seleccionados para el Model Binding -->
         <div id="productosContainerOculto"></div>
 
         <div class="row g-4">
-            <!-- COLUMNA IZQUIERDA: Datos del Cliente, Búsqueda de Productos, Forma de Pago y Examen -->
+            <!-- COLUMNA IZQUIERDA -->
             <div class="col-lg-5">
                 
                 <!-- 1. Datos del Cliente -->
                 <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0">
+                    <div class="card-header bg-transparent border-0 pt-3 px-4 pb-0 d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold mb-0">Datos del Cliente</h5>
+                        <span id="badgeBonificacion" class="badge bg-success-subtle text-success d-none">
+                            <i class="bi bi-patch-check-fill me-1"></i>Examen Bonificado
+                        </span>
                     </div>
                     <div class="card-body p-4">
-                        <!-- Nombre del Cliente (Autocompleta Teléfono) -->
                         <div class="mb-3 position-relative">
                             <label class="form-label fw-semibold small">Nombre del Cliente</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                <input type="text" id="inputNombreCliente" class="form-control" placeholder="Nombre del cliente..." autocomplete="off" />
+                                <input type="text" id="inputNombreCliente" class="form-control" placeholder="Buscar por nombre..." autocomplete="off" />
                             </div>
                             <ul id="sugerenciasClienteNombre" class="dropdown-menu w-100 shadow-sm" style="max-height: 180px; overflow-y: auto;"></ul>
                         </div>
 
-                        <!-- Número de Teléfono (Autocompleta Nombre) -->
                         <div class="mb-2 position-relative">
                             <label class="form-label fw-semibold small">Num. Teléfono</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-telephone-fill"></i></span>
-                                <input type="text" id="inputTelefonoCliente" class="form-control" placeholder="10 dígitos..." autocomplete="off" />
+                                <input type="text" id="inputTelefonoCliente" class="form-control" placeholder="Filtrar por 10 dígitos..." autocomplete="off" />
                             </div>
                             <ul id="sugerenciasClienteTel" class="dropdown-menu w-100 shadow-sm" style="max-height: 180px; overflow-y: auto;"></ul>
                         </div>
@@ -68,13 +68,11 @@
                         <h5 class="fw-bold mb-0">Productos y Detalles</h5>
                     </div>
                     <div class="card-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">Búsqueda de Producto</label>
-                            <button type="button" class="btn btn-outline-primary w-100 text-start d-flex justify-content-between align-items-center py-2" onclick="abrirModalBusquedaProductos()">
-                                <span><i class="bi bi-search me-2"></i> Buscar productos en catálogo...</span>
-                                <i class="bi bi-plus-circle fw-bold"></i>
-                            </button>
-                        </div>
+                        <label class="form-label fw-semibold small">Búsqueda de Producto</label>
+                        <button type="button" class="btn btn-outline-primary w-100 text-start d-flex justify-content-between align-items-center py-2" onclick="abrirModalBusquedaProductos()">
+                            <span><i class="bi bi-search me-2"></i> Buscar productos en catálogo...</span>
+                            <i class="bi bi-plus-circle fw-bold"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -95,7 +93,6 @@
                             </div>
                         </div>
 
-                        <!-- Incluir Examen de la Vista -->
                         <div class="form-check form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="incluyeExamen" name="IncluyeExamen" value="true" onchange="calcularTotalesGlobales()">
                             <label class="form-check-label fw-semibold small" for="incluyeExamen">
@@ -103,7 +100,6 @@
                             </label>
                         </div>
 
-                        <!-- Descuentos Adicionales (Sin funcionalidad por ahora, tal como se solicitó) -->
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="descuentosAdicionales" disabled>
                             <label class="form-check-label text-muted small" for="descuentosAdicionales">
@@ -115,7 +111,7 @@
 
             </div>
 
-            <!-- COLUMNA DERECHA: Tabla de Productos Seleccionados, Totales y Procesar Cobro -->
+            <!-- COLUMNA DERECHA -->
             <div class="col-lg-7">
                 
                 <!-- Tabla de Productos en el Carrito -->
@@ -130,12 +126,12 @@
                                     <tr>
                                         <th class="ps-3">Nombre Producto</th>
                                         <th class="text-center" style="width: 140px;">Cantidad</th>
-                                        <th class="text-end pe-3">Precio</th>
+                                        <th class="text-end pe-3">Subtotal</th>
                                         <th class="text-center" style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbodyCarrito">
-                                    <tr id="filaVaciaCarrito">
+                                    <tr>
                                         <td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td>
                                     </tr>
                                 </tbody>
@@ -144,11 +140,11 @@
                     </div>
                 </div>
 
-                <!-- Resumen de la Operación y Botón Procesar -->
+                <!-- Resumen de la Operación -->
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal:</span>
+                            <span class="text-muted">Subtotal Productos:</span>
                             <span id="lblSubtotal" class="fw-semibold">$0.00 MXN</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
@@ -156,7 +152,7 @@
                             <span id="lblCostoExamen" class="fw-semibold">$0.00 MXN</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3 text-success">
-                            <span>Bonificación / Descuento:</span>
+                            <span>Bonificación Examen (Receta &le; 30 días):</span>
                             <span id="lblBonificacion" class="fw-semibold">-$0.00 MXN</span>
                         </div>
                         <hr />
@@ -176,7 +172,7 @@
     </form>
 </div>
 
-<!-- ================= MODAL DE BÚSQUEDA DE PRODUCTOS (SUPERPUESTO) ================= -->
+<!-- ================= MODAL DE BÚSQUEDA DE PRODUCTOS ================= -->
 <div class="modal fade" id="modalBusquedaProductos" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
@@ -185,7 +181,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <!-- Filtros de Búsqueda en el Modal -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-8">
                         <div class="input-group">
@@ -200,15 +195,14 @@
                     </div>
                 </div>
 
-                <!-- Tabla de Resultados para Seleccionar Múltiples Productos -->
                 <div class="table-responsive border rounded" style="max-height: 350px;">
-                    <table class="table table-hover align-middle mb-0" id="tablaModalProductos">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th class="text-center" style="width: 50px;">Sel.</th>
                                 <th class="ps-3">Nombre</th>
                                 <th>Categoría</th>
-                                <th class="text-center">Stock</th>
+                                <th class="text-center">Disponible</th>
                                 <th class="text-end pe-3">Precio</th>
                             </tr>
                         </thead>
@@ -230,7 +224,7 @@
     </div>
 </div>
 
-<!-- ================= MODAL DE PROCESAR COBRO (EFECTIVO / CAMBIO / TARJETA) ================= -->
+<!-- ================= MODAL DE PROCESAR COBRO ================= -->
 <div class="modal fade" id="modalProcesarCobro" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -244,7 +238,7 @@
                     <h2 class="fw-bold text-primary" id="modalMontoTotalTexto">$0.00 MXN</h2>
                 </div>
 
-                <!-- Contenedor específico para pago en Efectivo -->
+                <!-- Pago en Efectivo -->
                 <div id="seccionEfectivo" class="mb-3">
                     <label class="form-label fw-semibold">Cantidad Recibida en Efectivo</label>
                     <div class="input-group input-group-lg mb-3">
@@ -259,15 +253,15 @@
                     </div>
                 </div>
 
-                <!-- Contenedor para Tarjeta / Transferencia -->
+                <!-- Pago Electrónico -->
                 <div id="seccionElectronico" class="mb-3 d-none text-center p-3 bg-light rounded border">
-                    <p class="mb-0 text-muted">El cobro se procesará mediante <strong id="lblMetodoPagoText">Tarjeta</strong>.</p>
+                    <p class="mb-0 text-muted">El cobro se registrará mediante <strong id="lblMetodoPagoText">Tarjeta</strong>.</p>
                 </div>
             </div>
             <div class="modal-footer bg-light border-0 justify-content-center py-3">
                 <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success px-4 fw-bold" onclick="enviarFormularioVenta()">
-                    <i class="bi bi-check-circle me-1"></i> Finalizar Cobro
+                <button type="button" id="btnConfirmarAjax" class="btn btn-success px-4 fw-bold" onclick="ejecutarCobroAjax()">
+                    <i class="bi bi-check-circle me-1"></i> Confirmar y Cobrar
                 </button>
             </div>
         </div>
@@ -276,11 +270,9 @@
 
 @section Scripts {
     <script>
-        // Array global para los productos agregados al carrito
         let carritoProductos = [];
         let catalogoProductosGlobal = [];
         let precioExamenBase = 250.00;
-        let diasVigenciaBonif = 30;
         let clienteTieneBonificacion = false;
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -288,7 +280,7 @@
             cargarParametrosNegocio();
         });
 
-        // ================= 1. BÚSQUEDA DUAL DE CLIENTE (NOMBRE <-> TELÉFONO) =================
+        // ================= 1. BÚSQUEDA DUAL DE CLIENTE =================
         function inicializarBusquedaCliente() {
             const inputNombre = document.getElementById('inputNombreCliente');
             const ulNombre = document.getElementById('sugerenciasClienteNombre');
@@ -296,64 +288,54 @@
             const ulTel = document.getElementById('sugerenciasClienteTel');
             const inputHiddenId = document.getElementById('clienteId');
 
-            inputNombre.addEventListener('input', function () {
-                const query = this.value.trim();
-                if (query.length < 2) { ulNombre.classList.remove('show'); return; }
+            const seleccionarCliente = (c) => {
+                inputNombre.value = c.nombre;
+                inputTel.value = c.telefono || '';
+                inputHiddenId.value = c.id;
+                ulNombre.classList.remove('show');
+                ulTel.classList.remove('show');
+                verificarBonificacionCliente(c.id);
+            };
+
+            const buscarYRenderizar = (query, ulElement, mostrarTelPrimero) => {
+                if (query.length < 2) { ulElement.classList.remove('show'); return; }
 
                 fetch(`?handler=BuscarClientes&criterio=${encodeURIComponent(query)}`)
                     .then(res => res.json())
                     .then(data => {
-                        ulNombre.innerHTML = '';
+                        ulElement.innerHTML = '';
                         if (data.length === 0) {
-                            ulNombre.innerHTML = '<li class="dropdown-item text-muted disabled">No encontrado</li>';
+                            ulElement.innerHTML = '<li class="dropdown-item text-muted disabled">Sin coincidencias</li>';
                         } else {
                             data.forEach(c => {
                                 const li = document.createElement('li');
                                 li.className = 'dropdown-item d-flex justify-content-between align-items-center';
                                 li.style.cursor = 'pointer';
-                                li.innerHTML = `<span><strong>${c.nombre}</strong></span> <small class="text-muted">${c.telefono || 'Sin tel'}</small>`;
-                                li.onclick = function () {
-                                    inputNombre.value = c.nombre;
-                                    inputTel.value = c.telefono || '';
-                                    inputHiddenId.value = c.id;
-                                    ulNombre.classList.remove('show');
-                                    verificarBonificacionCliente(c.id);
-                                };
-                                ulNombre.appendChild(li);
+                                li.innerHTML = mostrarTelPrimero
+                                    ? `<span>${c.nombre}</span> <small class="text-muted fw-bold">${c.telefono || 'Sin tel'}</small>`
+                                    : `<span><strong>${c.nombre}</strong></span> <small class="text-muted">${c.telefono || 'Sin tel'}</small>`;
+                                li.onclick = () => seleccionarCliente(c);
+                                ulElement.appendChild(li);
                             });
                         }
-                        ulNombre.classList.add('show');
+                        ulElement.classList.add('show');
                     });
+            };
+
+            inputNombre.addEventListener('input', function () {
+                inputHiddenId.value = '';
+                clienteTieneBonificacion = false;
+                document.getElementById('badgeBonificacion').classList.add('d-none');
+                calcularTotalesGlobales();
+                buscarYRenderizar(this.value.trim(), ulNombre, false);
             });
 
             inputTel.addEventListener('input', function () {
-                const query = this.value.trim();
-                if (query.length < 2) { ulTel.classList.remove('show'); return; }
-
-                fetch(`?handler=BuscarClientes&criterio=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        ulTel.innerHTML = '';
-                        if (data.length === 0) {
-                            ulTel.innerHTML = '<li class="dropdown-item text-muted disabled">No encontrado</li>';
-                        } else {
-                            data.forEach(c => {
-                                const li = document.createElement('li');
-                                li.className = 'dropdown-item d-flex justify-content-between align-items-center';
-                                li.style.cursor = 'pointer';
-                                li.innerHTML = `<span>${c.nombre}</span> <small class="text-muted fw-bold">${c.telefono || ''}</small>`;
-                                li.onclick = function () {
-                                    inputTel.value = c.telefono || '';
-                                    inputNombre.value = c.nombre;
-                                    inputHiddenId.value = c.id;
-                                    ulTel.classList.remove('show');
-                                    verificarBonificacionCliente(c.id);
-                                };
-                                ulTel.appendChild(li);
-                            });
-                        }
-                        ulTel.classList.add('show');
-                    });
+                inputHiddenId.value = '';
+                clienteTieneBonificacion = false;
+                document.getElementById('badgeBonificacion').classList.add('d-none');
+                calcularTotalesGlobales();
+                buscarYRenderizar(this.value.trim(), ulTel, true);
             });
 
             document.addEventListener('click', function (e) {
@@ -366,14 +348,19 @@
             fetch(`?handler=ConsultarProducto&idProducto=0&idCliente=${clienteId}`)
                 .then(res => res.json())
                 .then(data => {
-                    // El backend valida la receta previa en este handler
                     clienteTieneBonificacion = data.aplicaBonificacion || false;
+                    const badge = document.getElementById('badgeBonificacion');
+                    if (clienteTieneBonificacion) {
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
                     calcularTotalesGlobales();
                 }).catch(() => { clienteTieneBonificacion = false; });
         }
 
         function cargarParametrosNegocio() {
-            fetch(`?handler=ConsultarProducto&idProducto=1&idCliente=0`)
+            fetch(`?handler=ConsultarProducto&idProducto=0&idCliente=0`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -382,10 +369,10 @@
                 }).catch(() => {});
         }
 
-        // ================= 2. MODAL Y BÚSQUEDA DE PRODUCTOS =================
+        // ================= 2. MODAL Y CATÁLOGO DE PRODUCTOS =================
         function abrirModalBusquedaProductos() {
-            var modalEl = document.getElementById('modalBusquedaProductos');
-            var modal = new bootstrap.Modal(modalEl);
+            document.getElementById('modalInputBuscar').value = '';
+            var modal = new bootstrap.Modal(document.getElementById('modalBusquedaProductos'));
             modal.show();
             cargarProductosModal();
         }
@@ -414,15 +401,25 @@
             }
 
             productos.forEach(p => {
+                // Restar lo que ya está en el carrito para mostrar disponibilidad real
+                const enCarrito = carritoProductos.find(item => item.id === p.id);
+                const cantEnCarrito = enCarrito ? enCarrito.cantidad : 0;
+                const stockRestante = Math.max(0, p.existencia - cantEnCarrito);
+
                 const tr = document.createElement('tr');
-                const badgeClass = p.existencia > 0 ? 'bg-success' : 'bg-danger';
+                const badgeClass = stockRestante > 0 ? 'bg-success' : 'bg-danger';
                 tr.innerHTML = `
                     <td class="text-center">
-                        <input class="form-check-input check-prod-modal" type="checkbox" value="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" data-stock="${p.existencia}" ${p.existencia <= 0 ? 'disabled' : ''}>
+                        <input class="form-check-input check-prod-modal" type="checkbox" value="${p.id}" 
+                               data-nombre="${p.nombre}" data-precio="${p.precio}" data-stock="${p.existencia}" 
+                               ${stockRestante <= 0 ? 'disabled' : ''}>
                     </td>
-                    <td class="ps-3 fw-medium">${p.nombre}</td>
+                    <td class="ps-3 fw-medium">
+                        ${p.nombre} 
+                        ${cantEnCarrito > 0 ? `<small class="text-primary d-block">(${cantEnCarrito} en carrito)</small>` : ''}
+                    </td>
                     <td><span class="badge bg-secondary-subtle text-secondary">${p.categoria}</span></td>
-                    <td class="text-center"><span class="badge ${badgeClass}">${p.existencia}</span></td>
+                    <td class="text-center"><span class="badge ${badgeClass}">${stockRestante}</span></td>
                     <td class="text-end pe-3 fw-bold text-primary">$${p.precio.toFixed(2)} MXN</td>
                 `;
                 tbody.appendChild(tr);
@@ -440,7 +437,7 @@
         function agregarProductosSeleccionados() {
             const checkboxes = document.querySelectorAll('.check-prod-modal:checked');
             if (checkboxes.length === 0) {
-                alert("Selecciona al menos un producto.");
+                alert("Selecciona al menos un producto disponible.");
                 return;
             }
 
@@ -448,35 +445,30 @@
                 const id = parseInt(chk.value);
                 const nombre = chk.getAttribute('data-nombre');
                 const precio = parseFloat(chk.getAttribute('data-precio'));
-                const stock = parseInt(chk.getAttribute('data-stock'));
+                const stockMax = parseInt(chk.getAttribute('data-stock'));
 
-                // Verificar si ya está en el carrito
                 const existente = carritoProductos.find(item => item.id === id);
                 if (existente) {
-                    if (existente.cantidad < stock) {
+                    if (existente.cantidad < stockMax) {
                         existente.cantidad += 1;
                     }
-                } else {
+                } else if (stockMax > 0) {
                     carritoProductos.push({
                         id: id,
                         nombre: nombre,
                         precioUnitario: precio,
                         cantidad: 1,
-                        stockMax: stock
+                        stockMax: stockMax
                     });
                 }
             });
 
-            // Cerrar modal
-            var modalEl = document.getElementById('modalBusquedaProductos');
-            var modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-
+            bootstrap.Modal.getInstance(document.getElementById('modalBusquedaProductos')).hide();
             actualizarTablaCarrito();
             calcularTotalesGlobales();
         }
 
-        // ================= 3. CONTROL DE CARRITO Y CANTIDADES (+ / -) =================
+        // ================= 3. CARRITO Y CANTIDADES =================
         function cambiarCantidad(id, delta) {
             const item = carritoProductos.find(i => i.id === id);
             if (!item) return;
@@ -486,7 +478,7 @@
                 carritoProductos = carritoProductos.filter(i => i.id !== id);
             } else if (item.cantidad > item.stockMax) {
                 item.cantidad = item.stockMax;
-                alert("Has alcanzado el límite de stock disponible.");
+                mostrarAlerta(`Stock máximo alcanzado para "${item.nombre}" (${item.stockMax} disponibles).`, "warning");
             }
 
             actualizarTablaCarrito();
@@ -506,14 +498,13 @@
             containerOculto.innerHTML = '';
 
             if (carritoProductos.length === 0) {
-                tbody.innerHTML = `<tr id="filaVaciaCarrito"><td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td></tr>`;
                 return;
             }
 
             carritoProductos.forEach((item, index) => {
                 const totalLinea = item.precioUnitario * item.cantidad;
 
-                // Fila visual
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="ps-3 fw-medium">${item.nombre}</td>
@@ -531,31 +522,32 @@
                 `;
                 tbody.appendChild(tr);
 
-                // Inputs ocultos para que el backend C# reciba el producto y la cantidad (asumiendo manejo del primer producto o múltiples según tu backend)
-                // Nota: Tu backend actual procesa `ProductoId`. Si decides adaptarlo a múltiples, aquí se envían. Para mantener compatibilidad con tu backend actual, enviamos el primer producto o el ID principal.
-                if (index === 0) {
-                    const inputHiddenProd = document.createElement('input');
-                    inputHiddenProd.type = 'hidden';
-                    inputHiddenProd.name = 'ProductoId';
-                    inputHiddenProd.value = item.id;
-                    containerOculto.appendChild(inputHiddenProd);
-                }
+                // Generar inputs indexados para que ASP.NET Core los vincule a List<ItemVentaDto> Items
+                const inputId = document.createElement('input');
+                inputId.type = 'hidden';
+                inputId.name = `Items[${index}].ProductoId`;
+                inputId.value = item.id;
+                containerOculto.appendChild(inputId);
+
+                const inputCant = document.createElement('input');
+                inputCant.type = 'hidden';
+                inputCant.name = `Items[${index}].Cantidad`;
+                inputCant.value = item.cantidad;
+                containerOculto.appendChild(inputCant);
             });
         }
 
-        // ================= 4. CÁLCULO DE TOTALES Y RESUMEN =================
+        // ================= 4. CÁLCULO DE TOTALES =================
         function calcularTotalesGlobales() {
-            let subtotalProductos = 0;
-            carritoProductos.forEach(item => {
-                subtotalProductos += (item.precioUnitario * item.cantidad);
-            });
+            let subtotalProductos = carritoProductos.reduce((acc, item) => acc + (item.precioUnitario * item.cantidad), 0);
 
             const incluyeExamen = document.getElementById('incluyeExamen').checked;
             let costoExamen = incluyeExamen ? precioExamenBase : 0.00;
-            let bonificacion = (incluyeExamen && (clienteTieneBonificacion || carritoProductos.length > 0)) ? precioExamenBase : 0.00;
+            
+            // Bonificación real: solo si incluye examen y el cliente tiene receta vigente (<= 30 días)
+            let bonificacion = (incluyeExamen && clienteTieneBonificacion) ? precioExamenBase : 0.00;
 
-            let totalCobrar = subtotalProductos + costoExamen - bonificacion;
-            if (totalCobrar < 0) totalCobrar = 0;
+            let totalCobrar = Math.max(0, subtotalProductos + costoExamen - bonificacion);
 
             document.getElementById('lblSubtotal').textContent = `$${subtotalProductos.toFixed(2)} MXN`;
             document.getElementById('lblCostoExamen').textContent = `$${costoExamen.toFixed(2)} MXN`;
@@ -564,28 +556,27 @@
             document.getElementById('totalVentaInput').value = totalCobrar.toFixed(2);
         }
 
-        // ================= 5. MODAL DE PROCESAR COBRO (CAMBIO Y TAREJTA) =================
+        // ================= 5. VALIDACIÓN Y COBRO ASÍNCRONO (AJAX) =================
         function validarYMostrarModalPago() {
             const clienteId = document.getElementById('clienteId').value;
-            const total = document.getElementById('totalVentaInput').value;
+            const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
 
-            if (!clienteId || clienteId <= 0) {
-                mostrarAlerta("Por favor selecciona un cliente válido de la lista.", "danger");
+            if (!clienteId || parseInt(clienteId) <= 0) {
+                mostrarAlerta("Por favor selecciona un cliente válido de la lista desplegable.", "danger");
                 return;
             }
             if (carritoProductos.length === 0) {
                 mostrarAlerta("Debes agregar al menos un producto al carrito.", "danger");
                 return;
             }
-            if (parseFloat(total) <= 0) {
-                mostrarAlerta("El total a cobrar no puede ser $0.00.", "warning");
+            if (total <= 0) {
+                mostrarAlerta("El total a cobrar debe ser mayor a $0.00 MXN.", "warning");
                 return;
             }
 
             cerrarAlerta();
             const formaPago = document.getElementById('formaPago').value;
-
-            document.getElementById('modalMontoTotalTexto').textContent = `$${parseFloat(total).toFixed(2)} MXN`;
+            document.getElementById('modalMontoTotalTexto').textContent = `$${total.toFixed(2)} MXN`;
 
             const seccionEfectivo = document.getElementById('seccionEfectivo');
             const seccionElectronico = document.getElementById('seccionElectronico');
@@ -601,9 +592,7 @@
                 document.getElementById('lblMetodoPagoText').textContent = formaPago;
             }
 
-            var modalEl = document.getElementById('modalProcesarCobro');
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
+            new bootstrap.Modal(document.getElementById('modalProcesarCobro')).show();
         }
 
         function calcularCambioEfectivo() {
@@ -621,7 +610,7 @@
             }
         }
 
-        function enviarFormularioVenta() {
+        function ejecutarCobroAjax() {
             const formaPago = document.getElementById('formaPago').value;
             if (formaPago === 'Efectivo') {
                 const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
@@ -632,19 +621,63 @@
                 }
             }
 
-            // Ocultar modal y enviar formulario por POST
-            var modalEl = document.getElementById('modalProcesarCobro');
-            var modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
+            const btnConfirmar = document.getElementById('btnConfirmarAjax');
+            btnConfirmar.disabled = true;
+            btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
 
-            document.getElementById('formVenta').submit();
+            const form = document.getElementById('formVenta');
+            const formData = new FormData(form);
+
+            fetch('?handler=ProcesarVenta', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || "Error al procesar la venta.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                bootstrap.Modal.getInstance(document.getElementById('modalProcesarCobro')).hide();
+
+                if (data.success) {
+                    mostrarAlerta(`${data.mensaje} Total cobrado: $${data.montoCobrado.toFixed(2)} MXN`, "success");
+                    resetearFormularioCompleto();
+                } else {
+                    mostrarAlerta("No se pudo completar el cobro.", "warning");
+                }
+            })
+            .catch(error => {
+                bootstrap.Modal.getInstance(document.getElementById('modalProcesarCobro')).hide();
+                mostrarAlerta(error.message, "danger");
+            })
+            .finally(() => {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirmar y Cobrar';
+            });
+        }
+
+        function resetearFormularioCompleto() {
+            document.getElementById('formVenta').reset();
+            document.getElementById('clienteId').value = '';
+            document.getElementById('badgeBonificacion').classList.add('d-none');
+            carritoProductos = [];
+            clienteTieneBonificacion = false;
+            actualizarTablaCarrito();
+            calcularTotalesGlobales();
         }
 
         function mostrarAlerta(mensaje, tipo) {
-            var alerta = document.getElementById('alertaResultado');
-            var texto = document.getElementById('alertaMensaje');
-            alerta.className = "alert alert-" + tipo + " alert-dismissible fade show shadow-sm mb-4";
+            const alerta = document.getElementById('alertaResultado');
+            const texto = document.getElementById('alertaMensaje');
+            alerta.className = `alert alert-${tipo} alert-dismissible fade show shadow-sm mb-4`;
             texto.textContent = mensaje;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function cerrarAlerta() {
