@@ -4,7 +4,17 @@ using Proyecto.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    // Por defecto TODAS las páginas exigen login. Si mañana agregan una
+    // página y se les olvida el [Authorize], igual queda protegida.
+    options.Conventions.AuthorizeFolder("/");
+    options.Conventions.AllowAnonymousToPage("/Login");
+    options.Conventions.AllowAnonymousToPage("/Logout");
+    options.Conventions.AllowAnonymousToPage("/Error");
+    options.Conventions.AllowAnonymousToPage("/Privacy");
+    options.Conventions.AllowAnonymousToPage("/SesionCerrada");
+});
 
 // 1. Agregar soporte para caché en memoria y configuración de la sesión
 builder.Services.AddDistributedMemoryCache();

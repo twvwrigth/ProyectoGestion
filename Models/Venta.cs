@@ -15,6 +15,9 @@ public partial class Venta
 
     public int IdProducto { get; set; }
 
+    // SCRUM-12 HU-19: folio del pedido que liquida esta venta (null = venta normal sin pedido).
+    public int? IdPedido { get; set; }
+
     public DateOnly Fecha { get; set; }
 
     public string FormaPago { get; set; } = null!;
@@ -30,6 +33,9 @@ public partial class Venta
     public virtual Empleado IdEmpleadoNavigation { get; set; } = null!;
 
     public virtual Producto IdProductoNavigation { get; set; } = null!;
+
+    // SCRUM-12 HU-19: pedido liquidado con esta venta (opcional).
+    public virtual Pedido? IdPedidoNavigation { get; set; }
 
     public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

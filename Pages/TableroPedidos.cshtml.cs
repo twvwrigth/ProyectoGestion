@@ -130,7 +130,7 @@ namespace Proyecto.Pages
             return $"https://wa.me/{telLimpio}?text={Uri.EscapeDataString(mensaje)}";
         }
 
-        // 3. MARCAR COMO ENTREGADO (Con candado de saldo en $0 - Criterio 3)
+        // 3. MARCAR COMO ENTREGADO (Con saldo pendiente redirige a caja - Criterio 3)
         public async Task<IActionResult> OnPostEntregarAsync(int id)
         {
             var pedido = await _context.Pedidos.FindAsync(id);
@@ -138,8 +138,10 @@ namespace Proyecto.Pages
 
             if (pedido.SaldoPendiente > 0)
             {
-                TempData["ErrorEntrega"] = $"No se puede entregar el pedido #{pedido.FolioPedido} porque tiene un saldo pendiente de ${pedido.SaldoPendiente:0.00}. Debe liquidarse primero.";
-                return RedirectToPage();
+                // Observación PO (SCRUM-18/19): con saldo pendiente no se bloquea la
+                // entrega, se redirige a caja para liquidar el sobrante. El cobro vive
+                // en el zip SCRUM-12-HU19-Caja, que consume el parámetro folioPedido.
+                return RedirectToPage("/Index", new { folioPedido = id });
             }
 
             pedido.Estado = "Entregado";

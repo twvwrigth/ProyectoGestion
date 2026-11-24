@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 
 namespace Proyecto.Pages.Clientes
 {
+    [Authorize(Roles = "Encargado,Vendedor,Optometrista")]
     public class DetalleModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
@@ -18,9 +20,7 @@ namespace Proyecto.Pages.Clientes
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            // Criterio 5: Restricción de rol (Previene que el laboratorista abra fichas)
-            // Cuando leamos la sesión del usuario logueado:
-            // if (User.IsInRole("Laboratorista")) { return Forbid(); }
+            // El rol ya se valida con [Authorize] en la clase: el Laboratorista no entra.
 
             var clienteConsultado = await _context.Clientes
                 .Include(c => c.Receta)

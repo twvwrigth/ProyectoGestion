@@ -719,6 +719,9 @@ public partial class MiApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.IdProducto, "fk_venta_producto");
 
+            // SCRUM-12 HU-19: venta opcionalmente ligada a un pedido (liquidación de saldo).
+            entity.HasIndex(e => e.IdPedido, "fk_venta_pedido");
+
             entity.Property(e => e.FolioVenta).HasColumnName("folioVenta");
             entity.Property(e => e.ExamenComprado).HasDefaultValueSql("'0'");
             entity.Property(e => e.Fecha).HasColumnName("fecha");
@@ -728,6 +731,8 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.IdCliente).HasColumnName("idCliente");
             entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
             entity.Property(e => e.IdProducto).HasColumnName("idProducto");
+            // SCRUM-12 HU-19: FK opcional al pedido liquidado.
+            entity.Property(e => e.IdPedido).HasColumnName("idPedido");
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
@@ -746,6 +751,12 @@ public partial class MiApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_venta_producto");
+
+            // SCRUM-12 HU-19: una venta liquida como máximo un pedido; un pedido puede tener varias ventas.
+            entity.HasOne(d => d.IdPedidoNavigation).WithMany(p => p.Ventas)
+                .HasForeignKey(d => d.IdPedido)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_venta_pedido");
         });
 
         OnModelCreatingPartial(modelBuilder);

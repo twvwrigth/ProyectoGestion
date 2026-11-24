@@ -78,6 +78,28 @@
     else
     {
         <!-- DASHBOARD (VISIBLE PARA EL DUEÑO DE LA CAJA O EL ADMIN) -->
+        @* SCRUM-12 HU-19: aviso de pedido con adeudo que llega desde el tablero (folioPedido). *@
+        @if (Model.PedidoALiquidar != null)
+        {
+            <div class="alert alert-warning shadow-sm mb-4" role="alert">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Pedido #@Model.PedidoALiquidar.FolioPedido con saldo pendiente</h6>
+                        <p class="mb-0">Cliente: <strong>@Model.PedidoALiquidar.IdClienteNavigation?.Nombre</strong> — Monto a liquidar: <strong>$@Model.PedidoALiquidar.SaldoPendiente.ToString("0.00")</strong></p>
+                    </div>
+                    <form method="post" asp-page-handler="LiquidarPedido" class="d-flex align-items-center gap-2">
+                        <input type="hidden" name="folioPedido" value="@Model.PedidoALiquidar.FolioPedido" />
+                        <select name="formaPago" class="form-select form-select-sm" style="width: auto;" required>
+                            <option value="Efectivo" selected>Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                        </select>
+                        <button type="submit" class="btn btn-warning btn-sm fw-bold">Liquidar saldo</button>
+                    </form>
+                </div>
+            </div>
+        }
+
         <div class="row g-4 mb-4">
             <div class="col-md-3">
                 <div class="card border-0 shadow-sm bg-primary text-white h-100">
@@ -159,6 +181,51 @@
                             {
                                 <tr>
                                     <td colspan="4" class="text-center py-4 text-muted">No hay movimientos extra registrados en este turno.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* SCRUM-12 HU-19: historial de ventas del turno (antes solo se listaban los movimientos extra). *@
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-transparent border-bottom py-3">
+                <h6 class="mb-0 fw-bold">Historial de ventas del turno</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive table-card">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="ps-3">Folio</th>
+                                <th scope="col">Cliente</th>
+                                <th scope="col">Producto</th>
+                                <th scope="col">Forma de pago</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col" class="text-end pe-3">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.CajaAbierta.Ventas != null && Model.CajaAbierta.Ventas.Any())
+                            {
+                                @foreach (var v in Model.CajaAbierta.Ventas.OrderByDescending(v => v.FolioVenta))
+                                {
+                                    <tr>
+                                        <td class="ps-3">#@v.FolioVenta@(v.IdPedido != null ? $" (pedido #{v.IdPedido})" : "")</td>
+                                        <td>@v.IdClienteNavigation?.Nombre</td>
+                                        <td>@v.IdProductoNavigation?.Nombre</td>
+                                        <td>@v.FormaPago</td>
+                                        <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
+                                        <td class="text-end pe-3 fw-bold">$@v.Total.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No hay ventas registradas en este turno.</td>
                                 </tr>
                             }
                         </tbody>

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
@@ -12,6 +13,7 @@ namespace Proyecto.Pages
         public int Cantidad { get; set; }
     }
 
+    [Authorize(Roles = "Encargado,Vendedor")]
     public class VentaCobroExamenModel : PageModel
     {
         private readonly MiApplicationDbContext _context;

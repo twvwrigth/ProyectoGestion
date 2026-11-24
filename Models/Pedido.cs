@@ -36,4 +36,7 @@ public partial class Pedido
     public virtual Laboratorio IdLaboratorioNavigation { get; set; } = null!;
 
     public virtual ICollection<HistorialPedido> HistorialPedidos { get; set; } = new List<HistorialPedido>();
+
+    // SCRUM-12 HU-19: ventas que liquidaron (total o parcialmente) este pedido.
+    public virtual ICollection<Venta> Ventas { get; set; } = new List<Venta>();
 }

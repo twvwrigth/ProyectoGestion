@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 
 namespace Proyecto.Pages
 {
+    [Authorize(Roles = "Encargado,Vendedor,Optometrista")]
     public class ListaEsperaModel : PageModel
     {
         private readonly MiApplicationDbContext _context;

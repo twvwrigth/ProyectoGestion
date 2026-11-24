@@ -11,7 +11,7 @@ namespace Proyecto.Pages
         {
             // Destruye la cookie del usuario
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToPage("/login"); // Corregido a minúsculas
+            return RedirectToPage("/SesionCerrada");
         }
     }
 }

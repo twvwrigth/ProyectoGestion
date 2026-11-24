@@ -114,7 +114,18 @@ namespace Proyecto.Pages
             {
                 return RedirectToPage("/Index");
             }
-            return RedirectToPage("/catalogo"); 
+            if (usuario.IsInRole("Laboratorista"))
+            {
+                return RedirectToPage("/TrabajoLaboratorista");
+            }
+            if (usuario.IsInRole("Optometrista"))
+            {
+                return RedirectToPage("/listaEspera");
+            }
+            // OJO: antes esto mandaba a /catalogo, pero el catálogo es solo
+            // Encargado/Vendedor, así que el Optometrista y el Laboratorista
+            // quedaban en un bucle: denegado -> /Login -> /catalogo -> denegado...
+            return RedirectToPage("/listaEspera");
         }
     }
 }

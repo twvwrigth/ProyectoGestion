@@ -153,7 +153,7 @@
                             @foreach (var emp in Model.EmpleadosList)
                             {
                                 <tr>
-                                    <td class="ps-3 text-muted fw-bold">#@emp.IdEmpleado</td>
+                                    <td class="ps-3 text-muted fw-bold">EMP-@emp.IdEmpleado.ToString("D6")</td>
                                     <td class="fw-medium">@emp.Nombre</td>
                                     <td>@emp.Usuario</td>
                                     <td>

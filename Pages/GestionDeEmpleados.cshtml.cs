@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto.Pages;
 
+[Authorize(Roles = "Encargado")]
 public class GestionDeEmpleadosModel : PageModel
 {
     private readonly MiApplicationDbContext _context;
