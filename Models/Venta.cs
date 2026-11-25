@@ -30,7 +30,6 @@ public partial class Venta
 
     public bool? ExamenComprado { get; set; }
 
-<<<<<<< HEAD
     // HU-12.2: total de descuentos aplicados a la venta (promociones +
     // descuento manual). Invariante:
     // Total = SUM(detalle.subtotal - detalle.descuento) + costoExamen.
@@ -45,19 +44,15 @@ public partial class Venta
     // HU-09.3: true = el examen pagado de ESTA venta ya se usó como
     // crédito en una compra posterior. No se puede reutilizar.
     public bool CreditoExamenUsado { get; set; }
-=======
     public string Estado { get; set; } = "Activa";
 
     public int Cantidad { get; set; } = 1;
-
-    public decimal Descuento { get; set; }
 
     public decimal? PrecioVenta { get; set; }
 
     public string? MotivoCancelacion { get; set; }
 
     public DateTime? FechaCancelacion { get; set; }
->>>>>>> 2bc850b4ab3ed82f3f5c3c1f6399f0195e206086
 
     public virtual CajaTurno? IdCajaTurnoNavigation { get; set; }
 

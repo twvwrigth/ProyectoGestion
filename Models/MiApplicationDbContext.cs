@@ -59,7 +59,6 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Venta> Venta { get; set; }
 
-<<<<<<< HEAD
     // HU-09 (detalle_venta): líneas de venta.
     public virtual DbSet<DetalleVenta> DetalleVenta { get; set; }
 
@@ -73,8 +72,6 @@ public partial class MiApplicationDbContext : DbContext
     // Models/AjusteInventario.cs, y las versiones extendidas de
     // Models/Bitacora.cs (FechaHora, TipoAccion, Estado, FolioReferencia)
     // y Models/Producto.cs (Activo, FechaBaja).
-=======
->>>>>>> 2bc850b4ab3ed82f3f5c3c1f6399f0195e206086
     public virtual DbSet<Autorizacion> Autorizaciones { get; set; }
 
     public virtual DbSet<AjusteInventario> AjusteInventarios { get; set; }
@@ -808,7 +805,6 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_venta_pedido");
         });
 
-<<<<<<< HEAD
         // HU-09: detalle_venta (1 venta -> N líneas).
         modelBuilder.Entity<DetalleVenta>(entity =>
         {
@@ -880,8 +876,6 @@ public partial class MiApplicationDbContext : DbContext
         // que el bloque va directo dentro de OnModelCreating.)
 
         // --- HU-03: Bitacora, columnas nuevas ---
-=======
->>>>>>> 2bc850b4ab3ed82f3f5c3c1f6399f0195e206086
         modelBuilder.Entity<Bitacora>(entity =>
         {
             entity.Property(e => e.FechaHora).HasColumnType("datetime").HasColumnName("fecha_hora");
