@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,6 +8,7 @@ using Proyecto.Models;
 
 namespace Proyecto.Pages
 {
+    [Authorize(Roles = "Encargado,Vendedor")]
     public class CotizacionModel : PageModel
     {
         private readonly MiApplicationDbContext _context;

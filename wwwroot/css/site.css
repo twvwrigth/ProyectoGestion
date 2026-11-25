@@ -56,3 +56,90 @@ body {
   color: var(--bs-secondary-color);
   list-style: none;
 }
+
+@media (min-width: 992px) {
+  #menuLateral {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    visibility: visible !important;
+    transform: none !important;
+    width: 260px;
+    border-right: 1px solid var(--bs-border-color);
+    transition: width 0.2s ease;
+  }
+
+  #menuLateral .offcanvas-header .btn-close {
+    display: none;
+  }
+
+  #menuLateral .offcanvas-header {
+    justify-content: flex-end;
+  }
+
+  body.menu-colapsado #menuLateral .offcanvas-header {
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  body.menu-colapsado #menuLateral {
+    width: 72px;
+  }
+
+  body.menu-colapsado #menuLateral .menu-seccion {
+    display: none;
+  }
+
+  body.menu-colapsado #menuLateral .nav-link {
+    font-size: 0;
+    text-align: center;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.menu-colapsado #menuLateral .nav-link i {
+    font-size: 1.25rem;
+    margin-right: 0 !important;
+  }
+
+  body.menu-colapsado #menuLateral .menu-pie {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    text-align: center;
+  }
+
+  body.menu-colapsado #menuLateral .menu-pie .text-truncate {
+    display: none;
+  }
+
+  body.menu-colapsado #menuLateral .menu-pie .btn {
+    font-size: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  body.menu-colapsado #menuLateral .menu-pie .btn i {
+    font-size: 1.1rem;
+    margin-right: 0 !important;
+  }
+
+  body.menu-colapsado #menuLateral .menu-pie .d-flex {
+    justify-content: center;
+  }
+
+  body {
+    padding-left: 260px;
+    transition: padding-left 0.2s ease;
+  }
+
+  body.menu-colapsado {
+    padding-left: 72px;
+  }
+
+  body.sin-menu {
+    padding-left: 0;
+  }
+}

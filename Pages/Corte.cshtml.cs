@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
+using Proyecto.Services;
 using System.Security.Claims;
 
 namespace Proyecto.Pages
@@ -11,10 +12,12 @@ namespace Proyecto.Pages
     public class CorteModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
+        private readonly AutorizacionService _autorizaciones;
 
-        public CorteModel(MiApplicationDbContext context)
+        public CorteModel(MiApplicationDbContext context, AutorizacionService autorizaciones)
         {
             _context = context;
+            _autorizaciones = autorizaciones;
         }
 
         public CajaTurno? CajaAbierta { get; set; }
@@ -32,6 +35,16 @@ namespace Proyecto.Pages
 
         [BindProperty]
         public string? ComentarioDiferencia { get; set; }
+
+        // HU-03: autorización del encargado cuando el corte tiene diferencia.
+        [BindProperty]
+        public int? IdAutorizacion { get; set; }
+
+        [BindProperty]
+        public string? UsuarioEncargado { get; set; }
+
+        [BindProperty]
+        public string? ClaveEncargado { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -95,6 +108,33 @@ namespace Proyecto.Pages
                 return Page();
             }
 
+            // HU-03: un corte CON diferencia (faltante o sobrante) exige
+            // autorización del Encargado, además del comentario que ya se
+            // pedía. Un corte sin diferencia cierra como antes.
+            Autorizacion? aut = null;
+            if (diferencia != 0)
+            {
+                var motivoDif = $"Corte con diferencia de ${diferencia:0.00} en caja #{caja.IdCajaTurno}. " +
+                                $"Comentario: {ComentarioDiferencia}";
+                var (autorizado, autRes, mensaje) = await _autorizaciones.ResolverOSolicitarAsync(
+                    User, empleadoId, AutorizacionService.Acciones.CorteConDiferencia, $"CAJA-{caja.IdCajaTurno}",
+                    IdAutorizacion, UsuarioEncargado, ClaveEncargado,
+                    ComentarioDiferencia!, motivoDif);
+                if (!autorizado)
+                {
+                    TempData["ErrorMessage"] = mensaje;
+                    CajaAbierta = caja;
+                    TotalEntradas = entradas;
+                    TotalSalidas = salidas;
+                    VentasEfectivo = ventasEf;
+                    VentasTarjeta = caja.Ventas.Where(v => v.FormaPago == "Tarjeta").Sum(v => v.Total);
+                    VentasTransferencia = caja.Ventas.Where(v => v.FormaPago == "Transferencia").Sum(v => v.Total);
+                    SaldoEsperado = esperado;
+                    return Page();
+                }
+                aut = autRes;
+            }
+
             caja.FechaCierre = DateTime.Now;
             caja.EfectivoEsperado = esperado;
             caja.EfectivoContado = EfectivoContado;
@@ -103,6 +143,16 @@ namespace Proyecto.Pages
             caja.Estado = "Cerrada";
 
             await _context.SaveChangesAsync();
+
+            if (diferencia != 0)
+            {
+                await _autorizaciones.CerrarAutorizacionAsync(aut, empleadoId,
+                    AutorizacionService.Acciones.CorteConDiferencia, $"CAJA-{caja.IdCajaTurno}",
+                    ComentarioDiferencia!,
+                    $"Corte de caja #{caja.IdCajaTurno} con diferencia de ${diferencia:0.00} " +
+                    $"(esperado ${esperado:0.00}, contado ${EfectivoContado:0.00}). Comentario: {ComentarioDiferencia}");
+            }
+
             TempData["SuccessMessage"] = "Corte realizado y turno cerrado correctamente.";
             return RedirectToPage("/Index");
         }

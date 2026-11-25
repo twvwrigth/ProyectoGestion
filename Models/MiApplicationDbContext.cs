@@ -59,6 +59,7 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Venta> Venta { get; set; }
 
+<<<<<<< HEAD
     // HU-09 (detalle_venta): líneas de venta.
     public virtual DbSet<DetalleVenta> DetalleVenta { get; set; }
 
@@ -72,9 +73,13 @@ public partial class MiApplicationDbContext : DbContext
     // Models/AjusteInventario.cs, y las versiones extendidas de
     // Models/Bitacora.cs (FechaHora, TipoAccion, Estado, FolioReferencia)
     // y Models/Producto.cs (Activo, FechaBaja).
+=======
+>>>>>>> 2bc850b4ab3ed82f3f5c3c1f6399f0195e206086
     public virtual DbSet<Autorizacion> Autorizaciones { get; set; }
 
     public virtual DbSet<AjusteInventario> AjusteInventarios { get; set; }
+
+    public virtual DbSet<Devolucion> Devoluciones { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -749,7 +754,6 @@ public partial class MiApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.IdProducto, "fk_venta_producto");
 
-            // SCRUM-12 HU-19: venta opcionalmente ligada a un pedido (liquidación de saldo).
             entity.HasIndex(e => e.IdPedido, "fk_venta_pedido");
 
             entity.Property(e => e.FolioVenta).HasColumnName("folioVenta");
@@ -798,13 +802,13 @@ public partial class MiApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_venta_producto");
 
-            // SCRUM-12 HU-19: una venta liquida como máximo un pedido; un pedido puede tener varias ventas.
             entity.HasOne(d => d.IdPedidoNavigation).WithMany(p => p.Ventas)
                 .HasForeignKey(d => d.IdPedido)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_venta_pedido");
         });
 
+<<<<<<< HEAD
         // HU-09: detalle_venta (1 venta -> N líneas).
         modelBuilder.Entity<DetalleVenta>(entity =>
         {
@@ -876,6 +880,8 @@ public partial class MiApplicationDbContext : DbContext
         // que el bloque va directo dentro de OnModelCreating.)
 
         // --- HU-03: Bitacora, columnas nuevas ---
+=======
+>>>>>>> 2bc850b4ab3ed82f3f5c3c1f6399f0195e206086
         modelBuilder.Entity<Bitacora>(entity =>
         {
             entity.Property(e => e.FechaHora).HasColumnType("datetime").HasColumnName("fecha_hora");
@@ -884,7 +890,6 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.FolioReferencia).HasMaxLength(50).HasColumnName("folio_referencia");
         });
 
-        // --- HU-03: Autorizacion (tabla nueva) ---
         modelBuilder.Entity<Autorizacion>(entity =>
         {
             entity.HasKey(e => e.IdAutorizacion).HasName("PRIMARY");
@@ -916,7 +921,6 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_aut_encargado");
         });
 
-        // --- HU-03: Producto, baja lógica (activo) ---
         modelBuilder.Entity<Producto>(entity =>
         {
             entity.Property(e => e.Activo)
@@ -927,7 +931,6 @@ public partial class MiApplicationDbContext : DbContext
                 .HasColumnName("fecha_baja");
         });
 
-        // --- HU-03: AjusteInventario (tabla nueva) ---
         modelBuilder.Entity<AjusteInventario>(entity =>
         {
             entity.HasKey(e => e.IdAjuste).HasName("PRIMARY");
@@ -967,6 +970,79 @@ public partial class MiApplicationDbContext : DbContext
             entity.HasOne(d => d.IdAutorizacionNavigation).WithMany()
                 .HasForeignKey(d => d.IdAutorizacion)
                 .HasConstraintName("fk_aju_autorizacion");
+        });
+        modelBuilder.Entity<Venta>(entity =>
+        {
+            entity.Property(e => e.Estado)
+                .HasMaxLength(20)
+                .HasDefaultValueSql("'Activa'")
+                .HasColumnName("estado");
+            entity.Property(e => e.Cantidad)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("cantidad");
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("descuento");
+            entity.Property(e => e.PrecioVenta)
+                .HasPrecision(10, 2)
+                .HasColumnName("precio_venta");
+            entity.Property(e => e.MotivoCancelacion)
+                .HasMaxLength(255)
+                .HasColumnName("motivo_cancelacion");
+            entity.Property(e => e.FechaCancelacion)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_cancelacion");
+        });
+
+        modelBuilder.Entity<ParametroNegocio>(entity =>
+        {
+            entity.Property(e => e.LimiteDescuentoVendedor)
+                .HasPrecision(5, 2)
+                .HasDefaultValueSql("'10.00'")
+                .HasColumnName("limiteDescuentoVendedor");
+        });
+
+        modelBuilder.Entity<Devolucion>(entity =>
+        {
+            entity.HasKey(e => e.IdDevolucion).HasName("PRIMARY");
+
+            entity.ToTable("devolucion");
+
+            entity.HasIndex(e => e.FolioVenta, "fk_dev_venta");
+            entity.HasIndex(e => e.IdEmpleado, "fk_dev_empleado");
+            entity.HasIndex(e => e.IdEncargadoAutoriza, "fk_dev_encargado");
+            entity.HasIndex(e => e.IdAutorizacion, "fk_dev_autorizacion");
+
+            entity.Property(e => e.IdDevolucion).HasColumnName("idDevolucion");
+            entity.Property(e => e.FolioVenta).HasColumnName("folioVenta");
+            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            entity.Property(e => e.IdEncargadoAutoriza).HasColumnName("idEncargadoAutoriza");
+            entity.Property(e => e.Fecha).HasColumnType("datetime").HasColumnName("fecha");
+            entity.Property(e => e.Monto).HasPrecision(10, 2).HasColumnName("monto");
+            entity.Property(e => e.CantidadDevuelta).HasDefaultValueSql("'1'").HasColumnName("cantidadDevuelta");
+            entity.Property(e => e.FormaPagoDevolucion).HasMaxLength(20).HasColumnName("formaPagoDevolucion");
+            entity.Property(e => e.Motivo).HasMaxLength(255).HasColumnName("motivo");
+            entity.Property(e => e.Estado).HasMaxLength(20).HasDefaultValueSql("'Completada'").HasColumnName("estado");
+            entity.Property(e => e.IdAutorizacion).HasColumnName("idAutorizacion");
+
+            entity.HasOne(d => d.FolioVentaNavigation).WithMany()
+                .HasForeignKey(d => d.FolioVenta)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_dev_venta");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany()
+                .HasForeignKey(d => d.IdEmpleado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_dev_empleado");
+
+            entity.HasOne(d => d.IdEncargadoAutorizaNavigation).WithMany()
+                .HasForeignKey(d => d.IdEncargadoAutoriza)
+                .HasConstraintName("fk_dev_encargado");
+
+            entity.HasOne(d => d.IdAutorizacionNavigation).WithMany()
+                .HasForeignKey(d => d.IdAutorizacion)
+                .HasConstraintName("fk_dev_autorizacion");
         });
     }
 }

@@ -204,7 +204,8 @@
                                 <th scope="col">Producto</th>
                                 <th scope="col">Forma de pago</th>
                                 <th scope="col">Fecha</th>
-                                <th scope="col" class="text-end pe-3">Total</th>
+                                <th scope="col" class="text-end">Total</th>
+                                <th scope="col" class="text-end pe-3">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -218,14 +219,69 @@
                                         <td>@v.IdProductoNavigation?.Nombre</td>
                                         <td>@v.FormaPago</td>
                                         <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
-                                        <td class="text-end pe-3 fw-bold">$@v.Total.ToString("0.00")</td>
+                                        <td class="text-end fw-bold">$@v.Total.ToString("0.00")</td>
+                                        <td class="text-end pe-3">
+                                            @if (v.Estado == "Activa")
+                                            {
+                                                @if (v.IdPedido == null)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalCancelar_@v.FolioVenta">
+                                                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                                                    </button>
+                                                }
+                                            }
+                                            else if (v.Estado == "Cancelada")
+                                            {
+                                                <span class="badge bg-danger">Cancelada</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">Devuelta</span>
+                                            }
+                                        </td>
                                     </tr>
+
+                                    <div class="modal fade" id="modalCancelar_@v.FolioVenta" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="post" asp-page-handler="CancelarVenta">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title">Cancelar venta folio @v.FolioVenta</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="folioVenta" value="@v.FolioVenta" />
+                                                        <p>Se devuelve <strong>$@v.Total.ToString("0.00")</strong> al cliente (reversión de caja) y se regresan <strong>@v.Cantidad</strong> unidades de <strong>@(v.IdProductoNavigation?.Nombre ?? "-")</strong> al inventario.</p>
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-semibold">Motivo de la cancelación *</label>
+                                                            <textarea name="motivo" class="form-control" rows="2" required placeholder="Ej. el cliente se arrepintió, producto defectuoso..."></textarea>
+                                                        </div>
+                                                        @if (!User.IsInRole("Encargado") && !User.IsInRole("Admin"))
+                                                        {
+                                                        <p class="fw-bold small mb-2">Autorización del encargado *</p>
+                                                        <div class="row g-2">
+                                                            <div class="col-6"><input type="text" name="usuarioEncargado" class="form-control" placeholder="Usuario del encargado" /></div>
+                                                            <div class="col-6"><input type="password" name="claveEncargado" class="form-control" placeholder="Clave del encargado" /></div>
+                                                        </div>
+                                                        <div class="mt-2"><input type="number" name="idAutorizacion" class="form-control" placeholder="O folio de autorización aprobada" /></div>
+                                                        <small class="text-muted">Si ya tienes un folio aprobado, ponlo ahí y deja usuario/clave vacíos.</small>
+                                                        }
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                                        <button type="submit" class="btn btn-danger">Cancelar venta</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 }
                             }
                             else
                             {
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">No hay ventas registradas en este turno.</td>
+                                    <td colspan="7" class="text-center py-4 text-muted">No hay ventas registradas en este turno.</td>
                                 </tr>
                             }
                         </tbody>

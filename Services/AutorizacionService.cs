@@ -5,20 +5,6 @@ using System.Security.Claims;
 namespace Proyecto.Services;
 
 // HU-03 (SCRUM-21) "Autorizaciones y bitácora".
-// Lógica común del flujo de autorización de acciones sensibles:
-//   1. El empleado intenta la acción.
-//   2. Si quien ejecuta es Encargado (o Admin), se ejecuta directo.
-//   3. Si no, puede traer un folio de autorización Aprobada, o las
-//      credenciales del encargado en el acto (usuario + clave).
-//   4. Si no trae nada, se crea una solicitud Pendiente y el encargado
-//      la resuelve después en la página /Autorizaciones.
-// Toda autorización es de un solo uso y toda resolución queda en Bitacora.
-//
-// NOTA DE SEGURIDAD (preexistente, no introducida por la HU-03): las
-// contraseñas de empleado se guardan y se comparan en texto plano, igual
-// que ya lo hace el login (Pages/login.cshtml.cs). Este servicio reutiliza
-// esa misma comparación para no cambiar el esquema de contraseñas. Lo
-// correcto a futuro es guardar hash (BCrypt) y comparar contra el hash.
 public class AutorizacionService
 {
     private readonly MiApplicationDbContext _context;

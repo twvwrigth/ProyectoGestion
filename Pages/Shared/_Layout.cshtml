@@ -1,4 +1,4 @@
-﻿@using System.Security.Claims
+﻿﻿@using System.Security.Claims
 @{
     // SCRUM-3: página actual (para marcar el enlace activo) y rol del usuario (barra superior).
     var paginaActual = (ViewContext.RouteData.Values["page"]?.ToString() ?? "").ToLowerInvariant();
@@ -17,7 +17,9 @@
     <link rel="icon" href="~/favicon.ico" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body>
+<body class="@(User.Identity!.IsAuthenticated ? "" : "sin-menu")">
+    @if (User.Identity!.IsAuthenticated)
+    {
     <header>
         <!-- Cabecera de la aplicación -->
         <nav class="navbar navbar-light bg-white border-bottom box-shadow">
@@ -26,18 +28,10 @@
                 <!-- EL BOTÓN HAMBURGUESA SOLO APARECE SI EL USUARIO YA INICIÓ SESIÓN -->
                 @if (User.Identity!.IsAuthenticated)
                 {
-                    <button class="navbar-toggler border-0 shadow-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Toggle navigation">
+                    <button class="navbar-toggler border-0 shadow-none me-2 d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                 }
-
-                <!-- Logotipo principal de la Óptica -->
-                <a class="navbar-brand d-flex align-items-center fw-bold text-primary mb-0" asp-area="" asp-page="/Index">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
-                        <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
-                    </svg>
-                    Óptica
-                </a>
 
                 <!-- Usuario logueado visible en la barra superior (SCRUM-3) -->
                 @if (User.Identity!.IsAuthenticated)
@@ -52,16 +46,16 @@
             </div>
         </nav>
     </header>
+    }
 
     <!-- Estructura del Menú Lateral Plegable -->
-    <div class="offcanvas offcanvas-start shadow" tabindex="-1" id="menuLateral" aria-labelledby="menuLateralLabel">
+    @if (User.Identity!.IsAuthenticated)
+    {
+    <div class="offcanvas offcanvas-start shadow" tabindex="-1" id="menuLateral">
         <div class="offcanvas-header border-bottom">
-            <h5 class="offcanvas-title d-flex align-items-center fw-bold text-primary mb-0" id="menuLateralLabel">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-eyeglasses me-2" viewBox="0 0 16 16">
-                    <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4m2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953 2 2 0 0 0-2.75 0zM3 8a1 1 0 1 0 2 0 1 1 0 0 0-2 0m10 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/>
-                </svg>
-                Óptica
-            </h5>
+            <button type="button" id="btnMenuColapsar" class="btn btn-sm btn-outline-secondary border-0 d-none d-lg-inline-flex align-items-center" aria-label="Contraer menú">
+                <i class="bi bi-chevron-left"></i>
+            </button>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         
@@ -72,7 +66,7 @@
                     @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                     {
                         <li class="menu-seccion px-3 mt-2 mb-1">Ventas</li>
-                        @if (User.IsInRole("Encargado"))
+                        @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
                         {
                             <li class="nav-item mb-1">
                                 <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/cotizacion" ? "active" : "")" asp-area="" asp-page="/cotizacion">
@@ -85,6 +79,12 @@
                                 </a>
                             </li>
                         }
+                        <!-- HU-03: devoluciones / reembolsos -->
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/devoluciones" ? "active" : "")" asp-area="" asp-page="/Devoluciones">
+                                <i class="bi bi-arrow-counterclockwise me-2 text-secondary"></i> Devoluciones
+                            </a>
+                        </li>
                         <li class="nav-item mb-1">
                             <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/tableropedidos" ? "active" : "")" asp-area="" asp-page="/TableroPedidos">
                                 <i class="bi bi-kanban me-2 text-secondary"></i> Pedidos
@@ -162,11 +162,30 @@
                             </a>
                         </li>
                     }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
+                    {
+                        <!-- HU-03: autorizaciones pendientes y bitácora -->
+                        <li class="menu-seccion px-3 mt-2 mb-1">Autorizaciones</li>
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/autorizaciones" ? "active" : "")" asp-area="" asp-page="/Autorizaciones">
+                                    <i class="bi bi-shield-check me-2 text-secondary"></i> Solicitudes pendientes
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/bitacora" ? "active" : "")" asp-area="" asp-page="/Bitacora">
+                                <i class="bi bi-journal-text me-2 text-secondary"></i> Bitácora
+                            </a>
+                        </li>
+                    }
                 }
             </ul>
             
             <!-- Pie de página del menú -->
-            <div class="mt-auto p-3 border-top bg-light">
+            <div class="menu-pie mt-auto p-3 border-top bg-light">
                 @if (User.Identity!.IsAuthenticated)
                 {
                     <div class="d-flex align-items-center mb-3">
@@ -190,6 +209,7 @@
             </div>
         </div>
     </div>
+    }
 
     <!-- Contenedor Principal de la vista -->
     <div class="main-wrapper container-fluid px-0">

@@ -1,0 +1,130 @@
+@page
+@model Proyecto.Pages.AutorizacionesModel
+@{
+    ViewData["Title"] = "Autorizaciones";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="border-bottom pb-2 mb-4">Autorizaciones pendientes</h2>
+    <p class="text-muted">HU-03: el Encargado aprueba o rechaza con su usuario y su clave. La acción sensible no se ejecuta aquí: el empleado que la pidió vuelve a intentarla con el folio de la autorización aprobada.</p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning-subtle fw-bold">Pendientes (@Model.Pendientes.Count)</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Acción</th>
+                            <th>Ref.</th>
+                            <th>Solicita</th>
+                            <th>Fecha</th>
+                            <th>Motivo</th>
+                            <th>Resolver</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Pendientes.Any())
+                        {
+                            @foreach (var s in Model.Pendientes)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@s.IdAutorizacion</td>
+                                    <td>@s.TipoAccion</td>
+                                    <td>@(s.FolioReferencia ?? "-")</td>
+                                    <td>@s.IdEmpleadoSolicitaNavigation?.Nombre</td>
+                                    <td>@s.FechaSolicitud.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @s.Motivo
+                                        @if (!string.IsNullOrWhiteSpace(s.Detalle))
+                                        {
+                                            <br /><small class="text-muted">@s.Detalle</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form method="post" class="d-flex flex-wrap gap-1 align-items-center">
+                                            <input type="hidden" name="id" value="@s.IdAutorizacion" />
+                                            <input type="text" name="usuarioEncargado" class="form-control form-control-sm" placeholder="Tu usuario" required style="max-width: 130px;" />
+                                            <input type="password" name="claveEncargado" class="form-control form-control-sm" placeholder="Tu clave" required style="max-width: 130px;" />
+                                            <input type="text" name="motivoRechazo" class="form-control form-control-sm" placeholder="Motivo (solo si rechazas)" style="max-width: 180px;" />
+                                            <button type="submit" asp-page-handler="Aprobar" class="btn btn-sm btn-success">Aprobar</button>
+                                            <button type="submit" asp-page-handler="Rechazar" class="btn btn-sm btn-danger">Rechazar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="7" class="text-center text-muted py-4">No hay solicitudes pendientes.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light fw-bold">Últimas resueltas</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Acción</th>
+                            <th>Ref.</th>
+                            <th>Solicitó</th>
+                            <th>Resolvió</th>
+                            <th>Estado</th>
+                            <th>Fecha resolución</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Resueltas.Any())
+                        {
+                            @foreach (var s in Model.Resueltas)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@s.IdAutorizacion</td>
+                                    <td>@s.TipoAccion</td>
+                                    <td>@(s.FolioReferencia ?? "-")</td>
+                                    <td>@s.IdEmpleadoSolicitaNavigation?.Nombre</td>
+                                    <td>@s.IdEncargadoAutorizaNavigation?.Nombre</td>
+                                    <td>
+                                        <span class="badge @(s.Estado == "Aprobada" ? "bg-success" : "bg-danger")">@s.Estado</span>
+                                        @if (s.Usada)
+                                        {
+                                            <span class="badge bg-secondary">Usada</span>
+                                        }
+                                    </td>
+                                    <td>@(s.FechaResolucion?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="7" class="text-center text-muted py-4">Aún no hay solicitudes resueltas.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
