@@ -836,7 +836,6 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-<<<<<<< HEAD
 CREATE TABLE IF NOT EXISTS `detalle_venta` (
   `idDetalleVenta` int NOT NULL AUTO_INCREMENT,
   `folioVenta` int NOT NULL,
@@ -882,6 +881,3 @@ CREATE TABLE IF NOT EXISTS `detalle_venta` (
 
 
 -- Dump completed on 2026-11-24 17:58:16
-=======
--- Dump completed on 2026-11-25  0:25:39
->>>>>>> 81c2742a5a8c1b073f633939284b63c468e15f46
