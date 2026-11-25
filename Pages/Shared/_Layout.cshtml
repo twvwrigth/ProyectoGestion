@@ -85,6 +85,18 @@
                                 </a>
                             </li>
                         }
+                        <!-- HU-03: ventas registradas (cancelar / cambiar forma de pago) -->
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/ventas" ? "active" : "")" asp-area="" asp-page="/Ventas">
+                                <i class="bi bi-receipt-cutoff me-2 text-secondary"></i> Ventas registradas
+                            </a>
+                        </li>
+                        <!-- HU-03: devoluciones / reembolsos -->
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/devoluciones" ? "active" : "")" asp-area="" asp-page="/Devoluciones">
+                                <i class="bi bi-arrow-counterclockwise me-2 text-secondary"></i> Devoluciones
+                            </a>
+                        </li>
                         <li class="nav-item mb-1">
                             <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/tableropedidos" ? "active" : "")" asp-area="" asp-page="/TableroPedidos">
                                 <i class="bi bi-kanban me-2 text-secondary"></i> Pedidos
@@ -159,6 +171,25 @@
                         <li class="nav-item mb-1">
                             <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/catalogo" ? "active" : "")" asp-area="" asp-page="/catalogo">
                                 <i class="bi bi-grid me-2 text-secondary"></i> Catálogo
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Encargado") || User.IsInRole("Vendedor"))
+                    {
+                        <!-- HU-03: autorizaciones pendientes y bitácora -->
+                        <li class="menu-seccion px-3 mt-2 mb-1">Autorizaciones</li>
+                        @if (User.IsInRole("Encargado"))
+                        {
+                            <li class="nav-item mb-1">
+                                <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/autorizaciones" ? "active" : "")" asp-area="" asp-page="/Autorizaciones">
+                                    <i class="bi bi-shield-check me-2 text-secondary"></i> Solicitudes pendientes
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item mb-1">
+                            <a class="nav-link text-dark fw-medium px-3 rounded @(paginaActual == "/bitacora" ? "active" : "")" asp-area="" asp-page="/Bitacora">
+                                <i class="bi bi-journal-text me-2 text-secondary"></i> Bitácora
                             </a>
                         </li>
                     }

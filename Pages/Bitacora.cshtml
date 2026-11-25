@@ -1,0 +1,92 @@
+@page
+@model Proyecto.Pages.BitacoraModel
+@{
+    ViewData["Title"] = "Bitácora de autorizaciones";
+}
+
+<div class="container-fluid mt-4">
+    <h2 class="fw-bold mb-3"><i class="bi bi-journal-text me-2"></i>Bitácora de autorizaciones</h2>
+    <p class="text-muted">Registro de todas las acciones sensibles autorizadas o rechazadas: quién pidió, quién autorizó, cuándo y sobre qué venta o pedido.</p>
+
+    <!-- Filtros -->
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Tipo de acción</label>
+            <select name="tipoAccion" class="form-select">
+                <option value="">Todos</option>
+                @foreach (var t in Model.TiposAccion)
+                {
+                    <option value="@t" @(Model.TipoAccionFiltro == t ? "selected" : "")>@t</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-semibold">Estado</label>
+            <select name="estado" class="form-select">
+                <option value="">Todos</option>
+                <option value="Aprobada" @(Model.EstadoFiltro == "Aprobada" ? "selected" : "")>Aprobada</option>
+                <option value="Rechazada" @(Model.EstadoFiltro == "Rechazada" ? "selected" : "")>Rechazada</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Desde</label>
+            <input type="date" name="desde" class="form-control" value="@(Model.DesdeFiltro?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-semibold">Hasta</label>
+            <input type="date" name="hasta" class="form-control" value="@(Model.HastaFiltro?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+        </div>
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha y hora</th>
+                        <th>Acción</th>
+                        <th>Estado</th>
+                        <th>Folio</th>
+                        <th>Motivo</th>
+                        <th>Cambio realizado</th>
+                        <th>Solicitó</th>
+                        <th>Autorizó</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Registros)
+                    {
+                        <tr>
+                            <td class="fw-bold">@r.IdReporte</td>
+                            <td>@((r.FechaHora ?? r.FechaReporte.ToDateTime(TimeOnly.MinValue)).ToString("dd/MM/yyyy HH:mm"))</td>
+                            <td>@r.TipoAccion</td>
+                            <td>
+                                @if (r.Estado == "Aprobada")
+                                {
+                                    <span class="badge bg-success">Aprobada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Rechazada</span>
+                                }
+                            </td>
+                            <td>@(r.FolioReferencia ?? "-")</td>
+                            <td>@r.Motivo</td>
+                            <td>@r.CambioRealizado</td>
+                            <td>@(r.IdEmpleadoNavigation?.Nombre ?? "-")</td>
+                            <td>@(r.IdEncargadoNavigation?.Nombre ?? "-")</td>
+                        </tr>
+                    }
+                    @if (!Model.Registros.Any())
+                    {
+                        <tr><td colspan="9" class="text-center text-muted py-4">No hay registros en la bitácora con esos filtros.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
