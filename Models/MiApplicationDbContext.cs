@@ -59,6 +59,17 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Venta> Venta { get; set; }
 
+    // HU-03 (SCRUM-21) "Autorizaciones y bitácora" — DbSets nuevos.
+    // Se unieron aquí para subir un solo archivo MiApplicationDbContext.cs
+    // en vez del parcial MiApplicationDbContext.HU03.cs por separado.
+    // Requiere que también se suban Models/Autorizacion.cs y
+    // Models/AjusteInventario.cs, y las versiones extendidas de
+    // Models/Bitacora.cs (FechaHora, TipoAccion, Estado, FolioReferencia)
+    // y Models/Producto.cs (Activo, FechaBaja).
+    public virtual DbSet<Autorizacion> Autorizaciones { get; set; }
+
+    public virtual DbSet<AjusteInventario> AjusteInventarios { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -759,8 +770,103 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_venta_pedido");
         });
 
-        OnModelCreatingPartial(modelBuilder);
-    }
+        // --- HU-03 unido en este mismo archivo, sin método parcial ---
+        // (Antes era OnModelCreatingPartial en un archivo aparte; en C# la
+        // implementación sola, sin su declaración, da el error CS0759, así
+        // que el bloque va directo dentro de OnModelCreating.)
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+        // --- HU-03: Bitacora, columnas nuevas ---
+        modelBuilder.Entity<Bitacora>(entity =>
+        {
+            entity.Property(e => e.FechaHora).HasColumnType("datetime").HasColumnName("fecha_hora");
+            entity.Property(e => e.TipoAccion).HasMaxLength(100).HasColumnName("tipo_accion");
+            entity.Property(e => e.Estado).HasMaxLength(20).HasColumnName("estado");
+            entity.Property(e => e.FolioReferencia).HasMaxLength(50).HasColumnName("folio_referencia");
+        });
+
+        // --- HU-03: Autorizacion (tabla nueva) ---
+        modelBuilder.Entity<Autorizacion>(entity =>
+        {
+            entity.HasKey(e => e.IdAutorizacion).HasName("PRIMARY");
+
+            entity.ToTable("autorizacion");
+
+            entity.HasIndex(e => e.IdEmpleadoSolicita, "fk_aut_solicita");
+            entity.HasIndex(e => e.IdEncargadoAutoriza, "fk_aut_encargado");
+
+            entity.Property(e => e.IdAutorizacion).HasColumnName("idAutorizacion");
+            entity.Property(e => e.TipoAccion).HasMaxLength(100).HasColumnName("tipoAccion");
+            entity.Property(e => e.FolioReferencia).HasMaxLength(50).HasColumnName("folioReferencia");
+            entity.Property(e => e.IdEmpleadoSolicita).HasColumnName("idEmpleadoSolicita");
+            entity.Property(e => e.IdEncargadoAutoriza).HasColumnName("idEncargadoAutoriza");
+            entity.Property(e => e.FechaSolicitud).HasColumnType("datetime").HasColumnName("fechaSolicitud");
+            entity.Property(e => e.FechaResolucion).HasColumnType("datetime").HasColumnName("fechaResolucion");
+            entity.Property(e => e.Estado).HasMaxLength(20).HasDefaultValueSql("'Pendiente'").HasColumnName("estado");
+            entity.Property(e => e.Motivo).HasMaxLength(255).HasColumnName("motivo");
+            entity.Property(e => e.Detalle).HasMaxLength(255).HasColumnName("detalle");
+            entity.Property(e => e.Usada).HasDefaultValueSql("'0'").HasColumnName("usada");
+
+            entity.HasOne(d => d.IdEmpleadoSolicitaNavigation).WithMany()
+                .HasForeignKey(d => d.IdEmpleadoSolicita)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_aut_solicita");
+
+            entity.HasOne(d => d.IdEncargadoAutorizaNavigation).WithMany()
+                .HasForeignKey(d => d.IdEncargadoAutoriza)
+                .HasConstraintName("fk_aut_encargado");
+        });
+
+        // --- HU-03: Producto, baja lógica (activo) ---
+        modelBuilder.Entity<Producto>(entity =>
+        {
+            entity.Property(e => e.Activo)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("activo");
+            entity.Property(e => e.FechaBaja)
+                .HasColumnType("datetime")
+                .HasColumnName("fecha_baja");
+        });
+
+        // --- HU-03: AjusteInventario (tabla nueva) ---
+        modelBuilder.Entity<AjusteInventario>(entity =>
+        {
+            entity.HasKey(e => e.IdAjuste).HasName("PRIMARY");
+
+            entity.ToTable("ajuste_inventario");
+
+            entity.HasIndex(e => e.IdProducto, "fk_aju_producto");
+            entity.HasIndex(e => e.IdEmpleado, "fk_aju_empleado");
+            entity.HasIndex(e => e.IdEncargadoAutoriza, "fk_aju_encargado");
+            entity.HasIndex(e => e.IdAutorizacion, "fk_aju_autorizacion");
+
+            entity.Property(e => e.IdAjuste).HasColumnName("idAjuste");
+            entity.Property(e => e.IdProducto).HasColumnName("idProducto");
+            entity.Property(e => e.CantidadAntes).HasColumnName("cantidadAntes");
+            entity.Property(e => e.CantidadDespues).HasColumnName("cantidadDespues");
+            entity.Property(e => e.TipoAjuste).HasMaxLength(50).HasColumnName("tipoAjuste");
+            entity.Property(e => e.Motivo).HasMaxLength(255).HasColumnName("motivo");
+            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+            entity.Property(e => e.IdEncargadoAutoriza).HasColumnName("idEncargadoAutoriza");
+            entity.Property(e => e.Fecha).HasColumnType("datetime").HasColumnName("fecha");
+            entity.Property(e => e.IdAutorizacion).HasColumnName("idAutorizacion");
+
+            entity.HasOne(d => d.IdProductoNavigation).WithMany()
+                .HasForeignKey(d => d.IdProducto)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_aju_producto");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation).WithMany()
+                .HasForeignKey(d => d.IdEmpleado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_aju_empleado");
+
+            entity.HasOne(d => d.IdEncargadoAutorizaNavigation).WithMany()
+                .HasForeignKey(d => d.IdEncargadoAutoriza)
+                .HasConstraintName("fk_aju_encargado");
+
+            entity.HasOne(d => d.IdAutorizacionNavigation).WithMany()
+                .HasForeignKey(d => d.IdAutorizacion)
+                .HasConstraintName("fk_aju_autorizacion");
+        });
+    }
 }
