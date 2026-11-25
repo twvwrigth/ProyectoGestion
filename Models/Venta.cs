@@ -26,6 +26,18 @@ public partial class Venta
 
     public bool? ExamenComprado { get; set; }
 
+    public string Estado { get; set; } = "Activa";
+
+    public int Cantidad { get; set; } = 1;
+
+    public decimal Descuento { get; set; }
+
+    public decimal? PrecioVenta { get; set; }
+
+    public string? MotivoCancelacion { get; set; }
+
+    public DateTime? FechaCancelacion { get; set; }
+
     public virtual CajaTurno? IdCajaTurnoNavigation { get; set; }
 
     public virtual Cliente IdClienteNavigation { get; set; } = null!;

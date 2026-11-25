@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
+using Proyecto.Services;
 using System.Security.Claims;
 
 namespace Proyecto.Pages
@@ -12,10 +13,12 @@ namespace Proyecto.Pages
     public class IndexModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
+        private readonly AutorizacionService _autorizaciones;
 
-        public IndexModel(MiApplicationDbContext context)
+        public IndexModel(MiApplicationDbContext context, AutorizacionService autorizaciones)
         {
             _context = context;
+            _autorizaciones = autorizaciones;
         }
 
         public CajaTurno? CajaAbierta { get; set; }
@@ -33,6 +36,11 @@ namespace Proyecto.Pages
         [BindProperty] public string TipoMovimiento { get; set; } = "";
         [BindProperty] public decimal MontoMovimiento { get; set; }
         [BindProperty] public string MotivoMovimiento { get; set; } = "";
+
+        // HU-03: autorización del encargado para retiros (Salida).
+        [BindProperty] public int? IdAutorizacion { get; set; }
+        [BindProperty] public string? UsuarioEncargado { get; set; }
+        [BindProperty] public string? ClaveEncargado { get; set; }
 
         // SCRUM-12 HU-19: folioPedido opcional, lo manda el tablero cuando el pedido adeuda.
         public async Task<IActionResult> OnGetAsync(int? folioPedido)
@@ -135,6 +143,28 @@ namespace Proyecto.Pages
                     return RedirectToPage();
                 }
 
+                // HU-03: los retiros de efectivo (Salida) exigen autorización del
+                // encargado y quedan en Bitacora. Las entradas no la exigen.
+                Autorizacion? aut = null;
+                if (TipoMovimiento == "Salida")
+                {
+                    if (MontoMovimiento <= 0)
+                    {
+                        TempData["ErrorMessage"] = "El monto del retiro debe ser mayor a $0.00.";
+                        return RedirectToPage();
+                    }
+                    var (autorizado, autRes, mensaje) = await _autorizaciones.ResolverOSolicitarAsync(
+                        User, empleadoId, AutorizacionService.Acciones.RetiroEfectivo, $"CAJA-{caja.IdCajaTurno}",
+                        IdAutorizacion, UsuarioEncargado, ClaveEncargado,
+                        MotivoMovimiento, $"Retiro de efectivo por ${MontoMovimiento:0.00}.");
+                    if (!autorizado)
+                    {
+                        TempData["ErrorMessage"] = mensaje;
+                        return RedirectToPage();
+                    }
+                    aut = autRes;
+                }
+
                 var movimiento = new MovimientoCaja
                 {
                     IdCajaTurno = caja.IdCajaTurno,
@@ -146,6 +176,15 @@ namespace Proyecto.Pages
 
                 _context.MovimientoCaja.Add(movimiento);
                 await _context.SaveChangesAsync();
+
+                if (TipoMovimiento == "Salida")
+                {
+                    await _autorizaciones.CerrarAutorizacionAsync(aut, empleadoId,
+                        AutorizacionService.Acciones.RetiroEfectivo, $"CAJA-{caja.IdCajaTurno}",
+                        MotivoMovimiento,
+                        $"Retiro de efectivo por ${MontoMovimiento:0.00} de la caja #{caja.IdCajaTurno}. Motivo: {MotivoMovimiento}");
+                }
+
                 TempData["SuccessMessage"] = "Movimiento registrado correctamente.";
             }
             else
