@@ -28,6 +28,13 @@
         <input type="hidden" id="clienteId" name="ClienteId" required />
         <input type="hidden" id="totalVentaInput" name="TotalVenta" value="0.00" />
         <div id="productosContainerOculto"></div>
+        <div id="pagosContainerOculto"></div>
+        <!-- HU-12.3: autorización del descuento manual (la llena autorizarDescuento). -->
+        <input type="hidden" id="idAutorizacionDescuento" name="IdAutorizacionDescuento" />
+        <input type="hidden" id="descuentoManualTipo" name="DescuentoManualTipo" />
+        <input type="hidden" id="descuentoManualValor" name="DescuentoManualValor" value="0" />
+        <!-- HU-12.1: efectivo recibido con forma única (lo llena ejecutarCobroAjax). -->
+        <input type="hidden" id="efectivoRecibidoInput" name="EfectivoRecibido" />
 
         <div class="row g-4">
             <!-- COLUMNA IZQUIERDA -->
@@ -58,6 +65,21 @@
                                 <input type="text" id="inputTelefonoCliente" class="form-control" placeholder="Filtrar por 10 dígitos..." autocomplete="off" />
                             </div>
                             <ul id="sugerenciasClienteTel" class="dropdown-menu w-100 shadow-sm" style="max-height: 180px; overflow-y: auto;"></ul>
+                        </div>
+
+                        <!-- HU-09.1: alta rápida de cliente sin salir de la venta. -->
+                        <div class="border rounded p-3 bg-light">
+                            <div class="fw-semibold small mb-2"><i class="bi bi-person-plus me-1"></i> Cliente nuevo (alta rápida)</div>
+                            <div class="row g-2">
+                                <div class="col-7">
+                                    <input type="text" id="inputNuevoClienteNombre" class="form-control form-control-sm" placeholder="Nombre completo" />
+                                </div>
+                                <div class="col-5">
+                                    <input type="text" id="inputNuevoClienteTel" class="form-control form-control-sm" placeholder="Tel. 10 dígitos" maxlength="10" />
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-2" onclick="crearClienteRapido()">Crear y seleccionar cliente</button>
+                            <div id="msgClienteRapido" class="small mt-1"></div>
                         </div>
                     </div>
                 </div>
@@ -100,11 +122,45 @@
                             </label>
                         </div>
 
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="descuentosAdicionales" disabled>
-                            <label class="form-check-label text-muted small" for="descuentosAdicionales">
-                                Descuentos Adicionales (Próximamente)
+                        <!-- HU-12.1: pago combinado (varias formas de pago). -->
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="pagoCombinado" onchange="togglePagoCombinado()">
+                            <label class="form-check-label fw-semibold small" for="pagoCombinado">
+                                Pago combinado (varias formas de pago)
                             </label>
+                        </div>
+                        <div id="seccionPagoCombinado" class="border rounded p-3 mb-2 bg-light d-none">
+                            <div class="fw-semibold small mb-2">Pagos <span class="text-muted fw-normal">(la suma debe ser el total a cobrar)</span></div>
+                            <div id="filasPago"></div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="agregarFilaPago()">+ Agregar otro pago</button>
+                            <div id="msgPagoCombinado" class="small mt-1"></div>
+                        </div>
+
+                        <!-- HU-12.3: descuento manual autorizado por el encargado. -->
+                        <div class="border rounded p-3 bg-light">
+                            <div class="fw-semibold small mb-2"><i class="bi bi-percent me-1"></i> Descuento manual (requiere encargado)</div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-5">
+                                    <select id="inputDescTipo" class="form-select form-select-sm">
+                                        <option value="Porcentaje">Porcentaje (%)</option>
+                                        <option value="Monto">Monto ($)</option>
+                                    </select>
+                                </div>
+                                <div class="col-7">
+                                    <input type="number" id="inputDescValor" class="form-control form-control-sm" placeholder="Valor" step="0.01" min="0" />
+                                </div>
+                            </div>
+                            <input type="text" id="inputDescMotivo" class="form-control form-control-sm mb-2" placeholder="Motivo del descuento" />
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input type="text" id="inputDescUsuario" class="form-control form-control-sm" placeholder="Usuario encargado" />
+                                </div>
+                                <div class="col-6">
+                                    <input type="password" id="inputDescClave" class="form-control form-control-sm" placeholder="Clave encargado" />
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-warning btn-sm w-100" onclick="autorizarDescuento()">Autorizar descuento</button>
+                            <div id="msgDescuento" class="small mt-1"></div>
                         </div>
                     </div>
                 </div>
@@ -126,13 +182,14 @@
                                     <tr>
                                         <th class="ps-3">Nombre Producto</th>
                                         <th class="text-center" style="width: 140px;">Cantidad</th>
+                                        <th class="text-end">P. unitario</th>
                                         <th class="text-end pe-3">Subtotal</th>
                                         <th class="text-center" style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbodyCarrito">
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td>
+                                        <td colspan="5" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -154,6 +211,19 @@
                         <div class="d-flex justify-content-between mb-3 text-success">
                             <span>Bonificación Examen (Receta &le; 30 días):</span>
                             <span id="lblBonificacion" class="fw-semibold">-$0.00 MXN</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Crédito de examen pagado (HU-09.3):</span>
+                            <span id="lblCreditoExamen" class="fw-semibold">-$0.00 MXN</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Promociones aplicadas:</span>
+                            <span id="lblPromociones" class="fw-semibold">-$0.00 MXN</span>
+                        </div>
+                        <div id="detallePromociones" class="small text-muted mb-2"></div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Descuento manual autorizado:</span>
+                            <span id="lblDescuentoManual" class="fw-semibold">-$0.00 MXN</span>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -185,7 +255,7 @@
                     <div class="col-md-8">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-funnel"></i></span>
-                            <input type="text" id="modalInputBuscar" class="form-control" placeholder="Buscar por nombre o categoría..." oninput="filtrarProductosModal()" />
+                            <input type="text" id="modalInputBuscar" class="form-control" placeholder="Buscar por nombre, categoría o código (ej. PRD-007)..." oninput="filtrarProductosModal()" />
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -256,6 +326,10 @@
                 <!-- Pago Electrónico -->
                 <div id="seccionElectronico" class="mb-3 d-none text-center p-3 bg-light rounded border">
                     <p class="mb-0 text-muted">El cobro se registrará mediante <strong id="lblMetodoPagoText">Tarjeta</strong>.</p>
+                    <div class="mt-3 text-start">
+                        <label class="form-label fw-semibold small">Referencia (autorización o folio)</label>
+                        <input type="text" id="inputReferenciaUnica" class="form-control" placeholder="Ej. AUT-123456" />
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-light border-0 justify-content-center py-3">
@@ -274,6 +348,10 @@
         let catalogoProductosGlobal = [];
         let precioExamenBase = 250.00;
         let clienteTieneBonificacion = false;
+        // HU-09.3 / HU-12.2 / HU-12.3: estado de descuentos (el servidor recalcula todo).
+        let clienteTieneCreditoExamen = false;
+        let promoDescuento = 0.00;
+        let descuentoManualMonto = 0.00;
 
         document.addEventListener("DOMContentLoaded", function () {
             inicializarBusquedaCliente();
@@ -349,6 +427,8 @@
                 .then(res => res.json())
                 .then(data => {
                     clienteTieneBonificacion = data.aplicaBonificacion || false;
+                    // HU-09.3: examen pagado sin usar dentro de la vigencia.
+                    clienteTieneCreditoExamen = !clienteTieneBonificacion && (data.tieneCreditoExamen || false);
                     const badge = document.getElementById('badgeBonificacion');
                     if (clienteTieneBonificacion) {
                         badge.classList.remove('d-none');
@@ -356,7 +436,7 @@
                         badge.classList.add('d-none');
                     }
                     calcularTotalesGlobales();
-                }).catch(() => { clienteTieneBonificacion = false; });
+                }).catch(() => { clienteTieneBonificacion = false; clienteTieneCreditoExamen = false; });
         }
 
         function cargarParametrosNegocio() {
@@ -428,8 +508,9 @@
 
         function filtrarProductosModal() {
             const query = document.getElementById('modalInputBuscar').value.toLowerCase().trim();
-            const filtrados = catalogoProductosGlobal.filter(p => 
+            const filtrados = catalogoProductosGlobal.filter(p =>
                 p.nombre.toLowerCase().includes(query) || p.categoria.toLowerCase().includes(query)
+                || p.id.toString() === query || ('prd-' + p.id.toString().padStart(3, '0')) === query
             );
             renderizarTablaModal(filtrados);
         }
@@ -498,7 +579,7 @@
             containerOculto.innerHTML = '';
 
             if (carritoProductos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay productos agregados. Usa "Búsqueda de Producto".</td></tr>`;
                 return;
             }
 
@@ -515,6 +596,7 @@
                             <button type="button" class="btn btn-outline-secondary px-2" onclick="cambiarCantidad(${item.id}, 1)">+</button>
                         </div>
                     </td>
+                    <td class="text-end">$${item.precioUnitario.toFixed(2)} MXN</td>
                     <td class="text-end pe-3 fw-bold">$${totalLinea.toFixed(2)} MXN</td>
                     <td class="text-center">
                         <button type="button" class="btn btn-sm text-danger" onclick="eliminarDelCarrito(${item.id})"><i class="bi bi-trash"></i></button>
@@ -535,6 +617,9 @@
                 inputCant.value = item.cantidad;
                 containerOculto.appendChild(inputCant);
             });
+
+            // HU-12.2: al cambiar el carrito se vuelven a consultar las promociones.
+            actualizarPromociones();
         }
 
         // ================= 4. CÁLCULO DE TOTALES =================
@@ -543,17 +628,220 @@
 
             const incluyeExamen = document.getElementById('incluyeExamen').checked;
             let costoExamen = incluyeExamen ? precioExamenBase : 0.00;
-            
+
             // Bonificación real: solo si incluye examen y el cliente tiene receta vigente (<= 30 días)
             let bonificacion = (incluyeExamen && clienteTieneBonificacion) ? precioExamenBase : 0.00;
 
-            let totalCobrar = Math.max(0, subtotalProductos + costoExamen - bonificacion);
+            // HU-09.3: crédito de examen pagado (solo si no hay bonificación por receta).
+            let creditoExamen = (!clienteTieneBonificacion && clienteTieneCreditoExamen) ? precioExamenBase : 0.00;
+
+            // HU-12.2 / HU-12.3: promociones y descuento manual (el servidor recalcula).
+            let totalCobrar = Math.max(0, subtotalProductos + costoExamen - bonificacion - creditoExamen - promoDescuento - descuentoManualMonto);
 
             document.getElementById('lblSubtotal').textContent = `$${subtotalProductos.toFixed(2)} MXN`;
             document.getElementById('lblCostoExamen').textContent = `$${costoExamen.toFixed(2)} MXN`;
             document.getElementById('lblBonificacion').textContent = `-$${bonificacion.toFixed(2)} MXN`;
+            document.getElementById('lblCreditoExamen').textContent = `-$${creditoExamen.toFixed(2)} MXN`;
+            document.getElementById('lblPromociones').textContent = `-$${promoDescuento.toFixed(2)} MXN`;
+            document.getElementById('lblDescuentoManual').textContent = `-$${descuentoManualMonto.toFixed(2)} MXN`;
             document.getElementById('lblTotalCobrar').textContent = `$${totalCobrar.toFixed(2)} MXN`;
             document.getElementById('totalVentaInput').value = totalCobrar.toFixed(2);
+        }
+
+        // HU-12.2: consulta las promociones aplicables al carrito actual y
+        // actualiza la sugerencia con su desglose.
+        function actualizarPromociones() {
+            if (carritoProductos.length === 0) {
+                promoDescuento = 0.00;
+                document.getElementById('detallePromociones').textContent = '';
+                calcularTotalesGlobales();
+                return;
+            }
+            const ids = [...new Set(carritoProductos.map(i => i.id))].join(',');
+            fetch(`?handler=Promociones&productosIds=${encodeURIComponent(ids)}`)
+                .then(res => res.json())
+                .then(data => {
+                    promoDescuento = data.success ? (data.descuento || 0) : 0;
+                    document.getElementById('detallePromociones').textContent =
+                        (data.detalle || []).map(d => `${d.nombre} (${d.tipo}): -$${d.monto.toFixed(2)}`).join(' · ');
+                    calcularTotalesGlobales();
+                })
+                .catch(() => { promoDescuento = 0.00; calcularTotalesGlobales(); });
+        }
+
+        // HU-09.1: alta rápida de cliente.
+        function crearClienteRapido() {
+            const nombre = document.getElementById('inputNuevoClienteNombre').value.trim();
+            const telefono = document.getElementById('inputNuevoClienteTel').value.trim();
+            const msg = document.getElementById('msgClienteRapido');
+            if (!nombre) { msg.textContent = 'Escribe el nombre del cliente.'; msg.className = 'small mt-1 text-danger'; return; }
+
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('telefono', telefono);
+            fetch('?handler=CrearClienteRapido', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) { msg.textContent = data.message; msg.className = 'small mt-1 text-danger'; return; }
+                document.getElementById('inputNombreCliente').value = data.nombre;
+                document.getElementById('inputTelefonoCliente').value = data.telefono || '';
+                document.getElementById('clienteId').value = data.id;
+                msg.textContent = data.mensaje || 'Cliente creado.';
+                msg.className = 'small mt-1 text-success';
+                verificarBonificacionCliente(data.id);
+            })
+            .catch(() => { msg.textContent = 'No se pudo crear el cliente.'; msg.className = 'small mt-1 text-danger'; });
+        }
+
+        // HU-12.3: pide la autorización del descuento manual al encargado.
+        function autorizarDescuento() {
+            const tipo = document.getElementById('inputDescTipo').value;
+            const valor = parseFloat(document.getElementById('inputDescValor').value) || 0;
+            const motivo = document.getElementById('inputDescMotivo').value.trim();
+            const usuario = document.getElementById('inputDescUsuario').value.trim();
+            const clave = document.getElementById('inputDescClave').value;
+            const msg = document.getElementById('msgDescuento');
+            if (valor <= 0 || !motivo || !usuario || !clave) {
+                msg.textContent = 'Llena valor, motivo, usuario y clave del encargado.';
+                msg.className = 'small mt-1 text-danger';
+                return;
+            }
+            const formData = new FormData();
+            formData.append('tipo', tipo);
+            formData.append('valor', valor);
+            formData.append('motivo', motivo);
+            formData.append('usuarioEncargado', usuario);
+            formData.append('claveEncargado', clave);
+            fetch('?handler=AutorizarDescuento', {
+                method: 'POST',
+                body: formData,
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) { msg.textContent = data.message; msg.className = 'small mt-1 text-danger'; return; }
+                document.getElementById('idAutorizacionDescuento').value = data.idAutorizacion;
+                document.getElementById('descuentoManualTipo').value = tipo;
+                document.getElementById('descuentoManualValor').value = valor;
+                const subtotal = carritoProductos.reduce((acc, i) => acc + (i.precioUnitario * i.cantidad), 0);
+                descuentoManualMonto = tipo === 'Porcentaje'
+                    ? Math.round((subtotal - promoDescuento) * valor / 100 * 100) / 100
+                    : Math.min(valor, Math.max(0, subtotal - promoDescuento));
+                msg.textContent = 'Descuento autorizado por el encargado.';
+                msg.className = 'small mt-1 text-success';
+                calcularTotalesGlobales();
+            })
+            .catch(() => { msg.textContent = 'No se pudo autorizar el descuento.'; msg.className = 'small mt-1 text-danger'; });
+        }
+
+        // HU-12.1: pago combinado.
+        function togglePagoCombinado() {
+            const activo = document.getElementById('pagoCombinado').checked;
+            document.getElementById('seccionPagoCombinado').classList.toggle('d-none', !activo);
+            if (activo && document.querySelectorAll('#filasPago .fila-pago').length === 0) {
+                agregarFilaPago();
+            }
+            if (!activo) {
+                document.getElementById('filasPago').innerHTML = '';
+                document.getElementById('msgPagoCombinado').textContent = '';
+            }
+        }
+
+        function agregarFilaPago() {
+            const cont = document.getElementById('filasPago');
+            const idx = cont.querySelectorAll('.fila-pago').length;
+            const div = document.createElement('div');
+            div.className = 'fila-pago row g-2 mb-2';
+            div.innerHTML = `
+                <div class="col-4">
+                    <select class="form-select form-select-sm sel-forma-pago" onchange="actualizarFilaPago(this)">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    <input type="number" class="form-control form-control-sm inp-monto-pago" placeholder="Monto" step="0.01" min="0" />
+                </div>
+                <div class="col-4">
+                    <input type="text" class="form-control form-control-sm inp-ref-pago" placeholder="Referencia" />
+                </div>
+                <div class="col-12 campo-recibido">
+                    <input type="number" class="form-control form-control-sm inp-recibido-pago" placeholder="Efectivo recibido (opcional, por defecto = monto)" step="0.01" min="0" />
+                </div>`;
+            cont.appendChild(div);
+            if (idx === 0) {
+                const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
+                div.querySelector('.inp-monto-pago').value = total.toFixed(2);
+            }
+        }
+
+        function actualizarFilaPago(sel) {
+            const fila = sel.closest('.fila-pago');
+            const recibido = fila.querySelector('.campo-recibido');
+            recibido.classList.toggle('d-none', sel.value !== 'Efectivo');
+        }
+
+        // Construye los inputs Pagos[i] para el POST. Devuelve false si la
+        // suma no coincide con el total o falta una referencia.
+        function construirPagosOcultos() {
+            const cont = document.getElementById('pagosContainerOculto');
+            cont.innerHTML = '';
+            document.getElementById('efectivoRecibidoInput').value = '';
+            const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
+
+            if (!document.getElementById('pagoCombinado').checked) {
+                const formaPago = document.getElementById('formaPago').value;
+                if (formaPago === 'Efectivo') {
+                    document.getElementById('efectivoRecibidoInput').value = document.getElementById('inputEfectivoRecibido').value || '';
+                } else {
+                    const ref = document.getElementById('inputReferenciaUnica').value.trim();
+                    if (!ref) { alert('El pago con ' + formaPago + ' necesita su referencia (autorización o folio).'); return false; }
+                    agregarPagoOculto(cont, 0, formaPago, total, ref, null);
+                }
+                return true;
+            }
+
+            const filas = document.querySelectorAll('#filasPago .fila-pago');
+            if (filas.length === 0) { document.getElementById('msgPagoCombinado').textContent = 'Agrega al menos un pago.'; return false; }
+            let suma = 0;
+            for (let i = 0; i < filas.length; i++) {
+                const forma = filas[i].querySelector('.sel-forma-pago').value;
+                const monto = parseFloat(filas[i].querySelector('.inp-monto-pago').value) || 0;
+                const ref = filas[i].querySelector('.inp-ref-pago').value.trim();
+                const recibido = filas[i].querySelector('.inp-recibido-pago').value;
+                if (monto <= 0) { document.getElementById('msgPagoCombinado').textContent = 'Cada pago debe ser mayor a $0.00.'; return false; }
+                if ((forma === 'Tarjeta' || forma === 'Transferencia') && !ref) {
+                    document.getElementById('msgPagoCombinado').textContent = 'El pago con ' + forma + ' necesita su referencia.';
+                    return false;
+                }
+                suma += monto;
+                agregarPagoOculto(cont, i, forma, monto, ref || null, forma === 'Efectivo' && recibido ? recibido : null);
+            }
+            if (Math.abs(suma - total) > 0.01) {
+                document.getElementById('msgPagoCombinado').textContent = `La suma de los pagos ($${suma.toFixed(2)}) no coincide con el total ($${total.toFixed(2)}).`;
+                return false;
+            }
+            document.getElementById('msgPagoCombinado').textContent = '';
+            return true;
+        }
+
+        function agregarPagoOculto(cont, i, forma, monto, ref, recibido) {
+            const mk = (name, value) => {
+                const inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = name;
+                inp.value = value;
+                cont.appendChild(inp);
+            };
+            mk(`Pagos[${i}].FormaPago`, forma);
+            mk(`Pagos[${i}].Monto`, monto.toFixed(2));
+            if (ref) mk(`Pagos[${i}].Referencia`, ref);
+            if (recibido) mk(`Pagos[${i}].EfectivoRecibido`, recibido);
         }
 
         // ================= 5. VALIDACIÓN Y COBRO ASÍNCRONO (AJAX) =================
@@ -576,12 +864,17 @@
 
             cerrarAlerta();
             const formaPago = document.getElementById('formaPago').value;
+            const combinado = document.getElementById('pagoCombinado').checked;
             document.getElementById('modalMontoTotalTexto').textContent = `$${total.toFixed(2)} MXN`;
 
             const seccionEfectivo = document.getElementById('seccionEfectivo');
             const seccionElectronico = document.getElementById('seccionElectronico');
 
-            if (formaPago === 'Efectivo') {
+            if (combinado) {
+                // HU-12.1: el desglose ya está en la sección de pago combinado.
+                seccionEfectivo.classList.add('d-none');
+                seccionElectronico.classList.add('d-none');
+            } else if (formaPago === 'Efectivo') {
                 seccionEfectivo.classList.remove('d-none');
                 seccionElectronico.classList.add('d-none');
                 document.getElementById('inputEfectivoRecibido').value = '';
@@ -611,15 +904,20 @@
         }
 
         function ejecutarCobroAjax() {
-            const formaPago = document.getElementById('formaPago').value;
-            if (formaPago === 'Efectivo') {
-                const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
-                const recibido = parseFloat(document.getElementById('inputEfectivoRecibido').value) || 0;
-                if (recibido < total) {
-                    alert("La cantidad recibida en efectivo es menor al total a cobrar.");
-                    return;
+            const combinado = document.getElementById('pagoCombinado').checked;
+            if (!combinado) {
+                const formaPago = document.getElementById('formaPago').value;
+                if (formaPago === 'Efectivo') {
+                    const total = parseFloat(document.getElementById('totalVentaInput').value) || 0;
+                    const recibido = parseFloat(document.getElementById('inputEfectivoRecibido').value) || 0;
+                    if (recibido < total) {
+                        alert("La cantidad recibida en efectivo es menor al total a cobrar.");
+                        return;
+                    }
                 }
             }
+            // HU-12.1: construye los inputs Pagos[i] y valida suma/referencias.
+            if (!construirPagosOcultos()) return;
 
             const btnConfirmar = document.getElementById('btnConfirmarAjax');
             btnConfirmar.disabled = true;
@@ -646,7 +944,9 @@
                 bootstrap.Modal.getInstance(document.getElementById('modalProcesarCobro')).hide();
 
                 if (data.success) {
-                    mostrarAlerta(`${data.mensaje} Total cobrado: $${data.montoCobrado.toFixed(2)} MXN`, "success");
+                    mostrarAlerta(`Venta #${data.folioVenta} registrada. Total cobrado: $${data.montoCobrado.toFixed(2)} MXN`, "success");
+                    // HU-12.5: enlace al ticket imprimible de esta venta.
+                    document.getElementById('alertaMensaje').innerHTML += ` <a href="/Ticket?folioVenta=${data.folioVenta}" target="_blank" class="alert-link">Ver ticket</a>`;
                     resetearFormularioCompleto();
                 } else {
                     mostrarAlerta("No se pudo completar el cobro.", "warning");
@@ -668,6 +968,26 @@
             document.getElementById('badgeBonificacion').classList.add('d-none');
             carritoProductos = [];
             clienteTieneBonificacion = false;
+            clienteTieneCreditoExamen = false;
+            promoDescuento = 0.00;
+            descuentoManualMonto = 0.00;
+            document.getElementById('detallePromociones').textContent = '';
+            document.getElementById('idAutorizacionDescuento').value = '';
+            document.getElementById('descuentoManualTipo').value = '';
+            document.getElementById('descuentoManualValor').value = '0';
+            document.getElementById('inputDescValor').value = '';
+            document.getElementById('inputDescMotivo').value = '';
+            document.getElementById('inputDescUsuario').value = '';
+            document.getElementById('inputDescClave').value = '';
+            document.getElementById('msgDescuento').textContent = '';
+            document.getElementById('inputNuevoClienteNombre').value = '';
+            document.getElementById('inputNuevoClienteTel').value = '';
+            document.getElementById('msgClienteRapido').textContent = '';
+            document.getElementById('pagoCombinado').checked = false;
+            document.getElementById('seccionPagoCombinado').classList.add('d-none');
+            document.getElementById('filasPago').innerHTML = '';
+            document.getElementById('msgPagoCombinado').textContent = '';
+            document.getElementById('pagosContainerOculto').innerHTML = '';
             actualizarTablaCarrito();
             calcularTotalesGlobales();
         }

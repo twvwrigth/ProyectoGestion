@@ -21,6 +21,14 @@ public partial class Cotizacion
 
     public bool? BonificacionExamen { get; set; }
 
+    // HU-09.3 / HU-12.2: descuentos aplicados a la cotización
+    // (promociones sugeridas y/o crédito de examen pagado).
+    public decimal Descuento { get; set; }
+
+    // HU-09.3: folio de la venta cuyo examen pagado se descontó en
+    // esta cotización. Esa venta queda marcada CreditoExamenUsado.
+    public int? IdVentaExamenBonificado { get; set; }
+
     public bool? Receta { get; set; }
     public string? DetalleCotizacion { get; set; }
 

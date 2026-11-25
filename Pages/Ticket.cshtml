@@ -1,0 +1,149 @@
+@page
+@model Proyecto.Pages.TicketModel
+@{
+    ViewData["Title"] = $"Ticket #{Model.Venta?.FolioVenta}";
+    var v = Model.Venta!;
+    var subtotalLineas = v.DetallesVenta.Sum(d => d.Subtotal);
+    var descuentoLineas = v.DetallesVenta.Sum(d => d.Descuento);
+}
+
+<div class="container py-4" style="max-width: 640px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="text-center mb-3">
+                <h4 class="fw-bold mb-0">Óptica</h4>
+                <div class="text-muted small">Ticket de venta</div>
+            </div>
+
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Folio de venta:</span>
+                <strong>#@v.FolioVenta</strong>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Fecha:</span>
+                <strong>@v.Fecha.ToString("dd/MM/yyyy")</strong>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Cliente:</span>
+                <strong>@v.IdClienteNavigation?.Nombre</strong>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Atendió:</span>
+                <strong>@v.IdEmpleadoNavigation?.Nombre</strong>
+            </div>
+            @if (v.IdPedido != null)
+            {
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Pedido:</span>
+                    <strong>#@v.IdPedido</strong>
+                </div>
+            }
+
+            <hr />
+
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th class="text-center">Cant.</th>
+                        <th class="text-end">P. unit.</th>
+                        <th class="text-end">Importe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in v.DetallesVenta)
+                    {
+                        <tr>
+                            <td>@d.IdProductoNavigation?.Nombre</td>
+                            <td class="text-center">@d.Cantidad</td>
+                            <td class="text-end">$@d.PrecioUnitario.ToString("0.00")</td>
+                            <td class="text-end">$@d.Subtotal.ToString("0.00")</td>
+                        </tr>
+                        @if (d.Descuento > 0)
+                        {
+                            <tr>
+                                <td colspan="3" class="text-end text-success small">Descuento en @d.IdProductoNavigation?.Nombre</td>
+                                <td class="text-end text-success">-$@d.Descuento.ToString("0.00")</td>
+                            </tr>
+                        }
+                    }
+                    @if (v.ExamenComprado == true)
+                    {
+                        <tr>
+                            <td>Examen de la vista</td>
+                            <td class="text-center">1</td>
+                            <td class="text-end" colspan="2">incluido en el total</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <hr />
+
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Subtotal:</span>
+                <span>$@subtotalLineas.ToString("0.00")</span>
+            </div>
+            @if (descuentoLineas > 0)
+            {
+                <div class="d-flex justify-content-between small mb-1 text-success">
+                    <span>Descuentos (promociones y manual):</span>
+                    <span>-$@descuentoLineas.ToString("0.00")</span>
+                </div>
+            }
+            @if (v.Descuento > descuentoLineas)
+            {
+                <div class="d-flex justify-content-between small mb-1 text-success">
+                    <span>Crédito de examen pagado:</span>
+                    <span>-$@((v.Descuento - descuentoLineas).ToString("0.00"))</span>
+                </div>
+            }
+            <div class="d-flex justify-content-between mb-2">
+                <span class="h5 fw-bold mb-0">Total:</span>
+                <span class="h5 fw-bold mb-0">$@v.Total.ToString("0.00")</span>
+            </div>
+
+            <div class="small mb-1">
+                <span class="text-muted">Pagos:</span>
+                @if (v.Pagos != null && v.Pagos.Any())
+                {
+                    @string.Join(" + ", v.Pagos.Select(p => $"{p.FormaPago} ${p.Monto:0.00}" + (string.IsNullOrWhiteSpace(p.Referencia) ? "" : $" (ref. {p.Referencia})")))
+                }
+                else
+                {
+                    @v.FormaPago
+                }
+            </div>
+            @if (v.EfectivoRecibido != null)
+            {
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Efectivo recibido:</span>
+                    <span>$@v.EfectivoRecibido.Value.ToString("0.00")</span>
+                </div>
+            }
+            @if (v.Cambio != null && v.Cambio.Value > 0)
+            {
+                <div class="d-flex justify-content-between small mb-1">
+                    <span class="text-muted">Cambio devuelto:</span>
+                    <span>$@v.Cambio.Value.ToString("0.00")</span>
+                </div>
+            }
+
+            @if (v.IdPedidoNavigation != null)
+            {
+                <hr />
+                <div class="d-flex justify-content-between small">
+                    <span class="text-muted">Saldo pendiente del pedido #@v.IdPedido:</span>
+                    <strong>$@v.IdPedidoNavigation.SaldoPendiente.ToString("0.00")</strong>
+                </div>
+            }
+
+            <div class="text-center mt-4 d-print-none">
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Imprimir / Reimprimir
+                </button>
+                <a asp-page="/Index" class="btn btn-outline-secondary">Volver a caja</a>
+            </div>
+        </div>
+    </div>
+</div>

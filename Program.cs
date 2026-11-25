@@ -41,6 +41,9 @@ builder.Services.AddDbContext<MiApplicationDbContext>(options =>
 // HU-03 (SCRUM-21): flujo de autorización de acciones sensibles y bitácora.
 builder.Services.AddScoped<AutorizacionService>();
 
+// HU-08.4 / HU-12.2: motor de promociones (sugerencia en cotización, aplicación en venta).
+builder.Services.AddScoped<PromocionService>();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

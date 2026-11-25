@@ -59,6 +59,12 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Venta> Venta { get; set; }
 
+    // HU-09 (detalle_venta): líneas de venta.
+    public virtual DbSet<DetalleVenta> DetalleVenta { get; set; }
+
+    // HU-12.1: pagos por venta.
+    public virtual DbSet<PagoVenta> PagoVenta { get; set; }
+
     // HU-03 (SCRUM-21) "Autorizaciones y bitácora" — DbSets nuevos.
     // Se unieron aquí para subir un solo archivo MiApplicationDbContext.cs
     // en vez del parcial MiApplicationDbContext.HU03.cs por separado.
@@ -130,6 +136,12 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.Tratamiento).HasMaxLength(50).HasColumnName("tratamiento");
             entity.Property(e => e.RangoGraduacion).HasMaxLength(50).HasColumnName("rangoGraduacion");
             entity.Property(e => e.Precio).HasPrecision(10, 2).HasColumnName("precio");
+
+            // HU-08.1: una combinación material + tratamiento + rango solo
+            // puede existir una vez (la collation es insensible a mayúsculas).
+            entity.HasIndex(e => new { e.Material, e.Tratamiento, e.RangoGraduacion })
+                .IsUnique()
+                .HasDatabaseName("uq_mica");
         });
 
         modelBuilder.Entity<Bitacora>(entity =>
@@ -238,6 +250,13 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.TotalCalculado)
                 .HasPrecision(10, 2)
                 .HasColumnName("totalCalculado");
+            // HU-09.3 / HU-12.2: descuentos aplicados a la cotización.
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("descuento");
+            // HU-09.3: folio de la venta cuyo examen pagado se descontó.
+            entity.Property(e => e.IdVentaExamenBonificado).HasColumnName("idVentaExamenBonificado");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Cotizacions)
                 .HasForeignKey(d => d.IdCliente)
@@ -747,6 +766,22 @@ public partial class MiApplicationDbContext : DbContext
             entity.Property(e => e.Total)
                 .HasPrecision(10, 2)
                 .HasColumnName("total");
+            // HU-12.2: total de descuentos aplicados (promociones + manual).
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("descuento");
+            // HU-12.1: efectivo recibido y cambio devuelto (se guardan).
+            entity.Property(e => e.EfectivoRecibido)
+                .HasPrecision(10, 2)
+                .HasColumnName("efectivoRecibido");
+            entity.Property(e => e.Cambio)
+                .HasPrecision(10, 2)
+                .HasColumnName("cambio");
+            // HU-09.3: el examen pagado de esta venta ya se usó como crédito.
+            entity.Property(e => e.CreditoExamenUsado)
+                .HasDefaultValueSql("'0'")
+                .HasColumnName("creditoExamenUsado");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Venta)
                 .HasForeignKey(d => d.IdCliente)
@@ -768,6 +803,71 @@ public partial class MiApplicationDbContext : DbContext
                 .HasForeignKey(d => d.IdPedido)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_venta_pedido");
+        });
+
+        // HU-09: detalle_venta (1 venta -> N líneas).
+        modelBuilder.Entity<DetalleVenta>(entity =>
+        {
+            entity.HasKey(e => e.IdDetalleVenta).HasName("PRIMARY");
+
+            entity.ToTable("detalle_venta");
+
+            // Un producto no se repite dentro de la misma venta.
+            entity.HasIndex(e => new { e.FolioVenta, e.IdProducto })
+                .IsUnique()
+                .HasDatabaseName("uq_detalle_venta");
+
+            entity.Property(e => e.IdDetalleVenta).HasColumnName("idDetalleVenta");
+            entity.Property(e => e.FolioVenta).HasColumnName("folioVenta");
+            entity.Property(e => e.IdProducto).HasColumnName("idProducto");
+            entity.Property(e => e.Cantidad).HasColumnName("cantidad");
+            entity.Property(e => e.PrecioUnitario)
+                .HasPrecision(10, 2)
+                .HasColumnName("precioUnitario");
+            entity.Property(e => e.Subtotal)
+                .HasPrecision(10, 2)
+                .HasColumnName("subtotal");
+            // HU-12.2: descuento aplicado a la línea.
+            entity.Property(e => e.Descuento)
+                .HasPrecision(10, 2)
+                .HasDefaultValueSql("'0.00'")
+                .HasColumnName("descuento");
+
+            entity.HasOne(d => d.FolioVentaNavigation).WithMany(p => p.DetallesVenta)
+                .HasForeignKey(d => d.FolioVenta)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_detalle_venta");
+            entity.HasOne(d => d.IdProductoNavigation).WithMany(p => p.DetallesVenta)
+                .HasForeignKey(d => d.IdProducto)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("fk_detalle_producto");
+        });
+
+        // HU-12.1: pago_venta (1 venta -> N pagos).
+        modelBuilder.Entity<PagoVenta>(entity =>
+        {
+            entity.HasKey(e => e.IdPago).HasName("PRIMARY");
+
+            entity.ToTable("pago_venta");
+
+            entity.HasIndex(e => e.FolioVenta, "fk_pago_venta");
+
+            entity.Property(e => e.IdPago).HasColumnName("idPago");
+            entity.Property(e => e.FolioVenta).HasColumnName("folioVenta");
+            entity.Property(e => e.FormaPago)
+                .HasMaxLength(20)
+                .HasColumnName("formaPago");
+            entity.Property(e => e.Monto)
+                .HasPrecision(10, 2)
+                .HasColumnName("monto");
+            entity.Property(e => e.Referencia)
+                .HasMaxLength(100)
+                .HasColumnName("referencia");
+
+            entity.HasOne(d => d.FolioVentaNavigation).WithMany(p => p.Pagos)
+                .HasForeignKey(d => d.FolioVenta)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_pago_venta");
         });
 
         // --- HU-03 unido en este mismo archivo, sin método parcial ---

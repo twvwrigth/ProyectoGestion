@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto.Pages;
 
+// HU-08.4: solo el Encargado puede cambiar precios, parámetros y
+// promociones. Antes cualquier rol logueado podía entrar (no había
+// [Authorize] en esta página).
+[Authorize(Roles = "Encargado")]
 public class PreciosReglasPromocionesModel : PageModel
 {
     private readonly MiApplicationDbContext _context;
@@ -63,10 +68,13 @@ public class PreciosReglasPromocionesModel : PageModel
         string tratamientoLimpio = Tratamiento.Trim();
         string rangoLimpio = RangoGraduacion.Trim();
 
+        // HU-08.1: la comparación ignora mayúsculas y espacios. La BD
+        // además tiene el índice único uq_mica (material, tratamiento,
+        // rangoGraduacion) como segunda barrera.
         bool existeCombinacion = await _context.Micas.AnyAsync(m =>
-            m.Material == materialLimpio &&
-            m.Tratamiento == tratamientoLimpio &&
-            m.RangoGraduacion == rangoLimpio);
+            m.Material.ToLower() == materialLimpio.ToLower() &&
+            m.Tratamiento.ToLower() == tratamientoLimpio.ToLower() &&
+            m.RangoGraduacion.ToLower() == rangoLimpio.ToLower());
 
         if (existeCombinacion)
         {
@@ -100,10 +108,40 @@ public class PreciosReglasPromocionesModel : PageModel
                 }
             });
         }
+        catch (DbUpdateException)
+        {
+            // Choque contra el índice único uq_mica (carrera entre dos
+            // altas simultáneas con la misma combinación).
+            return new JsonResult(new { success = false, message = "Esta combinación de Mica ya está registrada en la matriz de precios." });
+        }
         catch (Exception)
         {
             return new JsonResult(new { success = false, message = "Ocurrió un error interno al guardar la mica en la base de datos." });
         }
+    }
+
+    // HU-08.2: búsqueda de una combinación de la matriz por material +
+    // tratamiento + rango. La usa la cotización para validar que la
+    // combinación elegida existe y tomar su precio del servidor.
+    // GET /PreciosReglasPromociones?handler=BuscarMica&material=...&tratamiento=...&rango=...
+    public async Task<IActionResult> OnGetBuscarMicaAsync(string material, string tratamiento, string rango)
+    {
+        if (string.IsNullOrWhiteSpace(material) || string.IsNullOrWhiteSpace(tratamiento) || string.IsNullOrWhiteSpace(rango))
+            return new JsonResult(new { success = false, message = "Faltan los tres datos de la combinación (material, tratamiento y rango)." });
+
+        var mica = await _context.Micas.FirstOrDefaultAsync(m =>
+            m.Material.ToLower() == material.Trim().ToLower() &&
+            m.Tratamiento.ToLower() == tratamiento.Trim().ToLower() &&
+            m.RangoGraduacion.ToLower() == rango.Trim().ToLower());
+
+        if (mica == null)
+            return new JsonResult(new { success = false, message = "No existe una mica con esa combinación en la matriz de precios." });
+
+        return new JsonResult(new
+        {
+            success = true,
+            data = new { id = mica.IdMica, material = mica.Material, tratamiento = mica.Tratamiento, rangoGraduacion = mica.RangoGraduacion, precio = mica.Precio }
+        });
     }
 
     public async Task<IActionResult> OnPostEliminarMicaAjaxAsync(int id)
@@ -218,6 +256,18 @@ public class PreciosReglasPromocionesModel : PageModel
         if (TipoPromocion == "Porcentaje" && PorcentajePromo > 100)
         {
             return new JsonResult(new { success = false, message = "El descuento por porcentaje no puede ser mayor al 100%." });
+        }
+
+        // HU-08.4: los tres tipos que permite el PDF. "Paquete" es un
+        // precio fijo por el conjunto completo de productos.
+        if (TipoPromocion != "Porcentaje" && TipoPromocion != "MontoFijo" && TipoPromocion != "Paquete")
+        {
+            return new JsonResult(new { success = false, message = "El tipo de promoción debe ser Porcentaje, Monto Fijo o Paquete." });
+        }
+
+        if (TipoPromocion == "Paquete" && (ProductosIds == null || ProductosIds.Distinct().Count() < 2))
+        {
+            return new JsonResult(new { success = false, message = "Un Paquete necesita al menos 2 productos: es un precio fijo por el conjunto." });
         }
 
         if (FechaFin < FechaInicio)

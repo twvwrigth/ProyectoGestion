@@ -40,4 +40,7 @@ public partial class Producto
     public virtual ICollection<Promocion> IdPromociones { get; set; } = new List<Promocion>();
 
     public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
+
+    // HU-09 (detalle_venta): líneas de detalle en las que aparece el producto.
+    public virtual ICollection<DetalleVenta> DetallesVenta { get; set; } = new List<DetalleVenta>();
 }
