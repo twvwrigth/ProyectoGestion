@@ -199,10 +199,15 @@
                                                                         data-campos-requeridos='@(producto.IdCategoriaNavigation != null ? producto.IdCategoriaNavigation.CamposRequeridos : "[]")'>
                                                                     Editar
                                                                 </button>
-                                                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                                                        data-bs-toggle="modal" data-bs-target="#modalEliminar"
+                                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                                        data-bs-toggle="modal" data-bs-target="#modalAjusteInventario"
                                                                         data-id="@producto.IdProducto"
-                                                                        data-nombre="@producto.Nombre">Eliminar</button>
+                                                                        data-nombre="@producto.Nombre"
+                                                                        data-existencia="@producto.Existencia">Ajustar</button>
+                                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                        data-bs-toggle="modal" data-bs-target="#modalDarDeBaja"
+                                                                        data-id="@producto.IdProducto"
+                                                                        data-nombre="@producto.Nombre">Dar de baja</button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -263,6 +268,51 @@
                                     </div>
 
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HU-03: Ajustes recientes de inventario (con motivo y autorización) -->
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 fs-6">Ajustes recientes de inventario</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0 text-center align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th class="text-start">Producto</th>
+                                            <th>Tipo</th>
+                                            <th>Antes → Después</th>
+                                            <th class="text-start">Motivo</th>
+                                            <th>Empleado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.AjustesRecientes != null && Model.AjustesRecientes.Any())
+                                        {
+                                            @foreach (var a in Model.AjustesRecientes)
+                                            {
+                                                <tr>
+                                                    <td>@a.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                                                    <td class="text-start fw-bold">@a.IdProductoNavigation?.Nombre</td>
+                                                    <td><span class="badge bg-warning text-dark">@a.TipoAjuste</span></td>
+                                                    <td>@a.CantidadAntes → @a.CantidadDespues</td>
+                                                    <td class="text-start"><small>@a.Motivo</small></td>
+                                                    <td>@a.IdEmpleadoNavigation?.Nombre</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4 text-muted">No hay ajustes registrados.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -350,12 +400,24 @@
                                         });
                                     }
         
-                                    var modalEliminar = document.getElementById('modalEliminar');
-                                    if (modalEliminar) {
-                                        modalEliminar.addEventListener('show.bs.modal', function (event) {
+                                    // HU-03: modal de Dar de baja (antes Eliminar)
+                                    var modalDarDeBaja = document.getElementById('modalDarDeBaja');
+                                    if (modalDarDeBaja) {
+                                        modalDarDeBaja.addEventListener('show.bs.modal', function (event) {
                                             var button = event.relatedTarget;
-                                            modalEliminar.querySelector('#eliminarId').value = button.getAttribute('data-id');
-                                            modalEliminar.querySelector('#nombreProductoEliminar').textContent = button.getAttribute('data-nombre');
+                                            modalDarDeBaja.querySelector('#bajaId').value = button.getAttribute('data-id');
+                                            modalDarDeBaja.querySelector('#nombreProductoBaja').textContent = button.getAttribute('data-nombre');
+                                        });
+                                    }
+
+                                    // HU-03: modal de Ajuste de inventario
+                                    var modalAjuste = document.getElementById('modalAjusteInventario');
+                                    if (modalAjuste) {
+                                        modalAjuste.addEventListener('show.bs.modal', function (event) {
+                                            var button = event.relatedTarget;
+                                            modalAjuste.querySelector('#ajusteId').value = button.getAttribute('data-id');
+                                            modalAjuste.querySelector('#nombreProductoAjuste').textContent = button.getAttribute('data-nombre');
+                                            modalAjuste.querySelector('#existenciaActualAjuste').textContent = button.getAttribute('data-existencia');
                                         });
                                     }
 
