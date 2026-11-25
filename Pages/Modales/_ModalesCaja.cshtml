@@ -82,12 +82,15 @@
                     <!-- HU-03: autorización del encargado. Obligatoria solo para retiros (Salida).
                          Si quien registra ya es Encargado (o Admin), se deja vacío.
                          Si trae un folio de autorización aprobada, se pone ahí y no hace falta usuario/clave. -->
+                    @if (!User.IsInRole("Encargado") && !User.IsInRole("Admin"))
+                    {
                     <div class="p-2 bg-light border rounded">
                         <small class="fw-bold d-block mb-2">Autorización del encargado <span class="text-muted fw-normal">(solo para retiros)</span></small>
                         <input type="text" class="form-control form-control-sm mb-1" name="UsuarioEncargado" placeholder="Usuario del encargado" />
                         <input type="password" class="form-control form-control-sm mb-1" name="ClaveEncargado" placeholder="Clave del encargado" />
                         <input type="number" class="form-control form-control-sm" name="IdAutorizacion" placeholder="O folio de autorización aprobada" />
                     </div>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>

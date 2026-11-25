@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Proyecto.Models;
 using Proyecto.Services;
+using System.Security.Claims;
 
 namespace Proyecto.Pages
 {
@@ -50,6 +51,12 @@ namespace Proyecto.Pages
                 .Include(b => b.IdEmpleadoNavigation)
                 .Include(b => b.IdEncargadoNavigation)
                 .AsQueryable();
+
+            if (!User.IsInRole("Encargado"))
+            {
+                int idEmpleadoActual = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                q = q.Where(b => b.IdEmpleado == idEmpleadoActual);
+            }
 
             if (!string.IsNullOrEmpty(tipoAccion))
                 q = q.Where(b => b.TipoAccion == tipoAccion);

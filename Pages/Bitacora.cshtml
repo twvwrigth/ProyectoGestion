@@ -16,7 +16,7 @@
                 <option value="">Todos</option>
                 @foreach (var t in Model.TiposAccion)
                 {
-                    <option value="@t" @(Model.TipoAccionFiltro == t ? "selected" : "")>@t</option>
+                    <option value="@t" selected="@(Model.TipoAccionFiltro == t ? "selected" : null)">@t</option>
                 }
             </select>
         </div>
@@ -24,8 +24,8 @@
             <label class="form-label small fw-semibold">Estado</label>
             <select name="estado" class="form-select">
                 <option value="">Todos</option>
-                <option value="Aprobada" @(Model.EstadoFiltro == "Aprobada" ? "selected" : "")>Aprobada</option>
-                <option value="Rechazada" @(Model.EstadoFiltro == "Rechazada" ? "selected" : "")>Rechazada</option>
+                <option value="Aprobada" selected="@(Model.EstadoFiltro == "Aprobada" ? "selected" : null)">Aprobada</option>
+                <option value="Rechazada" selected="@(Model.EstadoFiltro == "Rechazada" ? "selected" : null)">Rechazada</option>
             </select>
         </div>
         <div class="col-md-2">

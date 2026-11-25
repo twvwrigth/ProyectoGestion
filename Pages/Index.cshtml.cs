@@ -279,5 +279,92 @@ namespace Proyecto.Pages
 
             return RedirectToPage();
         }
+
+        public async Task<IActionResult> OnPostCancelarVentaAsync(
+            int folioVenta, string motivo,
+            string? usuarioEncargado, string? claveEncargado, int? idAutorizacion)
+        {
+            int idEmpleadoActual = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var venta = await _context.Venta.FindAsync(folioVenta);
+            if (venta == null)
+            {
+                TempData["ErrorMessage"] = "No se encontró la venta.";
+                return RedirectToPage();
+            }
+            if (venta.Estado != "Activa")
+            {
+                TempData["ErrorMessage"] = "La venta ya no está activa (está cancelada o devuelta).";
+                return RedirectToPage();
+            }
+            if (venta.IdPedido != null)
+            {
+                TempData["ErrorMessage"] = "La venta es de liquidación de un pedido y no se puede cancelar. Usa una devolución.";
+                return RedirectToPage();
+            }
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                TempData["ErrorMessage"] = "El motivo de la cancelación es obligatorio.";
+                return RedirectToPage();
+            }
+
+            var (autorizado, aut, mensaje) = await _autorizaciones.ResolverOSolicitarAsync(
+                User, idEmpleadoActual, AutorizacionService.Acciones.CancelacionVenta,
+                $"VTA-{folioVenta}", idAutorizacion, usuarioEncargado, claveEncargado,
+                $"Venta folio {folioVenta}", motivo.Trim());
+            if (!autorizado)
+            {
+                TempData["ErrorMessage"] = mensaje;
+                return RedirectToPage();
+            }
+
+            var cajaAbierta = await _context.CajaTurno
+                .FirstOrDefaultAsync(c => c.Estado == "Abierta" && c.FechaCierre == null);
+            if (cajaAbierta == null)
+            {
+                TempData["ErrorMessage"] = "No hay una caja abierta para revertir el cobro. Abre la caja primero.";
+                return RedirectToPage();
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var movimiento = new MovimientoCaja
+                {
+                    IdCajaTurno = cajaAbierta.IdCajaTurno,
+                    Tipo = "Salida",
+                    Monto = venta.Total,
+                    Motivo = $"Cancelación de venta folio {folioVenta}. {motivo.Trim()}",
+                    Fecha = DateTime.Now
+                };
+                _context.MovimientoCaja.Add(movimiento);
+
+                var producto = await _context.Productos.FindAsync(venta.IdProducto);
+                if (producto != null)
+                {
+                    producto.Existencia = (producto.Existencia ?? 0) + venta.Cantidad;
+                }
+
+                venta.Estado = "Cancelada";
+                venta.MotivoCancelacion = motivo.Trim();
+                venta.FechaCancelacion = DateTime.Now;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _autorizaciones.CerrarAutorizacionAsync(aut!, idEmpleadoActual,
+                    AutorizacionService.Acciones.CancelacionVenta, $"VTA-{folioVenta}",
+                    $"Venta folio {folioVenta}",
+                    $"Cancelación autorizada: {motivo.Trim()} (total ${venta.Total:0.00}, inventario restaurado).");
+
+                TempData["SuccessMessage"] = $"Venta folio {folioVenta} cancelada. Se revirtió el cobro y el inventario.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = $"Error al cancelar: {ex.InnerException?.Message ?? ex.Message}";
+            }
+            return RedirectToPage();
+        }
     }
 }

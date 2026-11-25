@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using System.Security.Claims;
 
 namespace Proyecto.Pages
 {
+    [Authorize(Roles = "Encargado,Vendedor")]
     public class catalogoModel : PageModel
     {
         private readonly MiApplicationDbContext _context;
@@ -68,6 +70,11 @@ namespace Proyecto.Pages
         // --- CREAR CATEGORÍA (Camino 1) ---
         public async Task<IActionResult> OnPostCrearCategoriaAsync(string NuevaCategoriaNombre, string AtributosJson)
         {
+            if (!User.IsInRole("Encargado"))
+            {
+                TempData["MensajeError"] = "Solo el encargado puede crear categorías.";
+                return RedirectToPage();
+            }
             if (string.IsNullOrWhiteSpace(NuevaCategoriaNombre))
             {
                 TempData["MensajeError"] = "El nombre de la categoría es obligatorio.";
@@ -92,6 +99,11 @@ namespace Proyecto.Pages
         // --- CREAR PRODUCTO (Camino 2 - Dinámico) ---
         public async Task<IActionResult> OnPostAsync(string NombreNuevo, int CategoriaNueva, decimal PrecioNuevo, int ExistenciaNueva, string DetallesTecnicosJson)
         {
+            if (!User.IsInRole("Encargado"))
+            {
+                TempData["MensajeError"] = "Solo el encargado puede crear productos.";
+                return RedirectToPage();
+            }
             if (string.IsNullOrWhiteSpace(NombreNuevo) || CategoriaNueva == 0 || PrecioNuevo <= 0)
             {
                 TempData["MensajeError"] = "Faltan datos obligatorios o el precio es inválido.";
@@ -124,6 +136,11 @@ namespace Proyecto.Pages
         // y autorización), para que ningún cambio de stock sea silencioso.
         public async Task<IActionResult> OnPostEditarAsync(int IdProductoEdit, string NombreEdit, decimal PrecioEdit, int ExistenciaEdit, string DetallesTecnicosEdit)
         {
+            if (!User.IsInRole("Encargado"))
+            {
+                TempData["MensajeError"] = "Solo el encargado puede editar productos.";
+                return RedirectToPage();
+            }
             var producto = await _context.Productos.FindAsync(IdProductoEdit);
             if (producto == null)
             {

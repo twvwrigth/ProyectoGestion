@@ -18,6 +18,45 @@ USE `dboptica`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `ajuste_inventario`
+--
+
+DROP TABLE IF EXISTS `ajuste_inventario`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ajuste_inventario` (
+  `idAjuste` int NOT NULL AUTO_INCREMENT,
+  `idProducto` int NOT NULL,
+  `cantidadAntes` int NOT NULL,
+  `cantidadDespues` int NOT NULL,
+  `tipoAjuste` varchar(50) NOT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `idEmpleado` int NOT NULL,
+  `idEncargadoAutoriza` int DEFAULT NULL,
+  `fecha` datetime NOT NULL,
+  `idAutorizacion` int DEFAULT NULL,
+  PRIMARY KEY (`idAjuste`),
+  KEY `fk_aju_producto` (`idProducto`),
+  KEY `fk_aju_empleado` (`idEmpleado`),
+  KEY `fk_aju_encargado` (`idEncargadoAutoriza`),
+  KEY `fk_aju_autorizacion` (`idAutorizacion`),
+  CONSTRAINT `fk_aju_autorizacion` FOREIGN KEY (`idAutorizacion`) REFERENCES `autorizacion` (`idAutorizacion`),
+  CONSTRAINT `fk_aju_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_aju_encargado` FOREIGN KEY (`idEncargadoAutoriza`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_aju_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ajuste_inventario`
+--
+
+LOCK TABLES `ajuste_inventario` WRITE;
+/*!40000 ALTER TABLE `ajuste_inventario` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ajuste_inventario` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `autorizacion`
 --
 
@@ -236,6 +275,81 @@ LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
 INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)'),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)'),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)'),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)'),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.'),(8,1,1,1,'2026-11-24',700.00,'2026-12-09',1,1,'Mica (MINIMA) - CR-39 - Antirreflejante Básico');
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `detalle_venta`
+--
+
+DROP TABLE IF EXISTS `detalle_venta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `detalle_venta` (
+  `idDetalleVenta` int NOT NULL AUTO_INCREMENT,
+  `folioVenta` int NOT NULL,
+  `idProducto` int NOT NULL,
+  `cantidad` int NOT NULL,
+  `precioUnitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`idDetalleVenta`),
+  UNIQUE KEY `uq_detalle_venta` (`folioVenta`,`idProducto`),
+  KEY `fk_dv_venta` (`folioVenta`),
+  KEY `fk_dv_producto` (`idProducto`),
+  CONSTRAINT `fk_dv_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_dv_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_dv_cantidad` CHECK ((`cantidad` > 0)),
+  CONSTRAINT `chk_dv_precio` CHECK ((`precioUnitario` >= 0)),
+  CONSTRAINT `chk_dv_subtotal` CHECK ((`subtotal` = (`cantidad` * `precioUnitario`)))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `detalle_venta`
+--
+
+LOCK TABLES `detalle_venta` WRITE;
+/*!40000 ALTER TABLE `detalle_venta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `detalle_venta` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `devolucion`
+--
+
+DROP TABLE IF EXISTS `devolucion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `devolucion` (
+  `idDevolucion` int NOT NULL AUTO_INCREMENT,
+  `folioVenta` int NOT NULL,
+  `idEmpleado` int NOT NULL,
+  `idEncargadoAutoriza` int DEFAULT NULL,
+  `fecha` datetime NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `cantidadDevuelta` int NOT NULL DEFAULT '1',
+  `formaPagoDevolucion` varchar(20) NOT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `estado` varchar(20) NOT NULL DEFAULT 'Completada',
+  `idAutorizacion` int DEFAULT NULL,
+  PRIMARY KEY (`idDevolucion`),
+  KEY `fk_dev_venta` (`folioVenta`),
+  KEY `fk_dev_empleado` (`idEmpleado`),
+  KEY `fk_dev_encargado` (`idEncargadoAutoriza`),
+  KEY `fk_dev_autorizacion` (`idAutorizacion`),
+  CONSTRAINT `fk_dev_autorizacion` FOREIGN KEY (`idAutorizacion`) REFERENCES `autorizacion` (`idAutorizacion`),
+  CONSTRAINT `fk_dev_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_dev_encargado` FOREIGN KEY (`idEncargadoAutoriza`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_dev_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `devolucion`
+--
+
+LOCK TABLES `devolucion` WRITE;
+/*!40000 ALTER TABLE `devolucion` DISABLE KEYS */;
+/*!40000 ALTER TABLE `devolucion` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -460,6 +574,7 @@ CREATE TABLE `parametro_negocio` (
   `precioExamen` decimal(10,2) NOT NULL DEFAULT '250.00',
   `vigenciaBonificacion` int NOT NULL DEFAULT '30',
   `anticipoMinimo` int NOT NULL DEFAULT '50',
+  `limiteDescuentoVendedor` decimal(5,2) NOT NULL DEFAULT '10.00',
   PRIMARY KEY (`idParametro`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -470,7 +585,7 @@ CREATE TABLE `parametro_negocio` (
 
 LOCK TABLES `parametro_negocio` WRITE;
 /*!40000 ALTER TABLE `parametro_negocio` DISABLE KEYS */;
-INSERT INTO `parametro_negocio` VALUES (1,250.00,30,50);
+INSERT INTO `parametro_negocio` VALUES (1,250.00,30,50,10.00);
 /*!40000 ALTER TABLE `parametro_negocio` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -530,6 +645,8 @@ CREATE TABLE `producto` (
   `promocion` tinyint(1) DEFAULT '0',
   `precio` decimal(10,2) NOT NULL,
   `detallesTecnicos` json DEFAULT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  `fecha_baja` datetime DEFAULT NULL,
   PRIMARY KEY (`idProducto`),
   KEY `fk_producto_clase` (`idClasePrecio`),
   KEY `fk_producto_categoria` (`idCategoria`),
@@ -544,7 +661,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}'),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}'),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}'),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}'),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}'),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}'),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}'),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}'),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL);
+INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}',1,NULL),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}',1,NULL),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}',1,NULL),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}',1,NULL),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}',1,NULL),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}',1,NULL),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}',1,NULL),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}',1,NULL),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL,1,NULL);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -759,6 +876,12 @@ CREATE TABLE `venta` (
   `fecha` date NOT NULL,
   `formaPago` varchar(20) NOT NULL,
   `total` decimal(10,2) NOT NULL,
+  `estado` varchar(20) NOT NULL DEFAULT 'Activa',
+  `cantidad` int NOT NULL DEFAULT '1',
+  `descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `precio_venta` decimal(10,2) DEFAULT NULL,
+  `motivo_cancelacion` varchar(255) DEFAULT NULL,
+  `fecha_cancelacion` datetime DEFAULT NULL,
   `ExamenComprado` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`folioVenta`),
   KEY `fk_venta_cliente` (`idCliente`),
@@ -780,7 +903,7 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
-INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,0);
+INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,NULL,NULL),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,NULL,NULL),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,NULL,NULL),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,NULL,NULL),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,NULL,NULL),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,NULL,NULL),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,NULL,NULL),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,NULL,NULL),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,NULL,NULL),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -793,4 +916,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-25  9:28:53
+-- Dump completed on 2026-11-25  9:40:50
