@@ -753,4 +753,48 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+CREATE TABLE IF NOT EXISTS `detalle_venta` (
+  `idDetalleVenta` int NOT NULL AUTO_INCREMENT,
+  `folioVenta` int NOT NULL,
+  `idProducto` int NOT NULL,
+  `cantidad` int NOT NULL,
+  `precioUnitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`idDetalleVenta`),
+  UNIQUE KEY `uq_detalle_venta` (`folioVenta`, `idProducto`),
+  KEY `fk_dv_venta` (`folioVenta`),
+  KEY `fk_dv_producto` (`idProducto`),
+  CONSTRAINT `fk_dv_venta`
+    FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_dv_producto`
+    FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `chk_dv_cantidad` CHECK (`cantidad` > 0),
+  CONSTRAINT `chk_dv_precio` CHECK (`precioUnitario` >= 0),
+  CONSTRAINT `chk_dv_subtotal` CHECK (`subtotal` = `cantidad` * `precioUnitario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ---------------------------------------------------------------------------
+-- Backfill histórico (OPCIONAL, ejecutar solo después de crear la tabla).
+-- Preserva el total de cada venta vieja como una sola línea con cantidad 1.
+-- NO reconstruye la cantidad ni el precio real: en las ventas viejas la
+-- cantidad se perdió (nunca se guardó) y varios totales no coinciden con el
+-- precio actual del producto. Ejemplos en el dump 2026-11-24:
+--   folio 1: producto 6 (Renu, $220) con total $180.
+--   folio 7: producto 1 (Clubmaster, $3,200) con total $11,300.
+-- El folio 7 es justo la limitación en vivo: ese total no puede ser un solo
+-- producto, pero el modelo actual solo guardó el primero.
+-- Las ventas 9-16 (2026-11-24, un producto por folio, total = precio) sí
+-- quedan exactas con este backfill.
+-- ---------------------------------------------------------------------------
+-- INSERT INTO `detalle_venta` (`folioVenta`, `idProducto`, `cantidad`, `precioUnitario`, `subtotal`)
+-- SELECT `folioVenta`, `idProducto`, 1, `total`, `total`
+-- FROM `venta`
+-- WHERE NOT EXISTS (
+--   SELECT 1 FROM `detalle_venta` d WHERE d.`folioVenta` = `venta`.`folioVenta`
+-- );
+
+
+
 -- Dump completed on 2026-11-24 17:58:16
