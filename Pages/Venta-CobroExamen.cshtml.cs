@@ -197,6 +197,37 @@ namespace Proyecto.Pages
 
             int idSolicita = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+            // HU-12.3: si quien vende ya es Encargado (o Admin), el descuento se
+            // autoriza directo con su sesión, igual que Corte y Caja. No se le
+            // piden credenciales de otro encargado, y no pasa por
+            // AutorizarEnElActoAsync porque esa vía prohíbe que solicitante y
+            // autorizador sean la misma persona. Se crea el registro Aprobada
+            // para que la venta lo valide y lo consuma igual que los demás.
+            if (AutorizacionService.EsEncargado(User))
+            {
+                var autDirecta = new Autorizacion
+                {
+                    TipoAccion = AutorizacionService.Acciones.Descuento,
+                    FolioReferencia = null,
+                    IdEmpleadoSolicita = idSolicita,
+                    IdEncargadoAutoriza = idSolicita,
+                    FechaSolicitud = DateTime.Now,
+                    FechaResolucion = DateTime.Now,
+                    Estado = "Aprobada",
+                    Motivo = motivo,
+                    Detalle = $"Descuento manual {tipo} {valor:0.##} en venta de mostrador.",
+                    Usada = false
+                };
+                _context.Autorizaciones.Add(autDirecta);
+                await _context.SaveChangesAsync();
+
+                await _autorizaciones.RegistrarEnBitacoraAsync(
+                    idSolicita, idSolicita, AutorizacionService.Acciones.Descuento, "Aprobada", null, motivo,
+                    $"Descuento manual {tipo} {valor:0.##} autorizado directamente por el encargado en venta de mostrador.");
+
+                return new JsonResult(new { success = true, idAutorizacion = autDirecta.IdAutorizacion, mensaje = "Descuento autorizado." });
+            }
+
             var (ok, error, aut) = await _autorizaciones.AutorizarEnElActoAsync(
                 AutorizacionService.Acciones.Descuento,
                 folioReferencia: null,
