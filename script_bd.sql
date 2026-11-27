@@ -1,3 +1,28 @@
+-- ============================================================
+-- script_bd.sql — BASE COMPLETA Y CORREGIDA (dboptica)
+-- Base: script_bd.sql del repo en HEAD 2e60e71 (dump del 2026-11-25),
+-- corregida 2026-11-27 con el esquema de HU-08 / HU-09 / HU-12.
+--
+-- QUE CAMBIO RESPECTO AL DEL REPO:
+--   * venta: + efectivoRecibido, cambio, creditoExamenUsado
+--     (descuento ya existia; lo puso el lado de Devoluciones).
+--   * detalle_venta: + descuento.
+--   * cotizacion: + descuento, idVentaExamenBonificado (+ FK a venta).
+--   * NUEVA tabla pago_venta (pagos combinados, HU-12.1).
+--   * micas: + UNIQUE KEY uq_mica (Material, Tratamiento, RangoGraduacion).
+--   * Los INSERT de venta y cotizacion se ampliaron con los valores de
+--     las columnas nuevas (NULL / 0 / 0.00), porque el dump usa VALUES
+--     sin lista de columnas: si solo se agregaran las columnas, el
+--     INSERT fallaria por numero de valores.
+--
+-- ADVERTENCIA: este archivo trae DROP TABLE IF EXISTS y BORRA los datos
+-- de las tablas al importarlo. Es para crear una base NUEVA desde cero
+-- (o para un companero que parte limpio). NO lo importes sobre tu
+-- dboptica actual con ventas reales: para esa, el camino sigue siendo
+-- el ALTER de 3 columnas de venta (efectivoRecibido, cambio,
+-- creditoExamenUsado).
+-- ============================================================
+
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
 -- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
@@ -257,13 +282,16 @@ CREATE TABLE `cotizacion` (
   `bonificacionExamen` tinyint(1) DEFAULT '0',
   `receta` tinyint(1) DEFAULT '1',
   `detalleCotizacion` varchar(500) DEFAULT NULL,
+  `descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `idVentaExamenBonificado` int DEFAULT NULL,
   PRIMARY KEY (`idCotizacion`),
   KEY `fk_cotizacion_cliente` (`idCliente`),
   KEY `fk_cotizacion_empleado` (`idEmpleado`),
   KEY `fk_cotizacion_receta` (`idReceta`),
   CONSTRAINT `fk_cotizacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_cotizacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
-  CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`)
+  CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`),
+  CONSTRAINT `fk_cot_examen_credito` FOREIGN KEY (`idVentaExamenBonificado`) REFERENCES `venta` (`folioVenta`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -273,7 +301,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
-INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)'),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)'),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)'),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)'),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)'),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.'),(8,1,1,1,'2026-11-24',700.00,'2026-12-09',1,1,'Mica (MINIMA) - CR-39 - Antirreflejante Básico');
+INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)',0.00,NULL),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)',0.00,NULL),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)',0.00,NULL),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)',0.00,NULL),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.',0.00,NULL),(8,1,1,1,'2026-11-24',700.00,'2026-12-09',1,1,'Mica (MINIMA) - CR-39 - Antirreflejante Básico',0.00,NULL);
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -291,6 +319,7 @@ CREATE TABLE `detalle_venta` (
   `cantidad` int NOT NULL,
   `precioUnitario` decimal(10,2) NOT NULL,
   `subtotal` decimal(10,2) NOT NULL,
+  `descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`idDetalleVenta`),
   UNIQUE KEY `uq_detalle_venta` (`folioVenta`,`idProducto`),
   KEY `fk_dv_venta` (`folioVenta`),
@@ -518,7 +547,8 @@ CREATE TABLE `micas` (
   `Tratamiento` varchar(100) DEFAULT NULL,
   `RangoGraduacion` varchar(100) DEFAULT NULL,
   `Precio` decimal(18,2) NOT NULL,
-  PRIMARY KEY (`IdMica`)
+  PRIMARY KEY (`IdMica`),
+  UNIQUE KEY `uq_mica` (`Material`, `Tratamiento`, `RangoGraduacion`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -879,6 +909,9 @@ CREATE TABLE `venta` (
   `estado` varchar(20) NOT NULL DEFAULT 'Activa',
   `cantidad` int NOT NULL DEFAULT '1',
   `descuento` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `efectivoRecibido` decimal(10,2) DEFAULT NULL,
+  `cambio` decimal(10,2) DEFAULT NULL,
+  `creditoExamenUsado` tinyint(1) NOT NULL DEFAULT '0',
   `precio_venta` decimal(10,2) DEFAULT NULL,
   `motivo_cancelacion` varchar(255) DEFAULT NULL,
   `fecha_cancelacion` datetime DEFAULT NULL,
@@ -903,9 +936,38 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
-INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,NULL,NULL),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,NULL,NULL),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,NULL,NULL),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,NULL,NULL),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,NULL,NULL),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,NULL,NULL),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,NULL,NULL),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,NULL,NULL),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,NULL,NULL),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL);
+INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pago_venta`
+--
+
+DROP TABLE IF EXISTS `pago_venta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pago_venta` (
+  `idPago` int NOT NULL AUTO_INCREMENT,
+  `folioVenta` int NOT NULL,
+  `formaPago` varchar(20) NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `referencia` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`idPago`),
+  KEY `fk_pago_venta` (`folioVenta`),
+  CONSTRAINT `fk_pago_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pago_venta`
+--
+
+LOCK TABLES `pago_venta` WRITE;
+/*!40000 ALTER TABLE `pago_venta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pago_venta` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
