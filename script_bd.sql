@@ -1,35 +1,10 @@
--- ============================================================
--- script_bd.sql — BASE COMPLETA Y CORREGIDA (dboptica)
--- Base: script_bd.sql del repo en HEAD 2e60e71 (dump del 2026-11-25),
--- corregida 2026-11-27 con el esquema de HU-08 / HU-09 / HU-12.
---
--- QUE CAMBIO RESPECTO AL DEL REPO:
---   * venta: + efectivoRecibido, cambio, creditoExamenUsado
---     (descuento ya existia; lo puso el lado de Devoluciones).
---   * detalle_venta: + descuento.
---   * cotizacion: + descuento, idVentaExamenBonificado (+ FK a venta).
---   * NUEVA tabla pago_venta (pagos combinados, HU-12.1).
---   * micas: + UNIQUE KEY uq_mica (Material, Tratamiento, RangoGraduacion).
---   * Los INSERT de venta y cotizacion se ampliaron con los valores de
---     las columnas nuevas (NULL / 0 / 0.00), porque el dump usa VALUES
---     sin lista de columnas: si solo se agregaran las columnas, el
---     INSERT fallaria por numero de valores.
---
--- ADVERTENCIA: este archivo trae DROP TABLE IF EXISTS y BORRA los datos
--- de las tablas al importarlo. Es para crear una base NUEVA desde cero
--- (o para un companero que parte limpio). NO lo importes sobre tu
--- dboptica actual con ventas reales: para esa, el camino sigue siendo
--- el ALTER de 3 columnas de venta (efectivoRecibido, cambio,
--- creditoExamenUsado).
--- ============================================================
-
 CREATE DATABASE  IF NOT EXISTS `dboptica` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `dboptica`;
--- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
 -- Host: localhost    Database: dboptica
 -- ------------------------------------------------------
--- Server version	8.0.44
+-- Server version	8.0.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -288,11 +263,12 @@ CREATE TABLE `cotizacion` (
   KEY `fk_cotizacion_cliente` (`idCliente`),
   KEY `fk_cotizacion_empleado` (`idEmpleado`),
   KEY `fk_cotizacion_receta` (`idReceta`),
+  KEY `fk_cot_examen_credito` (`idVentaExamenBonificado`),
+  CONSTRAINT `fk_cot_examen_credito` FOREIGN KEY (`idVentaExamenBonificado`) REFERENCES `venta` (`folioVenta`) ON DELETE SET NULL,
   CONSTRAINT `fk_cotizacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_cotizacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
-  CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`),
-  CONSTRAINT `fk_cot_examen_credito` FOREIGN KEY (`idVentaExamenBonificado`) REFERENCES `venta` (`folioVenta`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `fk_cotizacion_receta` FOREIGN KEY (`idReceta`) REFERENCES `receta` (`idReceta`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -301,7 +277,7 @@ CREATE TABLE `cotizacion` (
 
 LOCK TABLES `cotizacion` WRITE;
 /*!40000 ALTER TABLE `cotizacion` DISABLE KEYS */;
-INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)',0.00,NULL),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)',0.00,NULL),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)',0.00,NULL),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)',0.00,NULL),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.',0.00,NULL),(8,1,1,1,'2026-11-24',700.00,'2026-12-09',1,1,'Mica (MINIMA) - CR-39 - Antirreflejante Básico',0.00,NULL);
+INSERT INTO `cotizacion` VALUES (1,1,2,1,'2026-11-05',4600.00,'2026-11-20',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Policarbonato Luz Azul ($1,650) - Bonificación examen ($250)',0.00,NULL),(2,2,2,2,'2026-11-07',5100.00,'2026-11-22',1,1,'Armazón Oakley Holbrook Rx ($2,450) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(3,3,3,3,'2026-11-10',3400.00,'2026-11-25',0,1,'Armazón propio del cliente + Micas High Index 1.67 ($3,400)',0.00,NULL),(4,4,2,4,'2026-11-12',1800.00,'2026-11-27',1,1,'Armazón Vogue Classic Slim ($1,100) + Micas CR-39 AR ($950) - Bonificación examen ($250)',0.00,NULL),(5,5,3,5,'2026-11-14',2750.00,'2026-11-29',0,1,'Armazón Vogue Classic Slim ($1,100) + Micas Policarbonato Luz Azul ($1,650)',0.00,NULL),(6,6,2,6,'2026-11-16',5850.00,'2026-12-01',1,1,'Armazón Ray-Ban Clubmaster ($3,200) + Micas Transitions Gen S ($2,900) - Bonificación examen ($250)',0.00,NULL),(7,5,1,5,'2026-11-18',4720.00,'2026-12-03',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul | Ray-Ban Clubmaster | Kit Limpieza Microf.',0.00,NULL),(8,1,1,1,'2026-11-24',700.00,'2026-12-09',1,1,'Mica (MINIMA) - CR-39 - Antirreflejante Básico',0.00,NULL),(9,8,1,7,'2026-11-27',3270.00,'2026-12-12',1,1,'Mica (RECOMENDADA) - High Index 1.67 - Antirreflejante Hidrofóbico + Luz Azul | Kit Limpieza Microf.',0.00,NULL),(10,5,1,5,'2026-11-27',1400.00,'2026-12-12',1,1,'Mica (RECOMENDADA) - Policarbonato - Antirreflejante + Filtro Luz Azul',0.00,NULL),(11,3,1,3,'2026-11-27',3400.00,'2026-12-12',0,1,'Mica (RECOMENDADA) - High Index 1.67 - Antirreflejante Hidrofóbico + Luz Azul',0.00,NULL);
 /*!40000 ALTER TABLE `cotizacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -436,7 +412,7 @@ CREATE TABLE `historial_pedido` (
   KEY `fk_historial_empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_historial_pedido` FOREIGN KEY (`folioPedido`) REFERENCES `pedido` (`folioPedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,7 +421,7 @@ CREATE TABLE `historial_pedido` (
 
 LOCK TABLES `historial_pedido` WRITE;
 /*!40000 ALTER TABLE `historial_pedido` DISABLE KEYS */;
-INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-11-05 11:00:00','Pedido registrado con 50% de anticipo ($2,300.00).'),(2,1,5,'En proceso','2026-11-06 09:15:00','Biselado y montaje iniciado en taller propio.'),(3,1,5,'Terminado','2026-11-08 16:30:00','Control de calidad aprobado.'),(4,1,2,'Entregado','2026-11-10 17:20:00','Cliente liquidó saldo de $2,300.00 y recibió sus lentes.'),(5,2,2,'Registrado','2026-11-07 12:10:00','Anticipo del 50% cobrado.'),(6,2,2,'Enviado a laboratorio','2026-11-07 17:00:00','Enviado por mensajería a Essilor Veracruz.'),(7,2,2,'Recibido en óptica','2026-11-14 13:00:00','Recibido de laboratorio externo, graduación verificada.'),(8,2,2,'Listo para entrega','2026-11-14 13:20:00','Se notificó al cliente vía WhatsApp.'),(9,3,3,'Registrado','2026-11-10 10:30:00','Se recibe armazón del cliente en buen estado.'),(10,3,3,'Enviado a laboratorio','2026-11-10 16:00:00','Enviado para tallado High Index 1.67.'),(11,3,1,'Con incidencia','2026-11-16 11:45:00','Laboratorio reporta falla en tratamiento AR; se repite mica sin costo.'),(12,4,2,'Registrado','2026-11-12 14:00:00','Pedido liquidado al 100% desde mostrador.'),(13,4,5,'Terminado','2026-11-17 18:00:00','Montaje finalizado en taller central.'),(14,5,3,'Registrado','2026-11-14 11:20:00','Anticipo de $1,500.00 registrado.'),(15,5,3,'En proceso','2026-11-15 10:00:00','En tallado de oblea bifocal en Óptica Industrial del Golfo.'),(16,6,2,'Registrado','2026-11-16 16:10:00','Anticipo recibido. Pendiente de envío a laboratorio.');
+INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-11-05 11:00:00','Pedido registrado con 50% de anticipo ($2,300.00).'),(2,1,5,'En proceso','2026-11-06 09:15:00','Biselado y montaje iniciado en taller propio.'),(3,1,5,'Terminado','2026-11-08 16:30:00','Control de calidad aprobado.'),(4,1,2,'Entregado','2026-11-10 17:20:00','Cliente liquidó saldo de $2,300.00 y recibió sus lentes.'),(5,2,2,'Registrado','2026-11-07 12:10:00','Anticipo del 50% cobrado.'),(6,2,2,'Enviado a laboratorio','2026-11-07 17:00:00','Enviado por mensajería a Essilor Veracruz.'),(7,2,2,'Recibido en óptica','2026-11-14 13:00:00','Recibido de laboratorio externo, graduación verificada.'),(8,2,2,'Listo para entrega','2026-11-14 13:20:00','Se notificó al cliente vía WhatsApp.'),(9,3,3,'Registrado','2026-11-10 10:30:00','Se recibe armazón del cliente en buen estado.'),(10,3,3,'Enviado a laboratorio','2026-11-10 16:00:00','Enviado para tallado High Index 1.67.'),(11,3,1,'Con incidencia','2026-11-16 11:45:00','Laboratorio reporta falla en tratamiento AR; se repite mica sin costo.'),(12,4,2,'Registrado','2026-11-12 14:00:00','Pedido liquidado al 100% desde mostrador.'),(13,4,5,'Terminado','2026-11-17 18:00:00','Montaje finalizado en taller central.'),(14,5,3,'Registrado','2026-11-14 11:20:00','Anticipo de $1,500.00 registrado.'),(15,5,3,'En proceso','2026-11-15 10:00:00','En tallado de oblea bifocal en Óptica Industrial del Golfo.'),(16,6,2,'Registrado','2026-11-16 16:10:00','Anticipo recibido. Pendiente de envío a laboratorio.'),(17,10,5,'En proceso','2026-11-27 17:25:21','Producción actualizada a: En proceso'),(18,11,5,'En proceso','2026-11-27 19:16:07','Producción actualizada a: En proceso'),(19,11,5,'Terminado','2026-11-27 19:17:20','Producción actualizada a: Terminado'),(20,8,5,'En proceso','2026-11-27 19:32:05','Producción actualizada a: En proceso');
 /*!40000 ALTER TABLE `historial_pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -548,7 +524,7 @@ CREATE TABLE `micas` (
   `RangoGraduacion` varchar(100) DEFAULT NULL,
   `Precio` decimal(18,2) NOT NULL,
   PRIMARY KEY (`IdMica`),
-  UNIQUE KEY `uq_mica` (`Material`, `Tratamiento`, `RangoGraduacion`)
+  UNIQUE KEY `uq_mica` (`Material`,`Tratamiento`,`RangoGraduacion`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -590,6 +566,34 @@ LOCK TABLES `movimientocaja` WRITE;
 /*!40000 ALTER TABLE `movimientocaja` DISABLE KEYS */;
 INSERT INTO `movimientocaja` VALUES (1,1,'Salida',150.00,'Pago de mensajería local para envío de pedidos a laboratorio','2026-11-17 13:20:00'),(2,1,'Entrada',500.00,'Reposición de morralla para cambio en mostrador','2026-11-17 15:00:00'),(3,2,'Salida',85.00,'Compra de agua embotellada e insumos de limpieza','2026-11-18 11:30:00');
 /*!40000 ALTER TABLE `movimientocaja` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pago_venta`
+--
+
+DROP TABLE IF EXISTS `pago_venta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pago_venta` (
+  `idPago` int NOT NULL AUTO_INCREMENT,
+  `folioVenta` int NOT NULL,
+  `formaPago` varchar(20) NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `referencia` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`idPago`),
+  KEY `fk_pago_venta` (`folioVenta`),
+  CONSTRAINT `fk_pago_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pago_venta`
+--
+
+LOCK TABLES `pago_venta` WRITE;
+/*!40000 ALTER TABLE `pago_venta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pago_venta` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -646,7 +650,7 @@ CREATE TABLE `pedido` (
   CONSTRAINT `fk_cotizacion_pedido` FOREIGN KEY (`idCotizacion`) REFERENCES `cotizacion` (`idCotizacion`),
   CONSTRAINT `fk_pedido_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_pedido_laboratorio` FOREIGN KEY (`idLaboratorio`) REFERENCES `laboratorio` (`idLaboratorio`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -655,7 +659,7 @@ CREATE TABLE `pedido` (
 
 LOCK TABLES `pedido` WRITE;
 /*!40000 ALTER TABLE `pedido` DISABLE KEYS */;
-INSERT INTO `pedido` VALUES (1,1,1,1,'2026-11-05','2026-11-10','2026-11-10 17:20:00',1,2300.00,0.00,'Entregado','2291457890'),(2,2,2,2,'2026-11-07','2026-11-15',NULL,1,2550.00,2550.00,'Listo para entrega','2292345612'),(3,3,3,2,'2026-11-10','2026-11-17',NULL,1,2000.00,1400.00,'Con incidencia','2298765432'),(4,4,4,1,'2026-11-12','2026-11-19',NULL,1,1800.00,0.00,'Terminado','2293456789'),(5,5,5,3,'2026-11-14','2026-11-20',NULL,1,1500.00,1250.00,'En proceso','2294567890'),(6,6,6,2,'2026-11-16','2026-11-24',NULL,1,3000.00,2850.00,'Registrado','2295678901'),(7,5,7,1,'2026-11-18','2026-11-25',NULL,0,NULL,4720.00,'Registrado','2294567890'),(8,1,8,1,'2026-11-24','2026-12-01',NULL,0,NULL,700.00,'Registrado','2291457890');
+INSERT INTO `pedido` VALUES (1,1,1,1,'2026-11-05','2026-11-10','2026-11-10 17:20:00',1,2300.00,0.00,'Entregado','2291457890'),(2,2,2,2,'2026-11-07','2026-11-15',NULL,1,2550.00,2550.00,'Listo para entrega','2292345612'),(3,3,3,2,'2026-11-10','2026-11-17',NULL,1,2000.00,1400.00,'Con incidencia','2298765432'),(4,4,4,1,'2026-11-12','2026-11-19',NULL,1,1800.00,0.00,'Entregado','2293456789'),(5,5,5,3,'2026-11-14','2026-11-20',NULL,1,1500.00,1250.00,'Recibido en óptica','2294567890'),(6,6,6,2,'2026-11-16','2026-11-24',NULL,1,3000.00,2850.00,'Registrado','2295678901'),(7,5,7,1,'2026-11-18','2026-11-25',NULL,0,NULL,4720.00,'Registrado','2294567890'),(8,1,8,1,'2026-11-24','2026-12-01',NULL,0,NULL,700.00,'En proceso','2291457890'),(9,8,9,1,'2026-11-27','2026-12-04',NULL,0,NULL,0.00,'Entregado','2297890123'),(10,5,10,1,'2026-11-27','2026-12-04',NULL,0,NULL,0.00,'Entregado','2294567890'),(11,3,11,1,'2026-11-27','2026-12-04',NULL,1,1700.00,1700.00,'Recibido en óptica','2298765432');
 /*!40000 ALTER TABLE `pedido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -682,7 +686,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -691,7 +695,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}',1,NULL),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}',1,NULL),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}',1,NULL),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}',1,NULL),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}',1,NULL),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}',1,NULL),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}',1,NULL),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}',1,NULL),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL,1,NULL);
+INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}',1,NULL),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}',1,NULL),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}',1,NULL),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}',1,NULL),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}',1,NULL),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}',1,NULL),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}',1,NULL),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}',1,NULL),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL,1,NULL),(10,1,NULL,'Anticipo pedido',0,0,0.00,NULL,1,NULL);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -927,7 +931,7 @@ CREATE TABLE `venta` (
   CONSTRAINT `fk_venta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_venta_pedido` FOREIGN KEY (`idPedido`) REFERENCES `pedido` (`folioPedido`),
   CONSTRAINT `fk_venta_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -936,38 +940,9 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
-INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,NULL,NULL,NULL,NULL,0);
+INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(17,3,9,8,1,9,'2026-11-27','Efectivo',3270.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(18,3,10,5,1,9,'2026-11-27','Tarjeta',1400.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(19,3,11,3,1,10,'2026-11-27','Efectivo',1700.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Table structure for table `pago_venta`
---
-
-DROP TABLE IF EXISTS `pago_venta`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `pago_venta` (
-  `idPago` int NOT NULL AUTO_INCREMENT,
-  `folioVenta` int NOT NULL,
-  `formaPago` varchar(20) NOT NULL,
-  `monto` decimal(10,2) NOT NULL,
-  `referencia` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`idPago`),
-  KEY `fk_pago_venta` (`folioVenta`),
-  CONSTRAINT `fk_pago_venta` FOREIGN KEY (`folioVenta`) REFERENCES `venta` (`folioVenta`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `pago_venta`
---
-
-LOCK TABLES `pago_venta` WRITE;
-/*!40000 ALTER TABLE `pago_venta` DISABLE KEYS */;
-/*!40000 ALTER TABLE `pago_venta` ENABLE KEYS */;
-UNLOCK TABLES;
-
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -978,4 +953,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-25  9:40:50
+-- Dump completed on 2026-11-27 19:35:32

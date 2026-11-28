@@ -77,7 +77,7 @@
                                 <td class="fw-bold">#@ped.FolioPedido</td>
                                 <td>@(ped.IdLaboratorioNavigation?.Nombre ?? "N/A")</td>
                                 <td>@(ped.FechaPromesa?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
-                                <td class="text-danger fw-bold">$@ped.SaldoPendiente</td>
+                                <td class="text-danger fw-bold">$@ped.SaldoPendiente.ToString("N2")</td>
                                 <td><span class="badge bg-primary">@ped.Estado</span></td>
                             </tr>
                         }
@@ -280,6 +280,7 @@
                                                     <th>Estado</th>
                                                     <th>Anticipo</th>
                                                     <th>Saldo Pendiente</th>
+                                                    <th>Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -290,8 +291,9 @@
                                                         <tr>
                                                             <td>#@ped.FolioPedido</td>
                                                             <td><span class="badge bg-secondary">@ped.Estado</span></td>
-                                                            <td>$@ped.AnticipoTotal</td>
-                                                            <td>$@ped.SaldoPendiente</td>
+                                                            <td>@(ped.AnticipoTotal.HasValue && ped.AnticipoTotal.Value > 0 ? "$" + ped.AnticipoTotal.Value.ToString("N2") : "Ninguno")</td>
+                                                            <td>@(ped.SaldoPendiente > 0 ? "$" + ped.SaldoPendiente.ToString("N2") : "Ninguno")</td>
+                                                            <td class="fw-bold">@(ped.IdCotizacionNavigation != null ? "$" + ped.IdCotizacionNavigation.TotalCalculado.ToString("N2") : "-")</td>
                                                         </tr>
                                                     }
                                                 }

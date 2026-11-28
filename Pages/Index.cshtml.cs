@@ -228,6 +228,16 @@ namespace Proyecto.Pages
                 return RedirectToPage();
             }
 
+            // Corrección: no se liquida (ni se marca Entregado) un pedido que
+            // no esté "Listo para entrega", aunque se llegue directo con
+            // ?folioPedido=N. El saldo se cobra solo cuando los lentes ya
+            // están listos para recoger.
+            if (pedido.Estado != "Listo para entrega")
+            {
+                TempData["ErrorMessage"] = $"El pedido #{pedido.FolioPedido} no se puede liquidar porque está en '{pedido.Estado}'. Solo se liquida cuando esté 'Listo para entrega'.";
+                return RedirectToPage();
+            }
+
             if (pedido.SaldoPendiente <= 0)
             {
                 TempData["ErrorMessage"] = $"El pedido #{pedido.FolioPedido} ya no tiene saldo pendiente.";

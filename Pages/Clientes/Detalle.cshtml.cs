@@ -27,6 +27,8 @@ namespace Proyecto.Pages.Clientes
                 .Include(c => c.Venta)
                 .Include(c => c.Pedidos)
                     .ThenInclude(p => p.IdLaboratorioNavigation)
+                .Include(c => c.Pedidos)
+                    .ThenInclude(p => p.IdCotizacionNavigation)
                 .Include(c => c.Reparacions)
                 .FirstOrDefaultAsync(m => m.IdCliente == id);
 

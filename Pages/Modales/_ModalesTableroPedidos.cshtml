@@ -17,13 +17,17 @@
                         <h6 class="fw-bold text-secondary mb-3">Acciones de la Orden</h6>
                         <div class="d-flex flex-wrap gap-2">
 
-                            <!-- BOTÓN 1: Recibir de fábrica (Solo aparece si viene del taller) -->
-                            @if (p.Estado == "Enviado a laboratorio" || p.Estado == "En proceso" || p.Estado == "Terminado")
+                            <!-- BOTÓN 1: Recibir de fábrica (SOLO cuando el trabajo está Terminado) -->
+                            @if (p.Estado == "Terminado")
                             {
                                 <form method="post" asp-page-handler="RecibirOk" asp-route-id="@p.FolioPedido" class="d-inline">
                                     <button type="submit" class="btn btn-success btn-sm">✅ Recibir (Calidad OK)</button>
                                 </form>
+                            }
 
+                            <!-- Registrar Incidencia (mientras el pedido está en el laboratorio) -->
+                            @if (p.Estado == "Enviado a laboratorio" || p.Estado == "En proceso" || p.Estado == "Terminado")
+                            {
                                 <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse"
                                         data-bs-target="#formIncidencia_@p.FolioPedido">
                                     ⚠️ Registrar Incidencia
@@ -41,22 +45,29 @@
                                 </form>
                             }
 
-                            <!-- BOTÓN 3: Entregar (Con saldo pendiente redirige a caja para liquidarlo) -->
-                            <form method="post" asp-page-handler="Entregar" asp-route-id="@p.FolioPedido" class="d-inline">
-                                @if (p.SaldoPendiente > 0)
-                                {
-                                    <button type="submit" class="btn btn-secondary btn-sm"
-                                            title="Tiene saldo pendiente, se redirige a caja para liquidarlo">
-                                        📦 Pagar saldo y entregar
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        📦 Marcar como Entregado
-                                    </button>
-                                }
-                            </form>
+                            <!-- BOTÓN 3: Entregar (SOLO en "Listo para entrega") -->
+                            @if (p.Estado == "Listo para entrega")
+                            {
+                                <form method="post" asp-page-handler="Entregar" asp-route-id="@p.FolioPedido" class="d-inline">
+                                    @if (p.SaldoPendiente > 0)
+                                    {
+                                        <button type="submit" class="btn btn-secondary btn-sm"
+                                                title="Tiene saldo pendiente, se redirige a caja para liquidarlo">
+                                            📦 Pagar saldo y entregar
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            📦 Marcar como Entregado
+                                        </button>
+                                    }
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">🔒 La entrega se habilita cuando el pedido esté "Listo para entrega" (estado actual: @p.Estado).</span>
+                            }
                         </div>
 
                         <!-- Formulario oculto para registrar incidencia con motivo -->

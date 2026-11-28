@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,9 @@ namespace Proyecto.Pages
         }
 
         public IList<Cotizacion> CotizacionesLista { get; set; } = default!;
+
+        // SCRUM-15 HU-11: parámetros del negocio (AnticipoMinimo) para el modal de anticipo.
+        public ParametroNegocio? Parametros { get; set; }
 
         // Propiedades para almacenar el estado actual del ordenamiento
         public string FolioSort { get; set; }
@@ -80,9 +84,11 @@ namespace Proyecto.Pages
             }
 
             CotizacionesLista = await query.ToListAsync();
+
+            Parametros = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
         }
 
-        public async Task<IActionResult> OnPostConvertirPedidoAsync(int idCotizacion)
+        public async Task<IActionResult> OnPostConvertirPedidoAsync(int idCotizacion, decimal anticipo, string? formaPago)
         {
             var cotizacion = await _context.Cotizaciones
                 .Include(c => c.IdClienteNavigation)
@@ -95,32 +101,111 @@ namespace Proyecto.Pages
 
             if (cotizacion.FechaExpiracion < DateOnly.FromDateTime(DateTime.Now))
             {
+                TempData["MensajePedido"] = "La cotización ya está vencida y no se puede convertir en pedido.";
                 return RedirectToPage();
             }
 
             var laboratorioActivo = await _context.Laboratorios.FirstOrDefaultAsync(l => l.Activo == true);
             if (laboratorioActivo == null)
             {
+                TempData["MensajePedido"] = "No hay ningún laboratorio activo para enviar el pedido.";
                 return RedirectToPage();
             }
 
-            var nuevoPedido = new Pedido
+            // SCRUM-15 HU-11: anticipo al crear el pedido.
+            // Si el cliente deja anticipo, debe ser al menos el % mínimo
+            // configurado en Precios (AnticipoMinimo, por defecto 50%) y no
+            // mayor que el total. El anticipo se cobra en caja: se registra
+            // como Venta ligada al pedido (igual que la liquidación de
+            // SCRUM-12, la Venta ES el movimiento de caja, no se crea además
+            // un MovimientoCaja). Anticipo en 0 = pedido sin anticipo, como antes.
+            var param = await _context.ParametroNegocios.FirstOrDefaultAsync(p => p.IdParametro == 1);
+            int pctMinimo = param?.AnticipoMinimo ?? 50;
+            decimal minimoAnticipo = cotizacion.TotalCalculado * pctMinimo / 100m;
+
+            if (anticipo < 0 || anticipo > cotizacion.TotalCalculado)
             {
-                IdCliente = cotizacion.IdCliente,
-                IdCotizacion = cotizacion.IdCotizacion,
-                IdLaboratorio = laboratorioActivo.IdLaboratorio,
-                FechaRegisEp = DateOnly.FromDateTime(DateTime.Now),
-                FechaPromesa = DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
-                Estado = "Registrado",
-                Anticipo = false,
-                SaldoPendiente = cotizacion.TotalCalculado,
-                Telefono = cotizacion.IdClienteNavigation?.Telefono ?? "0000000000"
-            };
+                TempData["MensajePedido"] = "El anticipo debe estar entre $0 y el total de la cotización.";
+                return RedirectToPage();
+            }
 
-            _context.Pedidos.Add(nuevoPedido);
-            await _context.SaveChangesAsync();
+            if (anticipo > 0 && anticipo < minimoAnticipo)
+            {
+                TempData["MensajePedido"] = $"El anticipo mínimo es de ${minimoAnticipo:0.00} ({pctMinimo}% del total).";
+                return RedirectToPage();
+            }
 
-            TempData["MensajePedido"] = $"El pedido #{nuevoPedido.FolioPedido} ha sido creado a partir de la cotización #{cotizacion.IdCotizacion}.";
+            CajaTurno? caja = null;
+            Producto? productoAnticipo = null;
+            if (anticipo > 0)
+            {
+                caja = await _context.CajaTurno.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+                if (caja == null)
+                {
+                    TempData["MensajePedido"] = "No hay ninguna caja abierta: abre la caja para cobrar el anticipo, o deja el anticipo en 0.";
+                    return RedirectToPage();
+                }
+
+                productoAnticipo = await _context.Productos
+                    .FirstOrDefaultAsync(pr => pr.Nombre == "Anticipo pedido");
+                if (productoAnticipo == null)
+                {
+                    TempData["MensajePedido"] = "Falta el producto genérico 'Anticipo pedido'. Aplica el script 15-anticipo.sql antes de convertir con anticipo.";
+                    return RedirectToPage();
+                }
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var nuevoPedido = new Pedido
+                {
+                    IdCliente = cotizacion.IdCliente,
+                    IdCotizacion = cotizacion.IdCotizacion,
+                    IdLaboratorio = laboratorioActivo.IdLaboratorio,
+                    FechaRegisEp = DateOnly.FromDateTime(DateTime.Now),
+                    FechaPromesa = DateOnly.FromDateTime(DateTime.Now.AddDays(7)),
+                    Estado = "Registrado",
+                    Anticipo = anticipo > 0,
+                    AnticipoTotal = anticipo > 0 ? anticipo : null,
+                    SaldoPendiente = cotizacion.TotalCalculado - anticipo,
+                    Telefono = cotizacion.IdClienteNavigation?.Telefono ?? "0000000000"
+                };
+
+                _context.Pedidos.Add(nuevoPedido);
+                await _context.SaveChangesAsync();
+
+                if (anticipo > 0)
+                {
+                    var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                    var ventaAnticipo = new Venta
+                    {
+                        IdCliente = cotizacion.IdCliente,
+                        IdProducto = productoAnticipo!.IdProducto,
+                        Total = anticipo,
+                        IdCajaTurno = caja!.IdCajaTurno,
+                        IdPedido = nuevoPedido.FolioPedido,
+                        Fecha = DateOnly.FromDateTime(DateTime.Today),
+                        IdEmpleado = empleadoId,
+                        FormaPago = string.IsNullOrWhiteSpace(formaPago) ? "Efectivo" : formaPago
+                    };
+                    _context.Venta.Add(ventaAnticipo);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                TempData["MensajePedido"] = anticipo > 0
+                    ? $"El pedido #{nuevoPedido.FolioPedido} ha sido creado con anticipo de ${anticipo:0.00} ({formaPago}). Saldo pendiente: ${nuevoPedido.SaldoPendiente:0.00}."
+                    : $"El pedido #{nuevoPedido.FolioPedido} ha sido creado a partir de la cotización #{cotizacion.IdCotizacion}. Sin anticipo: saldo pendiente ${nuevoPedido.SaldoPendiente:0.00}.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["MensajePedido"] = $"No se pudo crear el pedido: {ex.InnerException?.Message ?? ex.Message}";
+                return RedirectToPage();
+            }
+
             return RedirectToPage("/TableroPedidos");
         }
     }

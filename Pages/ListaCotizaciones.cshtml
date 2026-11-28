@@ -31,6 +31,10 @@
         </div>
         
         <div class="card-body p-4">
+            @if (TempData["MensajePedido"] != null)
+            {
+                <div class="alert alert-warning">@TempData["MensajePedido"]</div>
+            }
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle text-center">
                     <thead class="table-light text-dark">
@@ -118,14 +122,55 @@
                                         }
                                         else
                                         {
-                                            <!-- Botón original para convertir a pedido -->
-                                            <form method="post" asp-page-handler="ConvertirPedido" class="m-0">
-                                                <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
-                                                <button type="submit" class="btn btn-sm btn-primary" @(estaVencida ? "disabled" :
-                                                        "") title="Enviar a Pedidos">
-                                                    <i class="bi bi-cart-plus"></i> Crear Pedido
-                                                </button>
-                                            </form>
+                                            <!-- SCRUM-15 HU-11: el pedido se crea desde el modal de anticipo -->
+                                            var pctMinimo = Model.Parametros?.AnticipoMinimo ?? 50;
+                                            var minimoAnticipo = cotizacion.TotalCalculado * pctMinimo / 100m;
+                                            var minimoStr = minimoAnticipo.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                                            var totalStr = cotizacion.TotalCalculado.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#modalAnticipo-@cotizacion.IdCotizacion" @(estaVencida ? "disabled" : "")
+                                                    title="Enviar a Pedidos">
+                                                <i class="bi bi-cart-plus"></i> Crear Pedido
+                                            </button>
+
+                                            <div class="modal fade" id="modalAnticipo-@cotizacion.IdCotizacion" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content text-start">
+                                                        <form method="post" asp-page-handler="ConvertirPedido">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Crear pedido — Cotización #@cotizacion.IdCotizacion</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <input type="hidden" name="idCotizacion" value="@cotizacion.IdCotizacion" />
+                                                                <p class="mb-1">Cliente: <strong>@cotizacion.IdClienteNavigation?.Nombre</strong></p>
+                                                                <p class="mb-3">Total de la cotización: <strong>$@cotizacion.TotalCalculado.ToString("N2")</strong></p>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold" for="anticipo-@cotizacion.IdCotizacion">Anticipo $</label>
+                                                                    <input type="number" class="form-control" id="anticipo-@cotizacion.IdCotizacion" name="anticipo"
+                                                                           value="0" min="0" max="@totalStr" step="0.01"
+                                                                           data-total="@totalStr" oninput="actualizarSaldoAnticipo(this)" />
+                                                                    <div class="form-text">Si el cliente deja anticipo, el mínimo es $@minimoAnticipo.ToString("N2") (@pctMinimo% del total). Deja 0 si no deja anticipo.</div>
+                                                                </div>
+                                                                <div class="mb-3">
+                                                                    <label class="form-label fw-bold" for="formaPago-@cotizacion.IdCotizacion">Forma de pago del anticipo</label>
+                                                                    <select class="form-select" id="formaPago-@cotizacion.IdCotizacion" name="formaPago">
+                                                                        <option value="Efectivo">Efectivo</option>
+                                                                        <option value="Tarjeta">Tarjeta</option>
+                                                                        <option value="Transferencia">Transferencia</option>
+                                                                    </select>
+                                                                    <div class="form-text">Solo se usa si el anticipo es mayor a 0. Se cobra en la caja abierta.</div>
+                                                                </div>
+                                                                <p class="mb-0">Saldo restante del pedido: <strong id="saldo-@cotizacion.IdCotizacion">$@cotizacion.TotalCalculado.ToString("N2")</strong></p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                <button type="submit" class="btn btn-primary">Crear pedido</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         }
                                     </td>
                                 </tr>
@@ -147,3 +192,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    // SCRUM-15 HU-11: actualiza el saldo restante al teclear el anticipo.
+    function actualizarSaldoAnticipo(input) {
+        var total = parseFloat(input.dataset.total) || 0;
+        var anticipo = parseFloat(input.value) || 0;
+        var id = input.id.replace('anticipo-', '');
+        var saldoEl = document.getElementById('saldo-' + id);
+        if (saldoEl) saldoEl.textContent = '$' + Math.max(total - anticipo, 0).toFixed(2);
+    }
+</script>

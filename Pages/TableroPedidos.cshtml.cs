@@ -69,6 +69,16 @@ namespace Proyecto.Pages
             var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido == null) return NotFound();
 
+            // Corrección: solo se puede recibir cuando el trabajo está
+            // "Terminado". Sin este candado, recibir un pedido "En proceso"
+            // saltaba directo a "Recibido en óptica" aunque los lentes
+            // siguieran en producción.
+            if (pedido.Estado != "Terminado")
+            {
+                TempData["ErrorEntrega"] = $"El pedido #{pedido.FolioPedido} no se puede recibir porque está en '{pedido.Estado}'. Solo se recibe cuando el trabajo esté 'Terminado'.";
+                return RedirectToPage();
+            }
+
             pedido.Estado = "Recibido en óptica";
             await _context.SaveChangesAsync();
 
@@ -81,6 +91,16 @@ namespace Proyecto.Pages
         {
             var pedido = await _context.Pedidos.Include(p => p.IdClienteNavigation).FirstOrDefaultAsync(p => p.FolioPedido == id);
             if (pedido == null) return NotFound();
+
+            // Corrección: el aviso solo tiene sentido desde "Recibido en
+            // óptica" (o reenviarlo ya en "Listo para entrega"). Desde otro
+            // estado saltaba el flujo y marcaba el pedido como listo sin
+            // haberlo recibido.
+            if (pedido.Estado != "Recibido en óptica" && pedido.Estado != "Listo para entrega")
+            {
+                TempData["ErrorEntrega"] = $"No se puede avisar al cliente del pedido #{pedido.FolioPedido} porque está en '{pedido.Estado}'. Primero debe estar 'Recibido en óptica'.";
+                return RedirectToPage();
+            }
 
             // Actualizamos el estado a "Listo para entrega" al notificar
             pedido.Estado = "Listo para entrega";
@@ -105,6 +125,14 @@ namespace Proyecto.Pages
         {
             var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido == null) return NotFound();
+
+            // Corrección: la incidencia solo se reporta mientras el pedido
+            // está en el laboratorio (Enviado / En proceso / Terminado).
+            if (pedido.Estado != "Enviado a laboratorio" && pedido.Estado != "En proceso" && pedido.Estado != "Terminado")
+            {
+                TempData["ErrorEntrega"] = $"No se puede registrar incidencia en el pedido #{pedido.FolioPedido} porque está en '{pedido.Estado}'.";
+                return RedirectToPage();
+            }
 
             pedido.Estado = "Con incidencia";
             // Opcional: Si deseas guardar el motivo en un campo de notas/comentarios o en el historial
@@ -135,6 +163,16 @@ namespace Proyecto.Pages
         {
             var pedido = await _context.Pedidos.FindAsync(id);
             if (pedido == null) return NotFound();
+
+            // Corrección: solo se puede entregar en "Listo para entrega". Sin
+            // este candado un pedido en Registrado / En proceso / Terminado /
+            // Recibido en óptica se podía marcar Entregado (o liquidar en caja)
+            // aunque los lentes ni siquiera estuvieran listos.
+            if (pedido.Estado != "Listo para entrega")
+            {
+                TempData["ErrorEntrega"] = $"El pedido #{pedido.FolioPedido} no se puede entregar porque está en '{pedido.Estado}'. Solo se entrega cuando esté 'Listo para entrega'.";
+                return RedirectToPage();
+            }
 
             if (pedido.SaldoPendiente > 0)
             {
