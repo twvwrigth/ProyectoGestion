@@ -1,0 +1,276 @@
+@page
+@model Proyecto.Pages.ReparacionesModel
+@{
+    ViewData["Title"] = "Reparaciones";
+}
+
+<style>
+    /* Al imprimir, solo sale el comprobante, no toda la página. */
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #comprobante, #comprobante * {
+            visibility: visible;
+        }
+
+        #comprobante {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            box-shadow: none !important;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <h4 class="fw-bold mb-3"><i class="bi bi-wrench me-2"></i>Reparaciones</h4>
+
+    @if (TempData["MensajeReparacion"] != null)
+    {
+        <div class="alert alert-success">@TempData["MensajeReparacion"]</div>
+    }
+    @if (TempData["ErrorReparacion"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorReparacion"]</div>
+    }
+
+    @* Criterio 1: comprobante con folio y fecha estimada, tras el registro. *@
+    @if (Model.Comprobante != null)
+    {
+        <div class="card shadow-sm border-success mb-4" id="comprobante">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Comprobante de reparación #@Model.Comprobante.FolioReparacion</h5>
+                <button type="button" class="btn btn-light btn-sm d-print-none" onclick="window.print()">🖨️ Imprimir comprobante</button>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Folio</dt>
+                    <dd class="col-sm-9 fw-bold">#@Model.Comprobante.FolioReparacion</dd>
+                    <dt class="col-sm-3">Cliente</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.IdClienteNavigation?.Nombre</dd>
+                    <dt class="col-sm-3">Teléfono</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.Telefono</dd>
+                    <dt class="col-sm-3">Lente recibido</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.Descripcion</dd>
+                    <dt class="col-sm-3">Estado en que llega</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.EstadoLentes</dd>
+                    <dt class="col-sm-3">Falla / reparación</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.EstadoFalla</dd>
+                    <dt class="col-sm-3">Precio estimado</dt>
+                    <dd class="col-sm-9 fw-bold">$@Model.Comprobante.PrecioEstimado?.ToString("N2")</dd>
+                    <dt class="col-sm-3">Fecha estimada de entrega</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.FechaEstimada?.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-3">Fecha de registro</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.FechaRegistro.ToString("dd/MM/yyyy")</dd>
+                    <dt class="col-sm-3">Recibió</dt>
+                    <dd class="col-sm-9">@Model.Comprobante.IdEmpleadoNavigation?.Nombre</dd>
+                </dl>
+            </div>
+        </div>
+    }
+
+    @* Criterio 1 y 2: registro + precio sugerido según el tipo (ajustable). *@
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Recibir reparación</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Crear">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="idCliente">Cliente</label>
+                        <select class="form-select" id="idCliente" name="idCliente" onchange="actualizarTelefono(this)" required>
+                            <option value="">Selecciona un cliente…</option>
+                            @foreach (var c in Model.ClientesLista)
+                            {
+                                <option value="@c.IdCliente" data-telefono="@c.Telefono">@c.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="telefono">Teléfono</label>
+                        <input type="text" class="form-control" id="telefono" name="telefono" maxlength="15" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="descripcion">Descripción del lente</label>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" maxlength="50"
+                               placeholder="Ej. Armazón metálico dorado marca Carrera" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="estadoLentes">Estado en que llega</label>
+                        <input type="text" class="form-control" id="estadoLentes" name="estadoLentes" maxlength="100"
+                               placeholder="Ej. Micas rayadas, varilla derecha suelta" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="tipoReparacion">Tipo de reparación / falla</label>
+                        <select class="form-select" id="tipoReparacion" name="tipoReparacion" onchange="actualizarPrecio(this)" required>
+                            <option value="">Selecciona el tipo…</option>
+                            @foreach (var t in Proyecto.Pages.ReparacionesModel.Tipos)
+                            {
+                                <option value="@t.Tipo" data-precio="@t.Precio.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">@t.Tipo — $@t.Precio.ToString("N2") sugerido</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="divFallaOtro" style="display:none;">
+                        <label class="form-label fw-bold" for="fallaOtro">Describe la falla</label>
+                        <input type="text" class="form-control" id="fallaOtro" name="fallaOtro" maxlength="50" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="precioEstimado">Precio estimado $</label>
+                        <input type="number" class="form-control" id="precioEstimado" name="precioEstimado"
+                               min="0" step="0.01" value="0" required />
+                        <div class="form-text">Precio sugerido según el tipo; se puede ajustar.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold" for="fechaEstimada">Fecha estimada de entrega</label>
+                        <input type="date" class="form-control" id="fechaEstimada" name="fechaEstimada"
+                               value="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Registrar reparación</button>
+            </form>
+        </div>
+    </div>
+
+    @* Criterio 3: seguimiento por estado, con fecha y usuario en el historial. *@
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Seguimiento de reparaciones (@Model.ReparacionesLista.Count)</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Folio</th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Lente / Falla</th>
+                            <th>Precio</th>
+                            <th>Fecha est.</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ReparacionesLista.Any())
+                        {
+                            @foreach (var r in Model.ReparacionesLista)
+                            {
+                                var badge = r.Estado switch
+                                {
+                                    "Recibida" => "bg-secondary",
+                                    "En reparación" => "bg-primary",
+                                    "Lista" => "bg-success",
+                                    "No reparable" => "bg-danger",
+                                    "Entregada" => "bg-dark",
+                                    _ => "bg-secondary"
+                                };
+                                <tr>
+                                    <td class="fw-bold">#@r.FolioReparacion</td>
+                                    <td>@r.IdClienteNavigation?.Nombre</td>
+                                    <td>@r.Telefono</td>
+                                    <td>
+                                        <div>@r.Descripcion</div>
+                                        <small class="text-muted">@r.EstadoFalla</small>
+                                    </td>
+                                    <td>$@r.PrecioEstimado?.ToString("N2")</td>
+                                    <td>@r.FechaEstimada?.ToString("dd/MM/yyyy")</td>
+                                    <td><span class="badge @badge">@r.Estado</span></td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @if (r.Estado == "Recibida")
+                                            {
+                                                <form method="post" asp-page-handler="CambiarEstado" class="d-inline">
+                                                    <input type="hidden" name="folio" value="@r.FolioReparacion" />
+                                                    <input type="hidden" name="nuevoEstado" value="En reparación" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">Iniciar reparación</button>
+                                                </form>
+                                            }
+                                            @if (r.Estado == "En reparación")
+                                            {
+                                                <form method="post" asp-page-handler="CambiarEstado" class="d-inline">
+                                                    <input type="hidden" name="folio" value="@r.FolioReparacion" />
+                                                    <input type="hidden" name="nuevoEstado" value="Lista" />
+                                                    <button type="submit" class="btn btn-success btn-sm">Marcar lista</button>
+                                                </form>
+                                            }
+                                            @if (r.Estado == "Recibida" || r.Estado == "En reparación")
+                                            {
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="collapse"
+                                                        data-bs-target="#formNoReparable_@r.FolioReparacion">
+                                                    No reparable
+                                                </button>
+                                            }
+                                            @if (r.Estado == "Lista" || r.Estado == "No reparable")
+                                            {
+                                                <form method="post" asp-page-handler="AvisarCliente" target="_blank" class="d-inline">
+                                                    <input type="hidden" name="folio" value="@r.FolioReparacion" />
+                                                    <button type="submit" class="btn btn-outline-success btn-sm">💬 Avisar WhatsApp</button>
+                                                </form>
+                                                <form method="post" asp-page-handler="Entregar" class="d-inline">
+                                                    <input type="hidden" name="folio" value="@r.FolioReparacion" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        @(r.Estado == "Lista" ? "📦 Entregar y cobrar" : "📦 Entregar sin cobro")
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                        @if (r.Estado == "Recibida" || r.Estado == "En reparación")
+                                        {
+                                            <div class="collapse mt-2" id="formNoReparable_@r.FolioReparacion">
+                                                <form method="post" asp-page-handler="CambiarEstado" class="p-2 bg-light rounded border">
+                                                    <input type="hidden" name="folio" value="@r.FolioReparacion" />
+                                                    <input type="hidden" name="nuevoEstado" value="No reparable" />
+                                                    <label class="form-label small fw-bold text-danger">Motivo por el que no es reparable:</label>
+                                                    <input type="text" name="comentario" class="form-control form-control-sm mb-2" maxlength="255" required />
+                                                    <button type="submit" class="btn btn-danger btn-sm">Confirmar no reparable</button>
+                                                </form>
+                                            </div>
+                                        }
+                                        @if (r.HistorialReparacions != null && r.HistorialReparacions.Any())
+                                        {
+                                            <details class="small mt-1">
+                                                <summary class="text-muted">Historial (@r.HistorialReparacions.Count)</summary>
+                                                <ul class="list-unstyled mb-0 mt-1">
+                                                    @foreach (var h in r.HistorialReparacions.OrderByDescending(x => x.FechaCambio))
+                                                    {
+                                                        <li><strong>@h.Estado</strong> — @h.FechaCambio.ToString("dd/MM/yyyy HH:mm") por @h.IdEmpleadoNavigation?.Nombre@(!string.IsNullOrEmpty(h.Comentario) ? " — " + h.Comentario : "")</li>
+                                                    }
+                                                </ul>
+                                            </details>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">Sin reparaciones registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // SCRUM-23 HU-17: llena el teléfono del cliente elegido.
+    function actualizarTelefono(select) {
+        var tel = select.options[select.selectedIndex]?.dataset.telefono || '';
+        document.getElementById('telefono').value = tel;
+    }
+    // Criterio 2: sugiere el precio según el tipo; el vendedor lo puede ajustar.
+    function actualizarPrecio(select) {
+        var opt = select.options[select.selectedIndex];
+        var precio = parseFloat(opt?.dataset.precio || '0');
+        document.getElementById('precioEstimado').value = precio.toFixed(2);
+        document.getElementById('divFallaOtro').style.display = select.value === 'Otro' ? '' : 'none';
+    }
+</script>

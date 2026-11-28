@@ -25,7 +25,18 @@ public partial class Reparacion
 
     public bool? ReparacionExito { get; set; }
 
+    // SCRUM-23 HU-17: estado del flujo (Recibida, En reparación, No
+    // reparable, Lista, Entregada), fecha estimada de entrega y teléfono
+    // registrado al recibir (constancia de lo recibido).
+    public string Estado { get; set; } = "Recibida";
+
+    public DateOnly? FechaEstimada { get; set; }
+
+    public string? Telefono { get; set; }
+
     public virtual Cliente IdClienteNavigation { get; set; } = null!;
 
     public virtual Empleado IdEmpleadoNavigation { get; set; } = null!;
+
+    public virtual ICollection<HistorialReparacion> HistorialReparacions { get; set; } = new List<HistorialReparacion>();
 }

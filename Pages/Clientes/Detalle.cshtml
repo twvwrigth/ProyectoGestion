@@ -318,6 +318,7 @@
                                                     <th>Descripción</th>
                                                     <th>Estado Falla</th>
                                                     <th>Precio Estimado</th>
+                                                    <th>Estado</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -330,13 +331,14 @@
                                                             <td>@rep.Descripcion</td>
                                                             <td>@rep.EstadoFalla</td>
                                                             <td>$@rep.PrecioEstimado</td>
+                                                            <td><span class="badge bg-secondary">@rep.Estado</span></td>
                                                         </tr>
                                                     }
                                                 }
                                                 else
                                                 {
                                                     <tr>
-                                                        <td colspan="4" class="text-center text-muted py-3">Sin reparaciones registradas.
+                                                        <td colspan="5" class="text-center text-muted py-3">Sin reparaciones registradas.
                                                         </td>
                                                     </tr>
                                                 }

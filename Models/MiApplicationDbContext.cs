@@ -53,6 +53,8 @@ public partial class MiApplicationDbContext : DbContext
 
     public virtual DbSet<Reparacion> Reparaciones { get; set; }
 
+    public virtual DbSet<HistorialReparacion> HistorialReparacions { get; set; }
+
     public virtual DbSet<Rol> Roles { get; set; }
 
     public virtual DbSet<Ticket> Tickets { get; set; }
@@ -500,6 +502,47 @@ public partial class MiApplicationDbContext : DbContext
                 .HasConstraintName("fk_historial_empleado");
         });
 
+        // SCRUM-23 HU-17: historial de estados de la reparación (igual que
+        // HistorialPedido para los pedidos).
+        modelBuilder.Entity<HistorialReparacion>(entity =>
+        {
+            entity.HasKey(e => e.IdHistorial).HasName("PRIMARY");
+
+            entity.ToTable("historial_reparacion");
+
+            entity.HasIndex(e => e.FolioReparacion, "fk_historial_reparacion");
+
+            entity.HasIndex(e => e.IdEmpleado, "fk_historial_rep_empleado");
+
+            entity.Property(e => e.IdHistorial).HasColumnName("idHistorial");
+            entity.Property(e => e.FolioReparacion).HasColumnName("folioReparacion");
+            entity.Property(e => e.IdEmpleado).HasColumnName("idEmpleado");
+
+            entity.Property(e => e.Estado)
+                .HasMaxLength(50)
+                .HasColumnName("estado");
+
+            entity.Property(e => e.FechaCambio)
+                .HasColumnType("datetime")
+                .HasColumnName("fechaCambio");
+
+            entity.Property(e => e.Comentario)
+                .HasMaxLength(255)
+                .HasColumnName("comentario");
+
+            entity.HasOne(d => d.FolioReparacionNavigation)
+                .WithMany(p => p.HistorialReparacions)
+                .HasForeignKey(d => d.FolioReparacion)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_historial_reparacion");
+
+            entity.HasOne(d => d.IdEmpleadoNavigation)
+                .WithMany(p => p.HistorialReparacions)
+                .HasForeignKey(d => d.IdEmpleado)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_historial_rep_empleado");
+        });
+
         modelBuilder.Entity<Producto>(entity =>
         {
             entity.HasKey(e => e.IdProducto).HasName("PRIMARY");
@@ -690,6 +733,15 @@ public partial class MiApplicationDbContext : DbContext
                 .HasPrecision(10, 2)
                 .HasColumnName("precioEstimado");
             entity.Property(e => e.ReparacionExito).HasColumnName("reparacionExito");
+
+            // SCRUM-23 HU-17
+            entity.Property(e => e.Estado)
+                .HasMaxLength(20)
+                .HasColumnName("estado");
+            entity.Property(e => e.FechaEstimada).HasColumnName("fechaEstimada");
+            entity.Property(e => e.Telefono)
+                .HasMaxLength(15)
+                .HasColumnName("telefono");
 
             entity.HasOne(d => d.IdClienteNavigation).WithMany(p => p.Reparacions)
                 .HasForeignKey(d => d.IdCliente)

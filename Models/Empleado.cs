@@ -42,4 +42,6 @@ public partial class Empleado
     public virtual ICollection<Venta> Venta { get; set; } = new List<Venta>();
 
     public virtual ICollection<HistorialPedido> HistorialPedidos { get; set; } = new List<HistorialPedido>();
+
+    public virtual ICollection<HistorialReparacion> HistorialReparacions { get; set; } = new List<HistorialReparacion>();
 }

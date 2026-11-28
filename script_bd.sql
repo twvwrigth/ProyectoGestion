@@ -426,6 +426,38 @@ INSERT INTO `historial_pedido` VALUES (1,1,2,'Registrado','2026-11-05 11:00:00',
 UNLOCK TABLES;
 
 --
+-- Table structure for table `historial_reparacion`
+--
+
+DROP TABLE IF EXISTS `historial_reparacion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `historial_reparacion` (
+  `idHistorial` int NOT NULL AUTO_INCREMENT,
+  `folioReparacion` int NOT NULL,
+  `idEmpleado` int NOT NULL,
+  `estado` varchar(50) NOT NULL,
+  `fechaCambio` datetime NOT NULL,
+  `comentario` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`idHistorial`),
+  KEY `fk_historial_reparacion` (`folioReparacion`),
+  KEY `fk_historial_rep_empleado` (`idEmpleado`),
+  CONSTRAINT `fk_historial_rep_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
+  CONSTRAINT `fk_historial_reparacion` FOREIGN KEY (`folioReparacion`) REFERENCES `reparacion` (`folioReparacion`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `historial_reparacion`
+--
+
+LOCK TABLES `historial_reparacion` WRITE;
+/*!40000 ALTER TABLE `historial_reparacion` DISABLE KEYS */;
+INSERT INTO `historial_reparacion` VALUES (1,3,1,'Recibida','2026-11-27 20:13:41','Reparación recibida.'),(2,3,1,'En reparación','2026-11-27 20:14:16',NULL),(3,3,1,'Lista','2026-11-27 20:14:47',NULL),(4,3,1,'Entregada','2026-11-27 20:15:10','Cobrada en caja (venta #20, $180.00 Efectivo).'),(5,4,1,'Recibida','2026-11-27 20:15:38','Reparación recibida.'),(6,4,1,'No reparable','2026-11-27 20:16:28','por que no'),(7,5,1,'Recibida','2026-11-27 20:19:56','Reparación recibida.');
+/*!40000 ALTER TABLE `historial_reparacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `inventario`
 --
 
@@ -686,7 +718,7 @@ CREATE TABLE `producto` (
   KEY `fk_producto_categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_categoria` FOREIGN KEY (`idCategoria`) REFERENCES `categoria` (`idCategoria`),
   CONSTRAINT `fk_producto_clase` FOREIGN KEY (`idClasePrecio`) REFERENCES `clase_precio` (`idClasePrecio`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -695,7 +727,7 @@ CREATE TABLE `producto` (
 
 LOCK TABLES `producto` WRITE;
 /*!40000 ALTER TABLE `producto` DISABLE KEYS */;
-INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}',1,NULL),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}',1,NULL),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}',1,NULL),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}',1,NULL),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}',1,NULL),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}',1,NULL),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}',1,NULL),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}',1,NULL),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL,1,NULL),(10,1,NULL,'Anticipo pedido',0,0,0.00,NULL,1,NULL);
+INSERT INTO `producto` VALUES (1,1,3,'Ray-Ban Clubmaster',5,1,3200.00,'{\"Color\": \"Carey/Dorado\", \"Marca\": \"Ray-Ban\", \"TipoAro\": \"Semi al aire\", \"Material\": \"Acetato/Metal\"}',1,NULL),(2,1,2,'Oakley Holbrook Rx',11,0,2450.00,'{\"Color\": \"Negro Mate\", \"Marca\": \"Oakley\", \"TipoAro\": \"Aro completo\", \"Material\": \"O-Matter\"}',1,NULL),(3,1,1,'Vogue Classic Slim',14,1,1100.00,'{\"Color\": \"Oro Rosa\", \"Marca\": \"Vogue\", \"TipoAro\": \"Aro completo\", \"Material\": \"Metal\"}',1,NULL),(4,2,3,'Ray-Ban Aviator Sol',4,0,3500.00,'{\"Color\": \"Dorado/Verde\", \"Marca\": \"Ray-Ban\", \"FiltroUV\": \"UV400\", \"Polarizado\": \"Sí\"}',1,NULL),(5,3,2,'Acuvue Oasys 6pz',19,0,890.00,'{\"Marca\": \"Johnson & Johnson\", \"Duracion\": \"Quincenal\", \"ContenidoCaja\": \"6 lentes\"}',1,NULL),(6,4,1,'Solución Renu 355ml',24,1,220.00,'{\"Marca\": \"Bausch + Lomb\", \"Funcion\": \"Limpieza y desinfección\", \"ContenidoML\": \"355 ml\"}',1,NULL),(7,4,1,'Gotas Systane Ultra',17,0,340.00,'{\"Marca\": \"Alcon\", \"Funcion\": \"Lubricante ocular\", \"ContenidoML\": \"10 ml\"}',1,NULL),(8,5,1,'Kit Limpieza Microf.',39,0,120.00,'{\"Color\": \"Azul\", \"Material\": \"Microfibra y spray\"}',1,NULL),(9,1,NULL,'Liquidación pedido',0,0,0.00,NULL,1,NULL),(10,1,NULL,'Anticipo pedido',0,0,0.00,NULL,1,NULL),(11,1,NULL,'Reparación',0,0,0.00,NULL,1,NULL);
 /*!40000 ALTER TABLE `producto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -824,12 +856,15 @@ CREATE TABLE `reparacion` (
   `precioEstimado` decimal(10,2) DEFAULT NULL,
   `estadoLentes` varchar(100) DEFAULT NULL,
   `reparacionExito` tinyint(1) DEFAULT NULL,
+  `estado` varchar(20) NOT NULL DEFAULT 'Recibida',
+  `telefono` varchar(15) DEFAULT NULL,
+  `fechaEstimada` date DEFAULT NULL,
   PRIMARY KEY (`folioReparacion`),
   KEY `fk_reparacion_cliente` (`idCliente`),
   KEY `fk_reparacion_empleado` (`idEmpleado`),
   CONSTRAINT `fk_reparacion_cliente` FOREIGN KEY (`idCliente`) REFERENCES `cliente` (`idCliente`),
   CONSTRAINT `fk_reparacion_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -838,7 +873,7 @@ CREATE TABLE `reparacion` (
 
 LOCK TABLES `reparacion` WRITE;
 /*!40000 ALTER TABLE `reparacion` DISABLE KEYS */;
-INSERT INTO `reparacion` VALUES (1,3,2,'2026-11-12','2026-11-14','Armazón metálico dorado marca Carrera','Soldadura de puente nasal fracturado',180.00,'Micas rayadas por uso previo, sin plaquetas',1),(2,7,3,'2026-11-17','2026-11-19','Armazón de acetato negro Hugo Boss','Cambio de tornillos y ajuste de varillas',80.00,'Buen estado general, varilla derecha suelta',NULL);
+INSERT INTO `reparacion` VALUES (1,3,2,'2026-11-12','2026-11-14','Armazón metálico dorado marca Carrera','Soldadura de puente nasal fracturado',180.00,'Micas rayadas por uso previo, sin plaquetas',1,'Entregada',NULL,NULL),(2,7,3,'2026-11-17','2026-11-19','Armazón de acetato negro Hugo Boss','Cambio de tornillos y ajuste de varillas',80.00,'Buen estado general, varilla derecha suelta',NULL,'Recibida',NULL,NULL),(3,1,1,'2026-11-27','2026-11-27','Armazon negro','Soldadura de puente',180.00,'armazon roto',1,'Entregada','2291457890','2026-12-04'),(4,8,1,'2026-11-27',NULL,'sbcosq','Soldadura de puente',180.00,'ocsqpo',NULL,'No reparable','2297890123','2026-12-04'),(5,8,1,'2026-11-27',NULL,'dwq','Cambio de tornillos',40.00,'wq',NULL,'Recibida','2297890123','2026-12-04');
 /*!40000 ALTER TABLE `reparacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -931,7 +966,7 @@ CREATE TABLE `venta` (
   CONSTRAINT `fk_venta_empleado` FOREIGN KEY (`idEmpleado`) REFERENCES `empleado` (`idEmpleado`),
   CONSTRAINT `fk_venta_pedido` FOREIGN KEY (`idPedido`) REFERENCES `pedido` (`folioPedido`),
   CONSTRAINT `fk_venta_producto` FOREIGN KEY (`idProducto`) REFERENCES `producto` (`idProducto`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -940,7 +975,7 @@ CREATE TABLE `venta` (
 
 LOCK TABLES `venta` WRITE;
 /*!40000 ALTER TABLE `venta` DISABLE KEYS */;
-INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(17,3,9,8,1,9,'2026-11-27','Efectivo',3270.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(18,3,10,5,1,9,'2026-11-27','Tarjeta',1400.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(19,3,11,3,1,10,'2026-11-27','Efectivo',1700.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0);
+INSERT INTO `venta` VALUES (1,1,NULL,4,2,6,'2026-11-17','Efectivo',180.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(2,1,NULL,6,2,7,'2026-11-17','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(3,1,NULL,1,2,4,'2026-11-17','Tarjeta',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(4,2,NULL,2,2,8,'2026-11-18','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(5,2,NULL,5,3,5,'2026-11-18','Transferencia',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(6,2,NULL,5,2,4,'2026-11-18','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(7,2,NULL,2,2,1,'2026-11-18','Efectivo',11300.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(8,3,NULL,5,2,1,'2026-11-18','Efectivo',5650.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(9,3,NULL,1,1,1,'2026-11-24','Efectivo',3200.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(10,3,NULL,1,1,2,'2026-11-24','Efectivo',2450.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(11,3,NULL,1,1,3,'2026-11-24','Efectivo',1100.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(12,3,NULL,1,1,4,'2026-11-24','Efectivo',3500.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(13,3,NULL,1,1,5,'2026-11-24','Efectivo',890.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(14,3,NULL,1,1,6,'2026-11-24','Efectivo',220.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(15,3,NULL,1,1,7,'2026-11-24','Efectivo',340.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(16,3,NULL,1,1,8,'2026-11-24','Efectivo',120.00,'0',0,1.00,0.00,NULL,0,NULL,NULL,NULL,0),(17,3,9,8,1,9,'2026-11-27','Efectivo',3270.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(18,3,10,5,1,9,'2026-11-27','Tarjeta',1400.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(19,3,11,3,1,10,'2026-11-27','Efectivo',1700.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0),(20,3,NULL,1,1,11,'2026-11-27','Efectivo',180.00,'Activa',1,0.00,NULL,NULL,0,NULL,NULL,NULL,0);
 /*!40000 ALTER TABLE `venta` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -953,4 +988,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-11-27 19:35:32
+-- Dump completed on 2026-11-27 20:21:07

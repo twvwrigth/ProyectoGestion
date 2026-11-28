@@ -24,6 +24,9 @@ namespace Proyecto.Pages
         public CajaTurno? CajaAbierta { get; set; }
         // SCRUM-12 HU-19: pedido con adeudo que llega desde el tablero para liquidar en caja.
         public Pedido? PedidoALiquidar { get; set; }
+        // SCRUM-23 HU-17: reparación lista que llega desde el tablero de
+        // reparaciones para cobrar en caja.
+        public Reparacion? ReparacionACobrar { get; set; }
         public decimal TotalEntradas { get; set; }
         public decimal TotalSalidas { get; set; }
         public decimal SaldoActual { get; set; }
@@ -43,7 +46,7 @@ namespace Proyecto.Pages
         [BindProperty] public string? ClaveEncargado { get; set; }
 
         // SCRUM-12 HU-19: folioPedido opcional, lo manda el tablero cuando el pedido adeuda.
-        public async Task<IActionResult> OnGetAsync(int? folioPedido)
+        public async Task<IActionResult> OnGetAsync(int? folioPedido, int? folioReparacion)
         {
             var claimId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(claimId)) return RedirectToPage("/Login");
@@ -75,6 +78,30 @@ namespace Proyecto.Pages
                 {
                     TempData["ErrorMessage"] = $"El pedido #{PedidoALiquidar.FolioPedido} ya no tiene saldo pendiente.";
                     PedidoALiquidar = null;
+                }
+            }
+
+            // SCRUM-23 HU-17: si viene un folio de reparación, cargarla para
+            // mostrar su cobro. Solo se cobra en estado "Lista".
+            if (folioReparacion.HasValue)
+            {
+                ReparacionACobrar = await _context.Reparaciones
+                    .Include(r => r.IdClienteNavigation)
+                    .FirstOrDefaultAsync(r => r.FolioReparacion == folioReparacion.Value);
+
+                if (ReparacionACobrar == null)
+                {
+                    TempData["ErrorMessage"] = $"No se encontró la reparación #{folioReparacion.Value}.";
+                }
+                else if (ReparacionACobrar.Estado != "Lista")
+                {
+                    TempData["ErrorMessage"] = $"La reparación #{ReparacionACobrar.FolioReparacion} no se puede cobrar porque está en '{ReparacionACobrar.Estado}'. Se cobra cuando esté 'Lista'.";
+                    ReparacionACobrar = null;
+                }
+                else if ((ReparacionACobrar.PrecioEstimado ?? 0) <= 0)
+                {
+                    TempData["ErrorMessage"] = $"La reparación #{ReparacionACobrar.FolioReparacion} no tiene precio estimado para cobrar.";
+                    ReparacionACobrar = null;
                 }
             }
 
@@ -285,6 +312,106 @@ namespace Proyecto.Pages
             {
                 await transaction.RollbackAsync();
                 TempData["ErrorMessage"] = $"No se pudo liquidar el pedido: {ex.InnerException?.Message ?? ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        // =========================================================================
+        // SCRUM-23 HU-17: Cobrar una reparación lista en caja.
+        // Crea la Venta por el PrecioEstimado, ligada a la caja abierta, y
+        // marca la reparación como Entregada (ReparacionExito = true). Sigue
+        // el patrón de la liquidación de SCRUM-12: la Venta ligada a la caja
+        // abierta ES el movimiento de caja, por eso NO se crea además un
+        // MovimientoCaja. El folio de la venta queda en el historial de la
+        // reparación, porque Venta no tiene columna de reparación.
+        // =========================================================================
+        public async Task<IActionResult> OnPostCobrarReparacionAsync(int folioReparacion, string formaPago)
+        {
+            var empleadoId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var caja = await _context.CajaTurno.FirstOrDefaultAsync(c => c.Estado == "Abierta");
+
+            if (caja == null)
+            {
+                TempData["ErrorMessage"] = "No se pudo cobrar. No hay ninguna caja abierta.";
+                return RedirectToPage();
+            }
+
+            bool esAdmin = User.IsInRole("Admin") || User.IsInRole("Encargado");
+            if (caja.IdEmpleado != empleadoId && !esAdmin)
+            {
+                TempData["ErrorMessage"] = "No tienes permisos para cobrar reparaciones en la caja de otro usuario.";
+                return RedirectToPage();
+            }
+
+            var reparacion = await _context.Reparaciones.FindAsync(folioReparacion);
+            if (reparacion == null)
+            {
+                TempData["ErrorMessage"] = $"No se encontró la reparación #{folioReparacion}.";
+                return RedirectToPage();
+            }
+
+            if (reparacion.Estado != "Lista")
+            {
+                TempData["ErrorMessage"] = $"La reparación #{reparacion.FolioReparacion} no se puede cobrar porque está en '{reparacion.Estado}'. Se cobra cuando esté 'Lista'.";
+                return RedirectToPage();
+            }
+
+            if ((reparacion.PrecioEstimado ?? 0) <= 0)
+            {
+                TempData["ErrorMessage"] = $"La reparación #{reparacion.FolioReparacion} no tiene precio estimado para cobrar.";
+                return RedirectToPage();
+            }
+
+            var productoReparacion = await _context.Productos
+                .FirstOrDefaultAsync(pr => pr.Nombre == "Reparación");
+            if (productoReparacion == null)
+            {
+                TempData["ErrorMessage"] = "Falta el producto genérico 'Reparación'. Aplica el script 23-reparaciones.sql antes de cobrar.";
+                return RedirectToPage();
+            }
+
+            if (string.IsNullOrWhiteSpace(formaPago)) formaPago = "Efectivo";
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var venta = new Venta
+                {
+                    IdCliente = reparacion.IdCliente,
+                    IdProducto = productoReparacion.IdProducto,
+                    Total = reparacion.PrecioEstimado!.Value,
+                    IdCajaTurno = caja.IdCajaTurno,
+                    Fecha = DateOnly.FromDateTime(DateTime.Today),
+                    IdEmpleado = empleadoId,
+                    FormaPago = formaPago
+                };
+                _context.Venta.Add(venta);
+
+                reparacion.Estado = "Entregada";
+                reparacion.FechaEntrega = DateOnly.FromDateTime(DateTime.Today);
+                reparacion.ReparacionExito = true;
+
+                await _context.SaveChangesAsync();
+
+                _context.HistorialReparacions.Add(new HistorialReparacion
+                {
+                    FolioReparacion = reparacion.FolioReparacion,
+                    IdEmpleado = empleadoId,
+                    Estado = "Entregada",
+                    FechaCambio = DateTime.Now,
+                    Comentario = $"Cobrada en caja (venta #{venta.FolioVenta}, ${venta.Total:0.00} {formaPago})."
+                });
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = $"Reparación #{reparacion.FolioReparacion} cobrada por ${venta.Total:0.00} ({formaPago}) y marcada como Entregada.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = $"No se pudo cobrar la reparación: {ex.InnerException?.Message ?? ex.Message}";
             }
 
             return RedirectToPage();
